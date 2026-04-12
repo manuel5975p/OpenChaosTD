@@ -13,7 +13,7 @@ void PlayingState::OnEnter(Game& game) {
 
     Enemy enemy;
     enemy.m_position = {static_cast<float>(game.GetGameData().map.GetNests()[0].first), static_cast<float>(game.GetGameData().map.GetNests()[0].second)};
-    enemy.m_speed = 50;
+    enemy.m_speed = 500;
     game.GetGameData().enemies.Insert(enemy);
 }
 
@@ -21,10 +21,10 @@ void PlayingState::OnExit(Game& /*game*/) {
 
 }
 
-void PlayingState::ProcessInput(Game& game) {
+void PlayingState::ProcessInput(Game& game, float dt) {
     if(game.GetInput().IsPressed("Debug")) m_debug = !m_debug;
 
-    m_renderSystem.ControlCamera(game.GetInput());
+    m_renderSystem.ControlCamera(dt, game.GetInput());
 
     // Place tower
     int x, y;
@@ -40,7 +40,6 @@ void PlayingState::ProcessInput(Game& game) {
 }
 
 void PlayingState::Update(Game& game, float dt) {
-    m_worldSystem.UpdateEnemyTargets(game.GetGameData());
     m_worldSystem.UpdateEnemyPosition(dt, game.GetGameData());
 }
 
@@ -49,6 +48,7 @@ void PlayingState::Draw(Game& game) {
 
     BeginMode2D(m_renderSystem.GetCamera());
         m_renderSystem.DrawMap(game.GetGameData().map, game.GetAssets());
+        m_renderSystem.DrawPaths(game.GetGameData().map);
         if(m_debug)
             m_renderSystem.DebugDrawMap(game.GetGameData().map);
         m_renderSystem.DrawTowers(game.GetGameData().towers, game.GetAssets());

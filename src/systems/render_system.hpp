@@ -12,12 +12,13 @@ class RenderSystem{
 public:
     // Draw calls
     void DrawMap(const Map& map, AssetManager& assets);
+    void DrawPaths(const Map& map);
     void DebugDrawMap(const Map& Map);
     void DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& assets);
     void DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets);
     
     void CenterCamera(Map& map, Renderer& renderer);
-    void ControlCamera(InputManager& input);
+    void ControlCamera(float& dt, InputManager& input);
 
     // Access
     const Camera2D& GetCamera(){return camera;}

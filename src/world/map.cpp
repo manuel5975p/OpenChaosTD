@@ -42,6 +42,8 @@ void Map::AddNest(int cols, int rows){
     m_grid.Get(cols, rows).m_type = TileType::Nest;
     m_grid.Get(cols, rows).m_buildable = false;
     m_grid.Get(cols, rows).m_walkable = true;
+
+    m_paths.push_back({}); // Add empty path
     std::cout << "Nest placed x: " << cols << " y: " << rows << std::endl;
 }
 
@@ -70,17 +72,22 @@ void Map::BuildPathMesh(){
     }
 
     m_pathfinder.solve({m_core.first, m_core.second}, graph);
-    std::cout << "FlowField calculated" << std::endl;
+    std::cout << "PathMesh calculated" << std::endl;
+    
+    // Construct all paths from nests to core
+    for(size_t i=0; i < m_nests.size(); i ++){
+        m_paths[i] = m_pathfinder.ConstructPath(m_nests[i]);
+        std::cout << "Path " << i << " constructed with " << m_paths[i].size() << " nodes" << std::endl;
+    }
 }
 
 bool Map::ValidatePathMesh(){
     for (auto& nest : m_nests) {
         if(m_pathfinder.mesh.Get(nest.first, nest.second).distance == std::numeric_limits<int>::max()){
-            std::cout << "Paths are not valid" << std::endl;
+            std::cout << "PathMesh is not valid" << std::endl;
             return false;
         }
     }
-
-    std::cout << "Paths are valid" << std::endl;
+    std::cout << "PathMesh is valid" << std::endl;
     return true;
 }

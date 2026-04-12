@@ -23,7 +23,22 @@ void RenderSystem::DrawMap(const Map& map, AssetManager& assets){
     }
 }
 
+void RenderSystem::DrawPaths(const Map& map){
+    int tileSize = map.GetTileSize();
+    int halfTileSize = map.GetTileSize() /2;
+
+    for (auto& path : map.GetPaths()) {
+        for (size_t i=0; i < path.size(); i++) {
+            if(i +1 >= path.size()) continue;
+            DrawLine(path[i].first * tileSize +halfTileSize, path[i].second * tileSize +halfTileSize, path[i +1].first * tileSize +halfTileSize, path[i +1].second * tileSize +halfTileSize, BLACK);
+        }
+    }
+}
+
 void RenderSystem::DebugDrawMap(const Map& map){
+    int tileSize = map.GetTileSize();
+    int halfTileSize = map.GetTileSize() /2;
+
     for (int y = 0; y < map.GetRows(); y++) {
         for (int x = 0; x < map.GetCols(); x++) {
             // Draw flowfield flow direction and distance
@@ -33,7 +48,7 @@ void RenderSystem::DebugDrawMap(const Map& map){
 
                 // Flow direction
                 std::pair<int, int> end = map.GetPathMesh().Get(x, y).predecessor;;
-                DrawLine(x * 32 +16, y * 32 +16, end.first * 32 +16, end.second * 32 +16, BLACK);
+                DrawLine(x * tileSize +halfTileSize, y * tileSize +halfTileSize, end.first * tileSize +halfTileSize, end.second * tileSize +halfTileSize, BLACK);
             }
         }
     }
@@ -58,7 +73,7 @@ void RenderSystem::CenterCamera(Map& map, Renderer& renderer){
     camera.zoom = 1.0f;
 }
 
-void RenderSystem::ControlCamera(InputManager& input){
+void RenderSystem::ControlCamera(float& dt, InputManager& input){
     // ------------------------------
     // Moving Camera
     // ------------------------------
@@ -69,7 +84,7 @@ void RenderSystem::ControlCamera(InputManager& input){
     if(input.IsDown("Down")) direction.y --;
     if(input.IsDown("Right")) direction.x --;
     if(input.IsDown("Left")) direction.x ++;
-    direction *= 6;
+    direction *= 300 * dt;
 
     // Move camera by draging
     if(input.IsMouseRightDown()){

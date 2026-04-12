@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <lib/grid2d.hpp>
 #include <vector>
 #include <iostream>
@@ -30,12 +31,12 @@ public:
     }
 
     // Add adjacency
-    void AddEdge(std::pair<int, int> target, std::pair<int, int> neighbor, Weight w = 1) {
+    void AddEdge(std::pair<int, int> target, std::pair<int, int> neighbor, Weight weight = 1) {
         adjacency.InBounds(target.first, target.second);
         adjacency.InBounds(neighbor.first, neighbor.second);
 
         // Add edge from u to v
-        adjacency.Get(target.first, target.second).emplace_back(neighbor, w);
+        adjacency.Get(target.first, target.second).emplace_back(neighbor, weight);
     }
 
     // Set the number of nodes in the graph
@@ -56,7 +57,7 @@ public:
 
 
 struct Node{
-    int distance = std::numeric_limits<Weight>::max();
+    int distance = std::numeric_limits<int>::max();
     std::pair<int, int> predecessor = {-1, -1};
 };
 
@@ -97,5 +98,24 @@ struct Bfs{
                 }
             }
         }
+    }
+
+    std::vector<std::pair<int, int>> ConstructPath(std::pair<int, int> target) const {
+        std::vector<std::pair<int, int>> path;
+        if (!mesh.InBounds(target.first, target.second) || mesh.Get(target.first, target.second).distance == std::numeric_limits<int>::max()) {
+            return path; // Return empty path when target is max weight or is out of bounds
+        }
+
+        std::pair<int, int> current = target;
+
+        // Walk backwards through predecessors until we reach the start node
+        while (mesh.Get(current.first, current.second).predecessor != current) {
+            path.push_back(current);
+            current = mesh.Get(current.first, current.second).predecessor;
+        }
+        path.push_back(current); // Push the start node
+
+        std::reverse(path.begin(), path.end());
+        return path;
     }
 };

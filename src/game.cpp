@@ -44,7 +44,7 @@ void Game::Run() {
         // Update
         m_monitor.Begin("Update");
             m_input.Update(m_renderer);
-            m_currentState->ProcessInput(*this);
+            m_currentState->ProcessInput(*this, dt);
             m_currentState->Update(*this, dt);
         m_monitor.End("Update");
 

@@ -11,7 +11,7 @@ void MenuState::OnExit(Game& /*game*/) {
 
 }
 
-void MenuState::ProcessInput(Game& game) {
+void MenuState::ProcessInput(Game& game, float dt) {
     if (game.GetInput().IsPressed("Confirm")){
         game.ChangeState(std::make_unique<PlayingState>());
     }

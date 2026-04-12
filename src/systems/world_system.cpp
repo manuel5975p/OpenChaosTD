@@ -58,46 +58,36 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
     return true;
 }
 
-void WorldSystem::UpdateEnemyTargets(GameData& gameData){
-    for (auto& enemy : gameData.enemies) {
-        // Check if no target is assigned
-        if(enemy.m_target.x == MAXFLOAT && enemy.m_target.x == MAXFLOAT){
-            // Current tile
-            int cX, cY;
-            gameData.map.WorldToTile(enemy.m_position, cX, cY);
-            
-            // Next tile
-            std::pair<int, int> n = gameData.map.GetPathMesh().Get(cX, cY).predecessor;
-
-            // Set target
-            enemy.m_target = gameData.map.TileToWorld(n.first, n.second);
-            enemy.m_target += {static_cast<float>(gameData.map.GetTileSize()) /2, static_cast<float>(gameData.map.GetTileSize()) /2};
-        }
-    }
-}
-
 void WorldSystem::UpdateEnemyPosition(float& dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
-        Vector2 distance = enemy.m_target - enemy.m_position; // Distance vector to target
-        Vector2 movement = Vector2Normalize(distance) * enemy.m_speed * dt; // Movement vector
+        float remainingTime = dt;
 
-        // Add remaining distance from last iteration to movement
-        if(enemy.m_remainingDistance > 0){
-            movement += Vector2Normalize(movement) * (Vector2Length(movement) + enemy.m_remainingDistance);
-            enemy.m_remainingDistance = 0;
-        }
-        
-        // Check if target is reached
-        float delta = Vector2Length(movement) - Vector2Length(distance); // Positiv if overshooting
-        if(delta > 0){
-            // Is overshooting
-            enemy.m_target = {MAXFLOAT, MAXFLOAT}; // Reset target
-            enemy.m_remainingDistance = delta; // Save the delta for next movement, to prevent loosing it
-            movement = distance; // Set movement to the exact distance to target
-        }
+        /*while (remainingTime > 0.0f) {
+            // Assign new target if target is reset
+            UpdateEnemyTargets(gameData);
 
-        // Move enemy
-        enemy.m_position += movement;
+            // Last target reached break;
+
+            //Vector2 distance = enemy.m_target - enemy.m_position; // Distance vector to target
+            //float distanceToTarget = Vector2Length(distance);
+
+            // Travel distance in remaining time
+            float travelDistance = enemy.m_speed * remainingTime;
+
+            // Check if target is reached
+            if (travelDistance >= distanceToTarget) {
+                // Reach the target exactly, consume only the time needed
+                float timeToTarget = distanceToTarget / enemy.m_speed;
+                remainingTime -= timeToTarget;
+                
+                // Place exactly on target
+            }
+            else{
+                // Normal movement — doesn't reach target this frame
+                enemy.m_position += Vector2Normalize(distance) * travelDistance;
+                remainingTime = 0.0f;
+            }
+        }*/
     }
 }
 
