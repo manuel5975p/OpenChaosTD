@@ -18,7 +18,7 @@ public:
     int GetTileSize() const { return m_tileSize; }
     const std::pair<int, int> GetCore() const { return m_core; }
     const std::vector<std::pair<int, int>> GetNests() const { return m_nests; }
-    const std::vector<std::vector<std::pair<int, int>>> GetPaths() const { return m_paths; }
+    const std::vector<std::vector<Vector2>> GetPaths() const { return m_paths; }
     const Grid2D<Node>& GetPathMesh() const {return m_pathfinder.mesh;}
 
     // Coordinate conversion
@@ -32,6 +32,7 @@ public:
     // Pathfinding
     void BuildPathMesh();
     bool ValidatePathMesh();
+    void ConstructPaths();
 
 private:
     Bfs m_pathfinder;
@@ -41,7 +42,7 @@ private:
 
     std::vector<std::pair<int, int>> m_nests; // Where enemys spawn
     std::pair<int, int> m_core; // Where enemys are going
-    std::vector<std::vector<std::pair<int, int>>> m_paths; // Paths from nests to core
+    std::vector<std::vector<Vector2>> m_paths; // Paths from nests to core
 
     int GridToIndex(int x, int y){  return y * m_grid.GetWidth() + x;}
 };

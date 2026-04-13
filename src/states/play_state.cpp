@@ -12,9 +12,8 @@ void PlayingState::OnEnter(Game& game) {
     game.GetGameData().map.BuildPathMesh();
 
     Enemy enemy;
-    enemy.m_position = {static_cast<float>(game.GetGameData().map.GetNests()[0].first), static_cast<float>(game.GetGameData().map.GetNests()[0].second)};
     enemy.m_speed = 500;
-    game.GetGameData().enemies.Insert(enemy);
+    m_worldSystem.SpawnEnemy(0, enemy, game.GetGameData());
 }
 
 void PlayingState::OnExit(Game& /*game*/) {

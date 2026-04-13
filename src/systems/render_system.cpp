@@ -24,13 +24,10 @@ void RenderSystem::DrawMap(const Map& map, AssetManager& assets){
 }
 
 void RenderSystem::DrawPaths(const Map& map){
-    int tileSize = map.GetTileSize();
-    int halfTileSize = map.GetTileSize() /2;
-
     for (auto& path : map.GetPaths()) {
         for (size_t i=0; i < path.size(); i++) {
             if(i +1 >= path.size()) continue;
-            DrawLine(path[i].first * tileSize +halfTileSize, path[i].second * tileSize +halfTileSize, path[i +1].first * tileSize +halfTileSize, path[i +1].second * tileSize +halfTileSize, BLACK);
+            DrawLine(path[i].x, path[i].y, path[i +1].x, path[i +1].y, RED);
         }
     }
 }

@@ -73,12 +73,8 @@ void Map::BuildPathMesh(){
 
     m_pathfinder.solve({m_core.first, m_core.second}, graph);
     std::cout << "PathMesh calculated" << std::endl;
-    
-    // Construct all paths from nests to core
-    for(size_t i=0; i < m_nests.size(); i ++){
-        m_paths[i] = m_pathfinder.ConstructPath(m_nests[i]);
-        std::cout << "Path " << i << " constructed with " << m_paths[i].size() << " nodes" << std::endl;
-    }
+
+    ConstructPaths();
 }
 
 bool Map::ValidatePathMesh(){
@@ -90,4 +86,16 @@ bool Map::ValidatePathMesh(){
     }
     std::cout << "PathMesh is valid" << std::endl;
     return true;
+}
+
+void Map::ConstructPaths(){
+    // Construct all paths from nests to core
+    for(size_t i=0; i < m_paths.size(); i ++){
+        // Calculate world position of nodes
+        m_paths[i].clear();
+        for(auto& node : m_pathfinder.ConstructPath(m_nests[i])){
+            m_paths[i].push_back({node.first * static_cast<float>(m_tileSize) + static_cast<float>(m_tileSize) /2, node.second * static_cast<float>(m_tileSize) + static_cast<float>(m_tileSize) /2});
+        }
+        std::cout << "Path " << i << " constructed with " << m_paths[i].size() << " nodes" << std::endl;
+    }
 }

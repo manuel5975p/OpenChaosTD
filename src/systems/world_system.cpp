@@ -3,7 +3,7 @@
 #include <iostream>
 #include <raymath.h>
 
- void WorldSystem::PlaceTower(int x, int y, Tower& towerTemplate, GameData& gameData){
+void WorldSystem::PlaceTower(int x, int y, Tower& towerTemplate, GameData& gameData){
     if(ValidateTowerPlacement(x, y, gameData)){
         Tile& tile = gameData.map.Get(x, y);
 
@@ -17,9 +17,9 @@
 
         std::cout << "Tower placed x: " << x << " y: " << y << std::endl;
     }
- }
+}
 
- void WorldSystem::RemoveTower(int x, int y, GameData& gameData){
+void WorldSystem::RemoveTower(int x, int y, GameData& gameData){
     Tile& tile = gameData.map.Get(x, y);
 
     if(tile.m_towerKey != DenseSlotMap<Tower>::INVALID_KEY){
@@ -33,7 +33,29 @@
 
         gameData.map.BuildPathMesh();
     }
- }
+}
+
+void WorldSystem::SpawnEnemy(const int& nest, const Enemy& templateEnemy,GameData& gameData){
+    Enemy newEnemy;
+    newEnemy.m_speed = templateEnemy.m_speed;
+    newEnemy.m_name = templateEnemy.m_name;
+    newEnemy.m_maxhealth = templateEnemy.m_maxhealth;
+    newEnemy.m_health = templateEnemy.m_health;
+
+    newEnemy.m_position = {
+        static_cast<float>(gameData.map.GetNests()[nest].first * gameData.map.GetTileSize() + static_cast<float>(gameData.map.GetTileSize()) /2), 
+        static_cast<float>(gameData.map.GetNests()[nest].second * gameData.map.GetTileSize()+ static_cast<float>(gameData.map.GetTileSize()) /2)
+    };
+
+    newEnemy.m_pathIndex = nest;
+    newEnemy.m_waypointIndex = gameData.map.GetPaths()[nest].size() -2;
+
+    gameData.enemies.Insert(newEnemy);
+}
+
+void WorldSystem::RemoveEnemy(){
+    
+}
 
 bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
     Tile& tile = gameData.map.Get(x, y);
@@ -60,34 +82,22 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
 
 void WorldSystem::UpdateEnemyPosition(float& dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
+
+        // Skip if waypointIndex is 0
+        if(enemy.m_waypointIndex == 0){
+            continue;
+        }
+
         float remainingTime = dt;
 
-        /*while (remainingTime > 0.0f) {
-            // Assign new target if target is reset
-            UpdateEnemyTargets(gameData);
+        // Assign target if target is reset
+        if(enemy.m_target.x == MAXFLOAT && enemy.m_target.y == MAXFLOAT){
+            enemy.m_target = gameData.map.GetPaths()[enemy.m_pathIndex][enemy.m_waypointIndex];
+        }
 
-            // Last target reached break;
-
-            //Vector2 distance = enemy.m_target - enemy.m_position; // Distance vector to target
-            //float distanceToTarget = Vector2Length(distance);
-
-            // Travel distance in remaining time
-            float travelDistance = enemy.m_speed * remainingTime;
-
-            // Check if target is reached
-            if (travelDistance >= distanceToTarget) {
-                // Reach the target exactly, consume only the time needed
-                float timeToTarget = distanceToTarget / enemy.m_speed;
-                remainingTime -= timeToTarget;
-                
-                // Place exactly on target
-            }
-            else{
-                // Normal movement — doesn't reach target this frame
-                enemy.m_position += Vector2Normalize(distance) * travelDistance;
-                remainingTime = 0.0f;
-            }
-        }*/
+        enemy.m_position = enemy.m_target;
+        enemy.m_waypointIndex --;
+        enemy.m_target = {MAXFLOAT, MAXFLOAT};
     }
 }
 
