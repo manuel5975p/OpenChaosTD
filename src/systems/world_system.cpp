@@ -47,7 +47,7 @@ void WorldSystem::SpawnEnemy(const int& nest, const Enemy& templateEnemy,GameDat
         static_cast<float>(gameData.map.GetNests()[nest].second * gameData.map.GetTileSize()+ static_cast<float>(gameData.map.GetTileSize()) /2)
     };
 
-    newEnemy.m_pathIndex = nest;
+    newEnemy.m_spawnedNest = nest;
     newEnemy.m_waypointIndex = gameData.map.GetPaths()[nest].size() -2;
 
     gameData.enemies.Insert(newEnemy);
@@ -82,22 +82,30 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
 
 void WorldSystem::UpdateEnemyPosition(float& dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
-
-        // Skip if waypointIndex is 0
-        if(enemy.m_waypointIndex == 0){
-            continue;
-        }
-
         float remainingTime = dt;
 
-        // Assign target if target is reset
-        if(enemy.m_target.x == MAXFLOAT && enemy.m_target.y == MAXFLOAT){
-            enemy.m_target = gameData.map.GetPaths()[enemy.m_pathIndex][enemy.m_waypointIndex];
+        // Enemy will not move this frame
+        if(enemy.m_speed <= 0.0f) continue;
+ 
+        // Loop to handle enemies fast enough to cross multiple waypoints in one frame
+        while(remainingTime > 0.0f && enemy.m_waypointIndex >= 0){
+ 
+            Vector2 toTarget = Vector2Subtract(gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex], enemy.m_position);
+            float distToTarget = Vector2Length(toTarget);
+            float moveDistance = enemy.m_speed * remainingTime;
+ 
+            if(moveDistance >= distToTarget){
+                // Snap to waypoint and carry over the unused time
+                remainingTime -= distToTarget / enemy.m_speed;
+                enemy.m_position = gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex];
+                enemy.m_waypointIndex--; // Reaches -1 when core is hit
+            } else {
+                // Move as far as we can this frame
+                Vector2 direction = Vector2Normalize(toTarget);
+                enemy.m_position = Vector2Add(enemy.m_position, Vector2Scale(direction, moveDistance));
+                remainingTime = 0.0f;
+            }
         }
-
-        enemy.m_position = enemy.m_target;
-        enemy.m_waypointIndex --;
-        enemy.m_target = {MAXFLOAT, MAXFLOAT};
     }
 }
 

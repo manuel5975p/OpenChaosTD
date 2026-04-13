@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cmath>
 #include <raylib.h>
 #include <string>
 
@@ -12,8 +11,6 @@ public:
     float m_health;
     float m_speed;
 
-    int m_pathIndex;
+    int m_spawnedNest;
     int m_waypointIndex;
-    Vector2 m_target = {MAXFLOAT, MAXFLOAT};
-    bool m_reachedCore = false;
 };
