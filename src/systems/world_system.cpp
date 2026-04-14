@@ -104,6 +104,9 @@ void WorldSystem::UpdateEnemyPosition(float& dt, GameData& gameData){
                 Vector2 direction = Vector2Normalize(toTarget);
                 enemy.m_position = Vector2Add(enemy.m_position, Vector2Scale(direction, moveDistance));
                 remainingTime = 0.0f;
+
+                // Update progress to next waypint
+                enemy.m_progress = enemy.m_waypointIndex + distToTarget / gameData.map.GetTileSize();
             }
         }
     }

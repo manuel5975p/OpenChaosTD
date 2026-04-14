@@ -27,7 +27,7 @@ void RenderSystem::DrawPaths(const Map& map){
     for (auto& path : map.GetPaths()) {
         for (size_t i=0; i < path.size(); i++) {
             if(i +1 >= path.size()) continue;
-            DrawLine(path[i].x, path[i].y, path[i +1].x, path[i +1].y, RED);
+            DrawLineEx(path[i], path[i +1], 2, {200,41,55,150});
         }
     }
 }
@@ -54,6 +54,7 @@ void RenderSystem::DebugDrawMap(const Map& map){
 void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& assets){
     for (auto& tower : towers) {
         DrawTexture(assets.GetTexture("tower_freezer"), tower.m_position.x, tower.m_position.y, WHITE);
+        
     }
 }
 
@@ -61,6 +62,7 @@ void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager&
     for (auto& enemy : enemies) {
         Texture2D& texture = assets.GetTexture("enemy_voidno");
         DrawTexture(texture, enemy.m_position.x - static_cast<float>(texture.width) /2, enemy.m_position.y - static_cast<float>(texture.height) /2, WHITE);
+        DrawText(TextFormat("%f", enemy.m_progress), enemy.m_position.x + 1, enemy.m_position.y + 1, 6, BLACK);
     }
 }
 

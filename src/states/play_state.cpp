@@ -12,8 +12,10 @@ void PlayingState::OnEnter(Game& game) {
     game.GetGameData().map.BuildPathMesh();
 
     Enemy enemy;
-    enemy.m_speed = 500;
+    enemy.m_speed = 5;
     m_worldSystem.SpawnEnemy(0, enemy, game.GetGameData());
+    m_worldSystem.SpawnEnemy(1, enemy, game.GetGameData());
+    m_worldSystem.SpawnEnemy(2, enemy, game.GetGameData());
 }
 
 void PlayingState::OnExit(Game& /*game*/) {
