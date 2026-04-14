@@ -35,28 +35,6 @@ void WorldSystem::RemoveTower(int x, int y, GameData& gameData){
     }
 }
 
-void WorldSystem::SpawnEnemy(const int& nest, const Enemy& templateEnemy,GameData& gameData){
-    Enemy newEnemy;
-    newEnemy.m_speed = templateEnemy.m_speed;
-    newEnemy.m_name = templateEnemy.m_name;
-    newEnemy.m_maxhealth = templateEnemy.m_maxhealth;
-    newEnemy.m_health = templateEnemy.m_health;
-
-    newEnemy.m_position = {
-        static_cast<float>(gameData.map.GetNests()[nest].first * gameData.map.GetTileSize() + static_cast<float>(gameData.map.GetTileSize()) /2), 
-        static_cast<float>(gameData.map.GetNests()[nest].second * gameData.map.GetTileSize()+ static_cast<float>(gameData.map.GetTileSize()) /2)
-    };
-
-    newEnemy.m_spawnedNest = nest;
-    newEnemy.m_waypointIndex = gameData.map.GetPaths()[nest].size() -2;
-
-    gameData.enemies.Insert(newEnemy);
-}
-
-void WorldSystem::RemoveEnemy(){
-    
-}
-
 bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
     Tile& tile = gameData.map.Get(x, y);
 
@@ -78,6 +56,28 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
 
     // If nothing fails allow tower placement
     return true;
+}
+
+void WorldSystem::SpawnEnemy(const int& nest, const Enemy& templateEnemy,GameData& gameData){
+    Enemy newEnemy;
+    newEnemy.m_speed = templateEnemy.m_speed;
+    newEnemy.m_name = templateEnemy.m_name;
+    newEnemy.m_maxhealth = templateEnemy.m_maxhealth;
+    newEnemy.m_health = templateEnemy.m_health;
+
+    newEnemy.m_position = {
+        static_cast<float>(gameData.map.GetNests()[nest].first * gameData.map.GetTileSize() + static_cast<float>(gameData.map.GetTileSize()) /2), 
+        static_cast<float>(gameData.map.GetNests()[nest].second * gameData.map.GetTileSize()+ static_cast<float>(gameData.map.GetTileSize()) /2)
+    };
+
+    newEnemy.m_spawnedNest = nest;
+    newEnemy.m_waypointIndex = gameData.map.GetPaths()[nest].size() -2;
+
+    gameData.enemies.Insert(newEnemy);
+}
+
+void WorldSystem::RemoveEnemy(){
+    
 }
 
 void WorldSystem::UpdateEnemyPosition(float& dt, GameData& gameData){
@@ -138,5 +138,27 @@ void WorldSystem::GenerateMap(Map& map, int x, int y){
 
             
         }
+    }
+}
+
+void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
+    std::vector<DenseSlotMap<Enemy>::Key> enemyErase;
+    for (auto& enemy: gameData.enemies) {
+        // Enemy reached core
+        if(enemy.m_waypointIndex == -1){
+            enemyErase.push_back(gameData.enemies.KeyOf(&enemy));
+        }   
+    }
+
+    for(auto& erase : enemyErase){
+        gameData.lives --;
+        gameData.enemies.Erase(erase);
+    }
+}
+
+void WorldSystem::CheckGameOver(bool& gameOver, GameData& gameData){
+    // Core live reaches zero
+    if(gameData.lives <= 18){
+        gameOver = true;
     }
 }

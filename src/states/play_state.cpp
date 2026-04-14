@@ -1,4 +1,6 @@
 #include <states/play_state.hpp>
+
+#include <states/menu_state.hpp>
 #include <game.hpp>
 #include <raylib.h>
 
@@ -11,8 +13,10 @@ void PlayingState::OnEnter(Game& game) {
 
     game.GetGameData().map.BuildPathMesh();
 
+    game.GetGameData().lives = 20;
+
     Enemy enemy;
-    enemy.m_speed = 5;
+    enemy.m_speed = 500;
     m_worldSystem.SpawnEnemy(0, enemy, game.GetGameData());
     m_worldSystem.SpawnEnemy(1, enemy, game.GetGameData());
     m_worldSystem.SpawnEnemy(2, enemy, game.GetGameData());
@@ -41,7 +45,14 @@ void PlayingState::ProcessInput(Game& game, float dt) {
 }
 
 void PlayingState::Update(Game& game, float dt) {
+    if(m_gameOver){
+        std::cout << "Game Over" <<  std::endl;
+        game.ChangeState(std::make_unique<MenuState>());
+    }
+
     m_worldSystem.UpdateEnemyPosition(dt, game.GetGameData());
+    m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
+    m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
 }
 
 void PlayingState::Draw(Game& game) {

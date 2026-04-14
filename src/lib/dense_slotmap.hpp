@@ -18,9 +18,9 @@ public:
 
 private:
     struct Slot {
-        uint32_t generation  = 0;
+        uint32_t generation = 0;
         uint32_t dense_index = 0;  // where in m_values this element lives
-        bool occupied    = false;
+        bool occupied = false;
     };
 
     std::vector<Slot> m_slots; // sparse — indexed by Key.index
@@ -100,6 +100,13 @@ public:
     const T* Get(Key key) const {
         if (!IsKeyValid(key)) return nullptr;
         return &m_values[ m_slots[key.index].dense_index ];
+    }
+
+    Key KeyOf(const T* it) const {
+        assert(it >= m_values.data() && it < m_values.data() + m_values.size());
+        const uint32_t denseIdx = static_cast<uint32_t>(it - m_values.data());
+        const uint32_t slotIdx  = m_erase[denseIdx];
+        return { slotIdx, m_slots[slotIdx].generation };
     }
 
     // Iteration — zero overhead, no gaps, perfect for render/update loops

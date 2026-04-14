@@ -16,6 +16,7 @@ public:
 
 private:
     bool m_debug = false;
+    bool m_gameOver = false;
     RenderSystem m_renderSystem;
     WorldSystem m_worldSystem;
 };
