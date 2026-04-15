@@ -16,7 +16,9 @@ void PlayingState::OnEnter(Game& game) {
     game.GetGameData().lives = 20;
 
     Enemy enemy;
-    enemy.m_speed = 500;
+    enemy.m_speed = 50;
+    enemy.m_health = 5;
+    enemy.m_maxhealth = 10;
     m_worldSystem.SpawnEnemy(0, enemy, game.GetGameData());
     m_worldSystem.SpawnEnemy(1, enemy, game.GetGameData());
     m_worldSystem.SpawnEnemy(2, enemy, game.GetGameData());

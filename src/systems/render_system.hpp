@@ -29,4 +29,6 @@ private:
     Camera2D camera;
     int zoomIndex = 1;
     float zoomLevel[4] = {0.5, 1, 2, 4};
+
+    void DrawHealthBar(Vector2 worldPos, float current, float max, float width, float height);
 };

@@ -58,11 +58,16 @@ void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& a
     }
 }
 
-void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets){
+void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets) {
     for (auto& enemy : enemies) {
         Texture2D& texture = assets.GetTexture("enemy_voidno");
-        DrawTexture(texture, enemy.m_position.x - static_cast<float>(texture.width) /2, enemy.m_position.y - static_cast<float>(texture.height) /2, WHITE);
-        DrawText(TextFormat("%f", enemy.m_progress), enemy.m_position.x + 1, enemy.m_position.y + 1, 6, BLACK);
+        float hw = static_cast<float>(texture.width)  / 2.0f;
+        float hh = static_cast<float>(texture.height) / 2.0f;
+
+        DrawTexture(texture, enemy.m_position.x - hw, enemy.m_position.y - hh, WHITE);
+
+        // Health bar: 24px wide, 4px tall, floats above the sprite
+        DrawHealthBar({enemy.m_position.x, enemy.m_position.y + hh + 2.0f}, enemy.m_health, enemy.m_maxhealth, 20.0f, 4.0f );
     }
 }
 
@@ -114,5 +119,36 @@ void RenderSystem::ControlCamera(float& dt, InputManager& input){
         zoomIndex = Clamp(zoomIndex, 0, static_cast<int>(sizeof(zoomLevel) / sizeof(zoomLevel[0])) -1);
 
         camera.zoom = zoomLevel[zoomIndex];
+    }
+}
+
+// Helper: interpolate color green -> yellow -> red based on health ratio
+static Color HealthBarColor(float ratio) {
+    if (ratio > 0.5f) {
+        // green to yellow
+        float t = (ratio - 0.5f) * 2.0f;
+        return ColorLerp(YELLOW, GREEN, t);
+    } else {
+        // yellow to red
+        float t = ratio * 2.0f;
+        return ColorLerp(RED, YELLOW, t);
+    }
+}
+
+void RenderSystem::DrawHealthBar(Vector2 worldPos, float current, float max, float width, float height) {
+    float ratio = Clamp(current / max, 0.0f, 1.0f);
+    float x = worldPos.x - width / 2.0f;
+    float y = worldPos.y - height / 2.0f;
+    float roundness = 0.2f;
+    int segments = 8;
+
+    // BackgroundBar
+    DrawRectangleRounded( {x, y, width, height}, roundness, segments, {40, 40, 40, 255});
+    
+    // HealthBar
+    float pad = 1.0f;
+    float fillWidth = (width - pad * 2) * ratio;
+    if (fillWidth > 0.0f) {
+        DrawRectangleRec( {x + pad, y + pad, fillWidth, height - pad * 2}, HealthBarColor(ratio));
     }
 }
