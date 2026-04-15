@@ -28,6 +28,15 @@ struct GameData {
     Map map;
     DenseSlotMap<Tower> towers;
     DenseSlotMap<Enemy> enemies;
+
+    void Reset(){
+        lives = 20;
+        gold  = 150;
+        score = 0;
+        map = Map();
+        towers = DenseSlotMap<Tower>();
+        enemies = DenseSlotMap<Enemy>();
+    }
 };
 
 class Game {

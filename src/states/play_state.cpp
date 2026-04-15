@@ -7,25 +7,23 @@
 
 void PlayingState::OnEnter(Game& game) {
     m_worldSystem.GenerateMap(game.GetGameData().map, 15, 19);
+    game.GetGameData().map.BuildPathMesh();
 
     // Center the map in the middle of the screen
     m_renderSystem.CenterCamera(game.GetGameData().map, game.GetRenderer());
 
-    game.GetGameData().map.BuildPathMesh();
-
-    game.GetGameData().lives = 20;
-
     Enemy enemy;
     enemy.m_speed = 50;
-    enemy.m_health = 5;
+    enemy.m_health = 2;
     enemy.m_maxhealth = 10;
     m_worldSystem.SpawnEnemy(0, enemy, game.GetGameData());
     m_worldSystem.SpawnEnemy(1, enemy, game.GetGameData());
     m_worldSystem.SpawnEnemy(2, enemy, game.GetGameData());
 }
 
-void PlayingState::OnExit(Game& /*game*/) {
-
+void PlayingState::OnExit(Game& game) {
+    // Reset GameData
+    game.GetGameData().Reset();
 }
 
 void PlayingState::ProcessInput(Game& game, float dt) {
@@ -70,7 +68,6 @@ void PlayingState::Draw(Game& game) {
         m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
     EndMode2D();
 
-    DrawText("PLAYING - map renders here", 20, 20, 20, GREEN);
     DrawText(
         TextFormat("Lives: %d   Gold: %d   Score: %d",
                    game.GetGameData().lives, game.GetGameData().gold, game.GetGameData().score),
