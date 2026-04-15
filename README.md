@@ -49,7 +49,8 @@ OpenChaosTD/
     │
     ├── lib/                            Core engine responsible for global functionality
     │   ├── grid2d.hpp                  - Header-only resizable 2D array template
-    │   └── slotmap.hpp                 - Stable id container O(capacity) lookup
+        ├── dense_slotmap.hpp           - Stable id container optimized for iteration
+    │   └── slotmap.hpp                 - Stable id container optimized for lookup
     │
     ├── states/                         Divide screens into individual states
     │   ├── game_state.hpp              - Base class (input, logic, drawing)

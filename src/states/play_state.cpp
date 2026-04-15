@@ -27,8 +27,10 @@ void PlayingState::OnExit(Game& game) {
 }
 
 void PlayingState::ProcessInput(Game& game, float dt) {
+    // Toggle debug mode
     if(game.GetInput().IsPressed("Debug")) m_debug = !m_debug;
 
+    // Control camera
     m_renderSystem.ControlCamera(dt, game.GetInput());
 
     // Place tower
