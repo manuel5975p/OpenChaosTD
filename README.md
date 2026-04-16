@@ -56,8 +56,7 @@ OpenChaosTD/
     │   ├── game_state.hpp              - Base class (input, logic, drawing)
     │   ├── menu_state.hpp/.cpp         - Pre playing state
     │   ├── play_state.hpp/.cpp         - Playing state
-    │   ├── gameover_state.hpp/.cpp     - Gameover state display score and start new ✏️
-    │   └── victory_state.hpp/.cpp      - Victory state display score ✏️
+    │   └── game_over_state.hpp/.cpp    - Gameover state display score and start new
     │
     ├── world/                          Grid, wave and paths
     │   ├── enemy.hpp/.cpp              - Enemy shell stores position, values and upgrades
