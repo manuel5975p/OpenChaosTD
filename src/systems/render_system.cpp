@@ -53,8 +53,11 @@ void RenderSystem::DebugDrawMap(const Map& map){
 
 void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& assets){
     for (auto& tower : towers) {
-        DrawTexture(assets.GetTexture("tower_freezer"), tower.m_position.x, tower.m_position.y, WHITE);
-        
+        Texture2D& texture = assets.GetTexture("tower_freezer");
+        float hw = static_cast<float>(texture.width)  / 2.0f;
+        float hh = static_cast<float>(texture.height) / 2.0f;
+        DrawTexture(texture, tower.m_position.x -hw, tower.m_position.y -hh, WHITE);
+        DrawCircleLinesV(tower.m_position, tower.m_radius, BLACK);
     }
 }
 

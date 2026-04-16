@@ -12,13 +12,6 @@ void PlayingState::OnEnter(Game& game) {
     // Center the map in the middle of the screen
     m_renderSystem.CenterCamera(game.GetGameData().map, game.GetRenderer());
 
-    Enemy enemy;
-    enemy.m_speed = 50;
-    enemy.m_health = 2;
-    enemy.m_maxhealth = 10;
-    m_worldSystem.SpawnEnemy(0, enemy, game.GetGameData());
-    m_worldSystem.SpawnEnemy(1, enemy, game.GetGameData());
-    m_worldSystem.SpawnEnemy(2, enemy, game.GetGameData());
 }
 
 void PlayingState::OnExit(Game& game) {
@@ -37,12 +30,27 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     int x, y;
     if(game.GetInput().IsMouseLeftPressed() && game.GetGameData().map.WorldToTile(GetScreenToWorld2D(game.GetInput().GetMousePosition(), m_renderSystem.GetCamera()), x, y)){
         Tower tower;
+        tower.m_fireRate = 1;
+        tower.m_radius = 128;
+        tower.m_damage = 2;
+        tower.m_targetingMode = TargetingMode::First;
         m_worldSystem.PlaceTower(x, y, tower, game.GetGameData());
     }
 
     // Remove tower
     if(game.GetInput().IsMouseRightPressed() && game.GetGameData().map.WorldToTile(GetScreenToWorld2D(game.GetInput().GetMousePosition(), m_renderSystem.GetCamera()), x, y)){
          m_worldSystem.RemoveTower(x, y, game.GetGameData());
+    }
+
+    // Spawn enemies
+    if(game.GetInput().IsPressed("Confirm")){
+        Enemy enemy;
+        enemy.m_speed = 50;
+        enemy.m_health = 2;
+        enemy.m_maxhealth = 10;
+        m_worldSystem.SpawnEnemy(0, enemy, game.GetGameData());
+        m_worldSystem.SpawnEnemy(1, enemy, game.GetGameData());
+        m_worldSystem.SpawnEnemy(2, enemy, game.GetGameData());
     }
 }
 
@@ -53,6 +61,8 @@ void PlayingState::Update(Game& game, float dt) {
     }
 
     m_worldSystem.UpdateEnemyPosition(dt, game.GetGameData());
+
+
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
     m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
 }
@@ -68,6 +78,15 @@ void PlayingState::Draw(Game& game) {
         m_renderSystem.DrawTowers(game.GetGameData().towers, game.GetAssets());
 
         m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
+
+        for(auto& tower : game.GetGameData().towers){
+            std::vector<DenseSlotMap<Enemy>::Key> keys = m_worldSystem.SelectTargets(tower, game.GetGameData().enemies);
+            for(auto& key : keys){
+                Enemy enemy = *game.GetGameData().enemies.Get(key);
+                DrawCircleV(enemy.m_position, 4, RED);
+            }
+            
+        }
     EndMode2D();
 
     DrawText(
