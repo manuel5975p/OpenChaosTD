@@ -2,7 +2,7 @@
 
 #include <raymath.h>
 
-void EnemySystem::UpdateEnemyPosition(float& dt, GameData& gameData){
+void EnemySystem::FollowPath(float& dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
         float remainingTime = dt;
 

@@ -5,7 +5,7 @@
 class EnemySystem{
 public:
 
-    void UpdateEnemyPosition(float& dt,GameData& gameData);
+    void FollowPath(float& dt,GameData& gameData);
 
 private:
     

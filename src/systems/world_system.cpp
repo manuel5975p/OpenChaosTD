@@ -76,8 +76,8 @@ void WorldSystem::SpawnEnemy(const int& nest, const Enemy& templateEnemy,GameDat
     gameData.enemies.Insert(newEnemy);
 }
 
-void WorldSystem::RemoveEnemy(){
-    
+void WorldSystem::RemoveEnemy(DenseSlotMap<Enemy>::Key key, GameData& gameData){
+    gameData.enemies.Erase(key);
 }
 
 void WorldSystem::GenerateMap(Map& map, int x, int y){
@@ -120,7 +120,7 @@ void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
 
     for(auto& erase : enemyErase){
         gameData.lives --;
-        gameData.enemies.Erase(erase);
+        RemoveEnemy(erase, gameData);
     }
 }
 

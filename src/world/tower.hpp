@@ -25,6 +25,7 @@ public:
     int m_targetCount;
     float m_radius;
     float m_fireRate;
+    float m_cooldown;
     TargetingMode m_targetingMode;
     std::vector<std::unique_ptr<TowerModule>> m_modules;
 

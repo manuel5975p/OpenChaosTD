@@ -36,7 +36,10 @@ void PlayingState::ProcessInput(Game& game, float dt) {
         slowTower.m_fireRate = 1;
         slowTower.m_radius = 128;
         slowTower.m_targetingMode = TargetingMode::First;
+
+        slowTower.AddModule(std::make_unique<FlatDamageModule>(1));
         slowTower.AddModule(std::make_unique<SlowModule>(0.6f, 2.0f));
+
         m_worldSystem.PlaceTower(x, y, slowTower, game.GetGameData());
     }
 
@@ -63,7 +66,9 @@ void PlayingState::Update(Game& game, float dt) {
         game.ChangeState(std::make_unique<GameOverState>());
     }
 
-    m_enemySystem.UpdateEnemyPosition(dt, game.GetGameData());
+    m_enemySystem.FollowPath(dt, game.GetGameData());
+
+    m_towerSystem.UpdateTowers(dt, game.GetGameData());
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
     m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
