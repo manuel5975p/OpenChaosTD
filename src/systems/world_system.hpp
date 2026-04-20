@@ -11,7 +11,6 @@ public:
     void SpawnEnemy(const int& nest, const Enemy& templateEnemy,GameData& gameData);
     void RemoveEnemy();
 
-    void UpdateEnemyPosition(float& dt,GameData& gameData);
     void CheckEnemyReachedCore(GameData& gameData);
     void GenerateMap(Map& map, int x, int y);
     void CheckGameOver(bool& gameOver, GameData& gameData);
@@ -19,6 +18,6 @@ public:
 
 private:
     bool ValidateTowerPlacement(int x, int y, GameData& gameData);
-    std::vector<Enemy*> GetEnemiesInRange(Tower& tower, DenseSlotMap<Enemy>& enemies);
+    std::vector<Enemy*> GetEnemiesInTowerRange(Tower& tower, DenseSlotMap<Enemy>& enemies);
     bool CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mode);
 };

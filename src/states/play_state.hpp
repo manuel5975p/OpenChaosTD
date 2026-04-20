@@ -4,6 +4,8 @@
 #include <raylib.h>
 #include <systems/render_system.hpp>
 #include <systems/world_system.hpp>
+#include <systems/enemy_system.hpp>
+#include <systems/tower_system.hpp>
 
 class PlayingState : public GameState {
 public:
@@ -19,4 +21,6 @@ private:
     bool m_gameOver = false;
     RenderSystem m_renderSystem;
     WorldSystem m_worldSystem;
+    TowerSystem m_towerSystem;
+    EnemySystem m_enemySystem;
 };

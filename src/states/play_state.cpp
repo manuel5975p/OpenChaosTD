@@ -31,12 +31,13 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     // Place tower
     int x, y;
     if(game.GetInput().IsMouseLeftPressed() && game.GetGameData().map.WorldToTile(GetScreenToWorld2D(game.GetInput().GetMousePosition(), m_renderSystem.GetCamera()), x, y)){
-        Tower tower;
-        tower.m_fireRate = 1;
-        tower.m_radius = 128;
-        tower.m_damage = 2;
-        tower.m_targetingMode = TargetingMode::First;
-        m_worldSystem.PlaceTower(x, y, tower, game.GetGameData());
+        Tower slowTower;
+        slowTower.m_targetCount = 0;
+        slowTower.m_fireRate = 1;
+        slowTower.m_radius = 128;
+        slowTower.m_targetingMode = TargetingMode::First;
+        slowTower.AddModule(std::make_unique<SlowModule>(0.6f, 2.0f));
+        m_worldSystem.PlaceTower(x, y, slowTower, game.GetGameData());
     }
 
     // Remove tower
@@ -62,8 +63,7 @@ void PlayingState::Update(Game& game, float dt) {
         game.ChangeState(std::make_unique<GameOverState>());
     }
 
-    m_worldSystem.UpdateEnemyPosition(dt, game.GetGameData());
-
+    m_enemySystem.UpdateEnemyPosition(dt, game.GetGameData());
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
     m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
@@ -82,7 +82,7 @@ void PlayingState::Draw(Game& game) {
         m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
 
         for(auto& tower : game.GetGameData().towers){
-            std::vector<DenseSlotMap<Enemy>::Key> keys = m_worldSystem.SelectTargets(tower, game.GetGameData().enemies);
+            std::vector<DenseSlotMap<Enemy>::Key> keys = m_worldSystem.SelectTargets(tower, game.GetGameData().enemies, tower.m_targetCount);
             for(auto& key : keys){
                 Enemy enemy = *game.GetGameData().enemies.Get(key);
                 DrawCircleV(enemy.m_position, 4, RED);

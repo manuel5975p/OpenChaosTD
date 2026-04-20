@@ -1,8 +1,6 @@
 # OpenChaosTD
 This is an open-map 2D Tower Defense game made in c++ with raylib that is still a work in progress. Towers can be placed anywhere on a grid, and enemies will search for the best path.
 
-
-
 ## Building
 
 ### Prerequisites
@@ -62,11 +60,14 @@ OpenChaosTD/
     │   ├── enemy.hpp/.cpp              - Enemy shell stores position, values and upgrades
     │   ├── tower.hpp/.cpp              - Tower shell stores position, values and upgrades
     │   ├── map.hpp/.cpp                - Grid2D, path calculation
+    │   ├── tower_modules.hpp           - Modules that define the behaviour of a tower
     │   └── tile.hpp                    - Tile shell stores type, buildable, walkable
     │
     ├── systems/                        State specific systems and functionality
     │   ├── pathfinder.hpp              - Generic graph & pathfinding
     │   ├── world_system.hpp/.cpp       - Controling behaviour of world
+    │   ├── tower_system.hpp/.cpp       - Controling behaviour of towers
+    │   ├── enemy_system.hpp/.cpp       - Controling behaviour of enemies
     │   ├── render_system.hpp/.cpp      - Drawing entities and world
     │   └── wave_manager.hpp/.cpp       - Spawn timing, wave definitions ✏️
     │

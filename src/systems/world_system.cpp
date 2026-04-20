@@ -80,38 +80,6 @@ void WorldSystem::RemoveEnemy(){
     
 }
 
-void WorldSystem::UpdateEnemyPosition(float& dt, GameData& gameData){
-    for (auto& enemy : gameData.enemies) {
-        float remainingTime = dt;
-
-        // Enemy will not move this frame
-        if(enemy.m_speed <= 0.0f) continue;
- 
-        // Loop to handle enemies fast enough to cross multiple waypoints in one frame
-        while(remainingTime > 0.0f && enemy.m_waypointIndex >= 0){
- 
-            Vector2 toTarget = Vector2Subtract(gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex], enemy.m_position);
-            float distToTarget = Vector2Length(toTarget);
-            float moveDistance = enemy.m_speed * remainingTime;
- 
-            if(moveDistance >= distToTarget){
-                // Snap to waypoint and carry over the unused time
-                remainingTime -= distToTarget / enemy.m_speed;
-                enemy.m_position = gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex];
-                enemy.m_waypointIndex--; // Reaches -1 when core is hit
-            } else {
-                // Move as far as we can this frame
-                Vector2 direction = Vector2Normalize(toTarget);
-                enemy.m_position = Vector2Add(enemy.m_position, Vector2Scale(direction, moveDistance));
-                remainingTime = 0.0f;
-
-                // Update progress to next waypint
-                enemy.m_progress = enemy.m_waypointIndex + distToTarget / gameData.map.GetTileSize();
-            }
-        }
-    }
-}
-
 void WorldSystem::GenerateMap(Map& map, int x, int y){
     map.Create(x, y);
 
@@ -163,7 +131,7 @@ void WorldSystem::CheckGameOver(bool& gameOver, GameData& gameData){
     }
 }
 
-std::vector<Enemy*> WorldSystem::GetEnemiesInRange(Tower& tower, DenseSlotMap<Enemy>& enemies) {
+std::vector<Enemy*> WorldSystem::GetEnemiesInTowerRange(Tower& tower, DenseSlotMap<Enemy>& enemies) {
     std::vector<Enemy*> result;
     for (auto& enemy : enemies) {
         if (tower.m_radius >= Vector2Distance(enemy.m_position, tower.m_position))
@@ -173,7 +141,7 @@ std::vector<Enemy*> WorldSystem::GetEnemiesInRange(Tower& tower, DenseSlotMap<En
 }
 
 std::vector<DenseSlotMap<Enemy>::Key> WorldSystem::SelectTargets(Tower& tower, DenseSlotMap<Enemy>& enemies, int max_targets) {
-    std::vector<Enemy*> inRange = GetEnemiesInRange(tower, enemies);
+    std::vector<Enemy*> inRange = GetEnemiesInTowerRange(tower, enemies);
 
     // Sort by targeting priority
     std::sort(inRange.begin(), inRange.end(), [&](const Enemy* a, const Enemy* b) {
@@ -183,6 +151,12 @@ std::vector<DenseSlotMap<Enemy>::Key> WorldSystem::SelectTargets(Tower& tower, D
     // Take up to max_targets and convert to stable keys
     std::vector<DenseSlotMap<Enemy>::Key> result;
     int count = std::min(static_cast<int>(inRange.size()), max_targets);
+    
+    // Set count to size of inRange to return all enemys in range
+    if(count == 0){
+        count = static_cast<int>(inRange.size());
+    }
+
     result.reserve(count);
     for (int i = 0; i < count; i++)
         result.push_back(enemies.KeyOf(inRange[i]));
