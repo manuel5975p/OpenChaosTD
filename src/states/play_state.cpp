@@ -52,8 +52,10 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     if(game.GetInput().IsPressed("Confirm")){
         Enemy enemy;
         enemy.m_speed = 50;
-        enemy.m_health = 2;
+        enemy.m_health = 10;
         enemy.m_maxhealth = 10;
+        enemy.AddEffect({EffectType::Burn, 5, 1});
+
         m_worldSystem.SpawnEnemy(0, enemy, game.GetGameData());
         m_worldSystem.SpawnEnemy(1, enemy, game.GetGameData());
         m_worldSystem.SpawnEnemy(2, enemy, game.GetGameData());
@@ -67,8 +69,9 @@ void PlayingState::Update(Game& game, float dt) {
     }
 
     m_enemySystem.FollowPath(dt, game.GetGameData());
+    m_enemySystem.TickEffects(dt, game.GetGameData());
 
-    m_towerSystem.UpdateTowers(dt, game.GetGameData());
+    m_towerSystem.update(dt, game.GetGameData());
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
     m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
@@ -87,7 +90,7 @@ void PlayingState::Draw(Game& game) {
         m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
 
         for(auto& tower : game.GetGameData().towers){
-            std::vector<DenseSlotMap<Enemy>::Key> keys = m_worldSystem.SelectTargets(tower, game.GetGameData().enemies, tower.m_targetCount);
+            std::vector<DenseSlotMap<Enemy>::Key> keys = m_towerSystem.FindTargets(tower, game.GetGameData().enemies, tower.m_targetCount);
             for(auto& key : keys){
                 Enemy enemy = *game.GetGameData().enemies.Get(key);
                 DrawCircleV(enemy.m_position, 4, RED);

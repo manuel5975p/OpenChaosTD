@@ -3,13 +3,13 @@
 #include <iostream>
 #include <raymath.h>
 
-void WorldSystem::PlaceTower(int x, int y, Tower& towerTemplate, GameData& gameData){
+void WorldSystem::PlaceTower(int x, int y, Tower& tower, GameData& gameData){
     if(ValidateTowerPlacement(x, y, gameData)){
         Tile& tile = gameData.map.Get(x, y);
 
         // Add tower
-        towerTemplate.m_position = Vector2Add(gameData.map.TileToWorld(x, y), {gameData.map.GetTileSize() /2.f, gameData.map.GetTileSize() /2.f});
-        DenseSlotMap<Tower>::Key towerKey = gameData.towers.Insert(std::move(towerTemplate));
+        tower.m_position = Vector2Add(gameData.map.TileToWorld(x, y), {gameData.map.GetTileSize() /2.f, gameData.map.GetTileSize() /2.f});
+        DenseSlotMap<Tower>::Key towerKey = gameData.towers.Insert(std::move(tower));
         
         tile.m_walkable = false;
         tile.m_buildable = false;
@@ -58,22 +58,16 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
     return true;
 }
 
-void WorldSystem::SpawnEnemy(const int& nest, const Enemy& templateEnemy,GameData& gameData){
-    Enemy newEnemy;
-    newEnemy.m_speed = templateEnemy.m_speed;
-    newEnemy.m_name = templateEnemy.m_name;
-    newEnemy.m_maxhealth = templateEnemy.m_maxhealth;
-    newEnemy.m_health = templateEnemy.m_health;
-
-    newEnemy.m_position = {
+void WorldSystem::SpawnEnemy(const int& nest, Enemy enemy,GameData& gameData){
+    enemy.m_position = {
         static_cast<float>(gameData.map.GetNests()[nest].first * gameData.map.GetTileSize() + static_cast<float>(gameData.map.GetTileSize()) /2), 
         static_cast<float>(gameData.map.GetNests()[nest].second * gameData.map.GetTileSize()+ static_cast<float>(gameData.map.GetTileSize()) /2)
     };
 
-    newEnemy.m_spawnedNest = nest;
-    newEnemy.m_waypointIndex = gameData.map.GetPaths()[nest].size() -2;
+    enemy.m_spawnedNest = nest;
+    enemy.m_waypointIndex = gameData.map.GetPaths()[nest].size() -2;
 
-    gameData.enemies.Insert(newEnemy);
+    gameData.enemies.Insert(std::move(enemy));
 }
 
 void WorldSystem::RemoveEnemy(DenseSlotMap<Enemy>::Key key, GameData& gameData){
@@ -129,49 +123,4 @@ void WorldSystem::CheckGameOver(bool& gameOver, GameData& gameData){
     if(gameData.lives <= 0){
         gameOver = true;
     }
-}
-
-std::vector<Enemy*> WorldSystem::GetEnemiesInTowerRange(Tower& tower, DenseSlotMap<Enemy>& enemies) {
-    std::vector<Enemy*> result;
-    for (auto& enemy : enemies) {
-        if (tower.m_radius >= Vector2Distance(enemy.m_position, tower.m_position))
-            result.push_back(&enemy);
-    }
-    return result;
-}
-
-std::vector<DenseSlotMap<Enemy>::Key> WorldSystem::SelectTargets(Tower& tower, DenseSlotMap<Enemy>& enemies, int max_targets) {
-    std::vector<Enemy*> inRange = GetEnemiesInTowerRange(tower, enemies);
-
-    // Sort by targeting priority
-    std::sort(inRange.begin(), inRange.end(), [&](const Enemy* a, const Enemy* b) {
-        return CompareTarget(*a, *b, tower.m_targetingMode);
-    });
-
-    // Take up to max_targets and convert to stable keys
-    std::vector<DenseSlotMap<Enemy>::Key> result;
-    int count = std::min(static_cast<int>(inRange.size()), max_targets);
-    
-    // Set count to size of inRange to return all enemys in range
-    if(count == 0){
-        count = static_cast<int>(inRange.size());
-    }
-
-    result.reserve(count);
-    for (int i = 0; i < count; i++)
-        result.push_back(enemies.KeyOf(inRange[i]));
-
-    return result;
-}
-
-bool WorldSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mode) {
-    switch (mode) {
-        case TargetingMode::First: return a.m_progress < b.m_progress;
-        case TargetingMode::Last: return a.m_progress > b.m_progress;
-        case TargetingMode::MostHealth: return a.m_health < b.m_health;
-        case TargetingMode::LowestHealth: return a.m_health > b.m_health;
-        case TargetingMode::Fastest: return a.m_speed < b.m_speed;
-        case TargetingMode::Slowest: return a.m_speed > b.m_speed;
-    }
-    return false;
 }

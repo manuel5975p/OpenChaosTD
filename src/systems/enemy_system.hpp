@@ -6,6 +6,7 @@ class EnemySystem{
 public:
 
     void FollowPath(float& dt,GameData& gameData);
+    void TickEffects(float& dt, GameData& gameData);
 
 private:
     

@@ -33,3 +33,17 @@ void EnemySystem::FollowPath(float& dt, GameData& gameData){
         }
     }
 }
+
+void EnemySystem::TickEffects(float& dt, GameData& gameData){
+    for (auto& enemy : gameData.enemies) {
+        std::cout << enemy.m_effects.size() << std::endl;
+        for (auto& effect : enemy.m_effects){
+            switch (effect.m_type) {
+                case EffectType::Burn:
+                    enemy.m_health -= effect.m_value * dt;
+                    break;
+            }
+            effect.m_duration -= dt;
+        }
+    }
+}
