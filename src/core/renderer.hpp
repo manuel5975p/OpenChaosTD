@@ -38,12 +38,6 @@ private:
 
     RenderTexture2D m_target = {};  // Game renders into this
 
-    // Destination rect on the real screen (letterboxed)
-    Rectangle m_destRect  = {};
-
-    // Bars to fill with black (either top/bottom or left/right)
-    Rectangle m_barA      = {};
-    Rectangle m_barB      = {};
-
-    float m_scale     = 1.0f;
+    Rectangle m_destRect = {};  // destination rect on the real screen (letterboxed)
+    float m_scale = 1.0f;
 };

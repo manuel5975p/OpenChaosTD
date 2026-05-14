@@ -4,7 +4,7 @@
 
 class TowerSystem{
 public:
-    void update(float& dt, GameData& gameData);
+    void update(float dt, GameData& gameData);
     std::vector<DenseSlotMap<Enemy>::Key> FindTargets(Tower& tower, DenseSlotMap<Enemy>& enemies, int max_targets);
 
 private:

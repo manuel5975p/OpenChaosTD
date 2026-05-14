@@ -57,9 +57,9 @@ void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& a
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
 
-        float flashRatio = tower.m_attackFlash / 0.15f;
+        float flashRatio = (tower.m_attackDuration > 0.0f) ? tower.m_attackFlash / tower.m_attackDuration : 0.0f;
         Color tint = (flashRatio > 0.0f) ? ColorLerp(WHITE, ORANGE, flashRatio) : WHITE;
-        DrawTexture(texture, tower.m_position.x - hw, tower.m_position.y - hh, tint);
+        DrawTextureV(texture, {tower.m_position.x - hw, tower.m_position.y - hh}, tint);
 
         DrawCircleLinesV(tower.m_position, tower.m_radius, BLACK);
         if (flashRatio > 0.0f) {
@@ -75,7 +75,7 @@ void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager&
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
 
-        DrawTexture(texture, enemy.m_position.x - hw, enemy.m_position.y - hh, WHITE);
+        DrawTextureV(texture, {enemy.m_position.x - hw, enemy.m_position.y - hh}, WHITE);
 
         // Health bar: 24px wide, 4px tall, floats above the sprite
         DrawHealthBar({enemy.m_position.x, enemy.m_position.y + hh + 2.0f}, enemy.m_currentHealth, enemy.m_health, 20.0f, 4.0f );
@@ -95,6 +95,17 @@ void RenderSystem::DrawAttacks(const std::vector<Attack>& attacks){
                 DrawLineEx(attack.m_origin, target, 2.0f, {255, 220, 50, alpha});
             }
         }
+    }
+}
+
+void RenderSystem::DebugDrawEnemies(const DenseSlotMap<Enemy>& enemies) {
+    for (auto& enemy : enemies) {
+        DrawText(
+            TextFormat("%.2f", enemy.m_progress),
+            static_cast<int>(enemy.m_position.x) + 6,
+            static_cast<int>(enemy.m_position.y) - 18,
+            8, LIME
+        );
     }
 }
 

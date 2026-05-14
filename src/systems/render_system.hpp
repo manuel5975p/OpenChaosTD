@@ -15,6 +15,7 @@ public:
     void DrawMap(const Map& map, AssetManager& assets);
     void DrawPaths(const Map& map);
     void DebugDrawMap(const Map& Map);
+    void DebugDrawEnemies(const DenseSlotMap<Enemy>& enemies);
     void DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& assets);
     void DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets);
     void DrawAttacks(const std::vector<Attack>& attacks);

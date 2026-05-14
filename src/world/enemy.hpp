@@ -12,17 +12,17 @@ class Enemy{
 public:
     std::string m_name;
     std::string m_texture;
-    Vector2 m_position      = {0.0f, 0.0f};
+    Vector2 m_position = {0.0f, 0.0f};
     
-    float m_health          = 0.0f;
-    float m_currentHealth   = 0.0f;
-    float m_speed           = 0.0f;
-    float m_currentSpeed    = 0.0f;
-    int   m_reward          = 0;
+    float m_health = 0.0f;
+    float m_currentHealth = 0.0f;
+    float m_speed = 0.0f;
+    float m_currentSpeed = 0.0f;
+    int m_reward = 0;
 
-    float m_progress        = 0.0f;
-    int   m_spawnedNest     = 0;
-    int   m_waypointIndex   = -1;
+    float m_progress = 0.0f;
+    int m_spawnedNest = 0;
+    int m_waypointIndex = -1;
 
     std::vector<Effect> m_effects;
     std::vector<std::unique_ptr<EnemyModule>> m_modules;

@@ -44,6 +44,8 @@ void Game::Run() {
     while (!WindowShouldClose() && m_running) {
         const float dt = GetFrameTime();
 
+        if (IsWindowResized()) m_renderer.OnResize();
+
         // Update
         m_monitor.Begin("Update");
             m_input.Update(m_renderer);

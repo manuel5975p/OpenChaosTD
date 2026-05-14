@@ -28,8 +28,9 @@ void TowerFactory::Load(JsonIO& jsonio) {
         TowerTemplate tmpl;
         tmpl.name          = entry["name"];
         tmpl.texture       = entry.value("texture", "");
-        tmpl.fireRate      = entry.value("fireRate", 1.0f);
-        tmpl.radius        = entry.value("radius", 64.0f);
+        tmpl.fireRate        = entry.value("fireRate", 1.0f);
+        tmpl.attackDuration = entry.value("attackDuration", 0.15f);
+        tmpl.radius          = entry.value("radius", 64.0f);
         tmpl.targetCount   = entry.value("targetCount", 1);
         tmpl.attackType    = ParseAttackType(entry.value("attackType", "Line"));
         tmpl.targetingMode = ParseTargetingMode(entry.value("targetingMode", "First"));
@@ -60,8 +61,9 @@ Tower TowerFactory::Create(const std::string& name) const {
     Tower tower;
     tower.m_name          = tmpl.name;
     tower.m_texture       = tmpl.texture;
-    tower.m_fireRate      = tmpl.fireRate;
-    tower.m_radius        = tmpl.radius;
+    tower.m_fireRate        = tmpl.fireRate;
+    tower.m_attackDuration = tmpl.attackDuration;
+    tower.m_radius          = tmpl.radius;
     tower.m_targetCount   = tmpl.targetCount;
     tower.m_attackType    = tmpl.attackType;
     tower.m_targetingMode = tmpl.targetingMode;

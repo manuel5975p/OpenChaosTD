@@ -8,36 +8,40 @@
 #include <world/effect.hpp>
 
 
-void TowerSystem::update(float& dt, GameData& gameData){
+void TowerSystem::update(float dt, GameData& gameData){
     for (Tower& tower : gameData.towers) {
         tower.m_cooldown -= dt;
         tower.m_attackFlash = std::max(0.0f, tower.m_attackFlash - dt);
 
+        if (tower.m_cooldown > 0.0f) continue;
+
         tower.m_currentTargetKeys = FindTargets(tower, gameData.enemies, tower.m_targetCount);
 
-        if(tower.m_cooldown <= 0 && !tower.m_currentTargetKeys.empty()){
-            tower.m_cooldown = 1.0f / tower.m_fireRate;
-            tower.m_attackFlash = 0.15f;
-
-            std::vector<Vector2> targetPositions;
-            targetPositions.reserve(tower.m_currentTargetKeys.size());
-            for (auto& key : tower.m_currentTargetKeys) {
-                if (Enemy* e = gameData.enemies.Get(key))
-                    targetPositions.push_back(e->m_position);
-            }
-
-            constexpr float kAttackDuration = 0.15f;
-            Attack attack;
-            attack.m_origin          = tower.m_position;
-            attack.m_targetPositions = std::move(targetPositions);
-            attack.m_targetKeys      = tower.m_currentTargetKeys;
-            attack.m_type            = tower.m_attackType;
-            attack.m_radius          = tower.m_radius;
-            attack.m_duration        = kAttackDuration;
-            attack.m_maxDuration     = kAttackDuration;
-            BuildAttackPayload(tower, attack);
-            gameData.attacks.push_back(std::move(attack));
+        if (tower.m_currentTargetKeys.empty()) {
+            tower.m_cooldown = 0.05f;
+            continue;
         }
+
+        tower.m_cooldown    = 1.0f / tower.m_fireRate;
+        tower.m_attackFlash = tower.m_attackDuration;
+
+        std::vector<Vector2> targetPositions;
+        targetPositions.reserve(tower.m_currentTargetKeys.size());
+        for (auto& key : tower.m_currentTargetKeys) {
+            if (Enemy* e = gameData.enemies.Get(key))
+                targetPositions.push_back(e->m_position);
+        }
+
+        Attack attack;
+        attack.m_origin          = tower.m_position;
+        attack.m_targetPositions = std::move(targetPositions);
+        attack.m_targetKeys      = tower.m_currentTargetKeys;
+        attack.m_type            = tower.m_attackType;
+        attack.m_radius          = tower.m_radius;
+        attack.m_duration        = tower.m_attackDuration;
+        attack.m_maxDuration     = tower.m_attackDuration;
+        BuildAttackPayload(tower, attack);
+        gameData.attacks.push_back(std::move(attack));
     }
 }
 

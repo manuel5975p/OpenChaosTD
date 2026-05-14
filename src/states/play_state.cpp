@@ -71,8 +71,10 @@ void PlayingState::Draw(Game& game) {
     BeginMode2D(m_renderSystem.GetCamera());
         m_renderSystem.DrawMap(game.GetGameData().map, game.GetAssets());
         m_renderSystem.DrawPaths(game.GetGameData().map);
-        if(m_debug)
+        if(m_debug) {
             m_renderSystem.DebugDrawMap(game.GetGameData().map);
+            m_renderSystem.DebugDrawEnemies(game.GetGameData().enemies);
+        }
         m_renderSystem.DrawTowers(game.GetGameData().towers, game.GetAssets());
 
         m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());

@@ -26,7 +26,7 @@ struct GameConfig {
 
 struct GameData {
     int lives = 20;
-    int gold  = 150;
+    int gold = 150;
     int score = 0;
     Map map;
     DenseSlotMap<Tower> towers;

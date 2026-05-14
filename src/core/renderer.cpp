@@ -45,17 +45,10 @@ void Renderer::UpdateScale() {
     const float offsetY = (screenH - scaledH) * 0.5f;
 
     m_destRect = { offsetX, offsetY, scaledW, scaledH };
-
-    // Black bar rectangles (one pair: top+bottom or left+right)
-    m_barA = { 0.0f,            0.0f,   screenW, offsetY };  // top   or left
-    m_barB = { 0.0f, offsetY + scaledH, screenW, offsetY };  // bottom or right
 }
 
 // Frame
 void Renderer::BeginFrame() {
-    // Recalculate every frame to handle live window resizing
-    UpdateScale();
-
     BeginTextureMode(m_target);
         ClearBackground(BLACK);
 }

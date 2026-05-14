@@ -19,11 +19,13 @@ void EnemySystem::FollowPath(float dt, GameData& gameData){
                 remainingTime -= distToTarget / enemy.m_currentSpeed;
                 enemy.m_position = gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex];
                 enemy.m_waypointIndex--;
+                enemy.m_progress = static_cast<float>(enemy.m_waypointIndex + 1);
             } else {
                 Vector2 direction = Vector2Normalize(toTarget);
                 enemy.m_position = Vector2Add(enemy.m_position, Vector2Scale(direction, moveDistance));
                 remainingTime = 0.0f;
-                enemy.m_progress = enemy.m_waypointIndex + distToTarget / gameData.map.GetTileSize();
+                float remainingDist = distToTarget - moveDistance;
+                enemy.m_progress = enemy.m_waypointIndex + remainingDist / gameData.map.GetTileSize();
             }
         }
     }
