@@ -53,7 +53,7 @@ void RenderSystem::DebugDrawMap(const Map& map){
 
 void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& assets){
     for (auto& tower : towers) {
-        Texture2D& texture = assets.GetTexture("tower_freezer");
+        Texture2D& texture = assets.GetTexture(tower.m_texture);
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
 
@@ -71,14 +71,14 @@ void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& a
 
 void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets) {
     for (auto& enemy : enemies) {
-        Texture2D& texture = assets.GetTexture("enemy_voidno");
+        Texture2D& texture = assets.GetTexture(enemy.m_texture);
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
 
         DrawTexture(texture, enemy.m_position.x - hw, enemy.m_position.y - hh, WHITE);
 
         // Health bar: 24px wide, 4px tall, floats above the sprite
-        DrawHealthBar({enemy.m_position.x, enemy.m_position.y + hh + 2.0f}, enemy.m_health, enemy.m_maxhealth, 20.0f, 4.0f );
+        DrawHealthBar({enemy.m_position.x, enemy.m_position.y + hh + 2.0f}, enemy.m_currentHealth, enemy.m_health, 20.0f, 4.0f );
     }
 }
 

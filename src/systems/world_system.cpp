@@ -1,8 +1,10 @@
 #include <systems/world_system.hpp>
 #include <world/tile.hpp>
+#include <world/enemy_module.hpp>
 #include <iostream>
 #include <raymath.h>
 #include <vector>
+#include <algorithm>
 
 void WorldSystem::PlaceTower(int x, int y, Tower& tower, GameData& gameData){
     if(ValidateTowerPlacement(x, y, gameData)){
@@ -59,7 +61,7 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
     return true;
 }
 
-void WorldSystem::SpawnEnemy(const int& nest, Enemy enemy,GameData& gameData){
+void WorldSystem::SpawnEnemy(int nest, Enemy&& enemy, GameData& gameData){
     enemy.m_position = {
         static_cast<float>(gameData.map.GetNests()[nest].first * gameData.map.GetTileSize() + static_cast<float>(gameData.map.GetTileSize()) /2), 
         static_cast<float>(gameData.map.GetNests()[nest].second * gameData.map.GetTileSize()+ static_cast<float>(gameData.map.GetTileSize()) /2)
@@ -80,26 +82,21 @@ void WorldSystem::GenerateMap(Map& map, int x, int y){
 
     int xmid = (map.GetCols() -1) /2;
     int ymid = (map.GetRows() -1) /2;
-    for(int x=0; x < map.GetCols(); x++) {
-        for(int y=0; y < map.GetRows(); y++) {
-            
-            //Add Nest at the top
-            if(y == 1 && x == xmid) map.AddNest(x, y);
-            if(y == 1 && x == 1) map.AddNest(x, y);
-            if(y == 1 && x == map.GetCols()-2) map.AddNest(x, y);
+    for(int col=0; col < map.GetCols(); col++) {
+        for(int row=0; row < map.GetRows(); row++) {
 
-            //Place Core at the bottom
-            if(y == map.GetRows() -2 && x == xmid) map.SetCore(x, y);
+            if(row == 1 && col == xmid) map.AddNest(col, row);
+            if(row == 1 && col == 1) map.AddNest(col, row);
+            if(row == 1 && col == map.GetCols()-2) map.AddNest(col, row);
 
-            // Add Rock formation
+            if(row == map.GetRows() -2 && col == xmid) map.SetCore(col, row);
+
             Tile rockTile;
             rockTile.m_type = TileType::Rock;
             rockTile.m_buildable = false;
             rockTile.m_walkable = false;
 
-            if(y == ymid && x < map.GetCols() -3) map.Get(x, y) = std::move(rockTile);
-
-            
+            if(row == ymid && col < map.GetCols() -3) map.Get(col, row) = std::move(rockTile);
         }
     }
 }
@@ -122,7 +119,7 @@ void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
 void WorldSystem::CheckEnemyDead(GameData& gameData){
     std::vector<DenseSlotMap<Enemy>::Key> toRemove;
     for (auto& enemy : gameData.enemies) {
-        if (enemy.m_health <= 0.0f)
+        if (enemy.m_currentHealth <= 0.0f)
             toRemove.push_back(gameData.enemies.KeyOf(&enemy));
     }
     for (auto& key : toRemove) {
@@ -139,7 +136,11 @@ void WorldSystem::TickAttacks(float dt, GameData& gameData){
                 for (auto& key : attack.m_targetKeys) {
                     Enemy* enemy = gameData.enemies.Get(key);
                     if (!enemy) continue;
-                    enemy->m_health -= attack.m_damage;
+                    float armor = 0.0f;
+                    for (auto& mod : enemy->m_modules)
+                        if (auto* a = dynamic_cast<ArmorModule*>(mod.get()))
+                            armor += a->m_amount;
+                    enemy->m_currentHealth -= std::max(0.0f, attack.m_damage - armor);
                     for (auto& effect : attack.m_effects)
                         enemy->AddEffect(effect);
                 }

@@ -1,0 +1,30 @@
+{
+    "enemies": [
+        {
+            "name": "voidno",
+            "texture": "enemy_voidno",
+            "health": 10,
+            "speed": 50,
+            "reward": 5
+        },
+        {
+            "name": "voidno_fast",
+            "texture": "enemy_voidno",
+            "health": 5,
+            "speed": 100,
+            "reward": 8
+        },
+        {
+            "name": "voidno_tank",
+            "texture": "enemy_voidno",
+            "health": 50,
+            "speed": 25,
+            "reward": 20,
+            "modules": [
+                { "type": "Regeneration", "rate": 2.0 },
+                { "type": "Armor",        "amount": 1.0 },
+                { "type": "Resistance",   "factor": 0.4 }
+            ]
+        }
+    ]
+}

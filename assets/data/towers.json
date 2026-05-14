@@ -1,0 +1,41 @@
+{
+    "towers": [
+        {
+            "name": "zapper",
+            "texture": "tower_zapper",
+            "fireRate": 2.0,
+            "radius": 100,
+            "targetCount": 1,
+            "attackType": "Line",
+            "targetingMode": "First",
+            "modules": [
+                { "type": "FlatDamage", "damage": 1.5 }
+            ]
+        },
+        {
+            "name": "freezer",
+            "texture": "tower_freezer",
+            "fireRate": 0.8,
+            "radius": 128,
+            "targetCount": 0,
+            "attackType": "Area",
+            "targetingMode": "First",
+            "modules": [
+                { "type": "FlatDamage", "damage": 0.5 },
+                { "type": "Slow", "factor": 0.5, "duration": 2.0 }
+            ]
+        },
+        {
+            "name": "sniper",
+            "texture": "tower_sniper",
+            "fireRate": 0.5,
+            "radius": 300,
+            "targetCount": 1,
+            "attackType": "Line",
+            "targetingMode": "MostHealth",
+            "modules": [
+                { "type": "FlatDamage", "damage": 8.0 }
+            ]
+        }
+    ]
+}

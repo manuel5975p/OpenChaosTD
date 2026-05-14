@@ -1,80 +1,94 @@
 # OpenChaosTD
-This is an open-map 2D Tower Defense game made in c++ with raylib that is still a work in progress. Towers can be placed anywhere on a grid, and enemies will search for the best path.
+An open-map 2D Tower Defense game written in C++ with raylib. Towers can be placed anywhere on a grid and enemies dynamically pathfind around them. Still a work in progress.
 
 ## Building
 
 ### Prerequisites
-* **CMake** (3.15 or newer)
-* **C++ Compiler** (e.g.,GCC, Clang, MSVC)
-* **Git** (for fetching dependencies)
-* **Emscripten SDK** (only for web builds)
-* **Python 3.8+** (only for web builds)
+* **CMake** 3.22 or newer
+* **C++20 compiler** (GCC, Clang, MSVC)
+* **Git** (for fetching dependencies via FetchContent)
+* **Emscripten SDK** (web builds only)
+* **Python 3.8+** (web builds only)
 
-### Desktop Build (Windows, macOS, Linux)
-1. **Configure and build with CMake:**
-    ```bash
-    mkdir build
-    cd build
-    cmake ..
-    cmake --build .
-    ```
-    The example binaries will be located in the `build/bin` directory.
+### Desktop (Windows, macOS, Linux)
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+The binary is output to `build/bin/`.
 
-### Web Build (WebAssembly)
-1.  **Configure and build with Emscripten**
-    ```bash
-    cd tools
-    ./build_web.sh
-    ```
-    Now there will be a HTTP Server running under port 8000 to test your project. The URL should be visible in the active terminal.
+### Web (WebAssembly)
+```bash
+cd tools
+./build_web.sh
+```
+A local HTTP server starts on port 8000. The URL will be shown in the terminal.
+
+## Dependencies
+All fetched automatically via CMake FetchContent — no manual installation needed.
+
+| Library | Version | Purpose |
+|---|---|---|
+| [raylib](https://github.com/raysan5/raylib) | 5.5 | Window, rendering, input, audio |
+| [nlohmann/json](https://github.com/nlohmann/json) | 3.11.3 | JSON parsing for data files |
 
 ## Media
-* (Add a screenshot or GIF of your project here)
+*(Add a screenshot or GIF here)*
 
 ## Project Structure
 ```
 OpenChaosTD/
-└── src/                                Root
-    ├── main.cpp                        - Run game
-    ├── game.hpp / game.cpp             - Window creation, FPS, resizing
+├── assets/
+│   ├── data/
+│   │   ├── towers.json         - Tower type definitions (stats, modules)
+│   │   └── enemies.json        - Enemy type definitions (stats, modules)
+│   └── textures/               - Sprites for towers, enemies and tiles
+│
+└── src/
+    ├── main.cpp                - Entry point
+    ├── game.hpp/.cpp           - Window, game loop, state machine, factories
     │
-    ├── core/                           Core engine responsible for global functionality
-    │   ├── asset_manager.hpp/.cpp      - Load/cache textures, sounds, fonts
-    │   ├── renderer.hpp/.cpp           - Rendering and letterbox scaling
-    │   ├── input_manager.hpp/.cpp      - Keybinding, virtual mouse and mouse consumption
-    │   ├── jsonio.hpp/.cpp             - Cross-platform JSON read/write
-    │   └── performance_monitor.h/.cpp  - Performance profiling avg, last, peak timings
+    ├── core/                   Engine infrastructure
+    │   ├── asset_manager       - Load/cache textures, sounds, fonts, music
+    │   ├── renderer            - Rendering with letterbox scaling
+    │   ├── input_manager       - Action-based input and keybindings
+    │   ├── jsonio              - Cross-platform JSON read/write (desktop + web)
+    │   └── performance_monitor - Frame-time profiling (avg, last, peak)
     │
-    ├── lib/                            Core engine responsible for global functionality
-    │   ├── grid2d.hpp                  - Header-only resizable 2D array template
-        ├── dense_slotmap.hpp           - Stable id container optimized for iteration
-    │   └── slotmap.hpp                 - Stable id container optimized for lookup
+    ├── factory/                Data-driven entity construction from JSON
+    │   ├── tower_factory       - Builds Tower instances from towers.json
+    │   └── enemy_factory       - Builds Enemy instances from enemies.json
     │
-    ├── states/                         Divide screens into individual states
-    │   ├── game_state.hpp              - Base class (input, logic, drawing)
-    │   ├── menu_state.hpp/.cpp         - Pre playing state
-    │   ├── play_state.hpp/.cpp         - Playing state
-    │   └── game_over_state.hpp/.cpp    - Gameover state display score and start new
+    ├── lib/                    Reusable data structures
+    │   ├── dense_slotmap.hpp   - Stable-ID container optimised for iteration
+    │   ├── slotmap.hpp         - Stable-ID container optimised for lookup
+    │   └── grid2d.hpp          - Resizable 2D array template
     │
-    ├── world/                          Grid, wave and paths
-    │   ├── enemy.hpp/.cpp              - Enemy shell stores position, values and upgrades
-    │   ├── tower.hpp/.cpp              - Tower shell stores position, values and upgrades
-    │   ├── map.hpp/.cpp                - Grid2D, path calculation
-    │   ├── tower_modules.hpp           - Modules that define the behaviour of a tower
-    │   └── tile.hpp                    - Tile shell stores type, buildable, walkable
+    ├── states/                 Game screen state machine
+    │   ├── game_state.hpp      - Abstract base (ProcessInput, Update, Draw)
+    │   ├── menu_state          - Main menu
+    │   ├── play_state          - Active gameplay
+    │   └── game_over_state     - Game over screen
     │
-    ├── systems/                        State specific systems and functionality
-    │   ├── pathfinder.hpp              - Generic graph & pathfinding
-    │   ├── world_system.hpp/.cpp       - Controling behaviour of world
-    │   ├── tower_system.hpp/.cpp       - Controling behaviour of towers
-    │   ├── enemy_system.hpp/.cpp       - Controling behaviour of enemies
-    │   ├── render_system.hpp/.cpp      - Drawing entities and world
-    │   └── wave_manager.hpp/.cpp       - Spawn timing, wave definitions ✏️
+    ├── world/                  Entity definitions and data
+    │   ├── tower               - Tower entity (position, stats, modules)
+    │   ├── tower_modules.hpp   - FlatDamageModule, SlowModule
+    │   ├── enemy               - Enemy entity (position, health, effects, modules)
+    │   ├── enemy_module.hpp    - RegenerationModule, ArmorModule, ResistanceModule
+    │   ├── attack.hpp          - Attack object (origin, targets, payload, visual)
+    │   ├── effect.hpp          - Status effect (Burn, Slow) with duration
+    │   ├── map                 - Grid, nest/core placement, path construction
+    │   └── tile.hpp            - Tile type, walkable/buildable flags
     │
-    └── ui/                             User interface
-        ├── hud.hpp/.cpp                - Lives, gold, score, wave counter ✏️
-        └── tower_menu.hpp/.cpp         - Tower selection & placement UI ✏️
+    └── systems/                Per-frame game logic
+        ├── pathfinder.hpp      - BFS pathfinding from core to all nests
+        ├── world_system        - Spawning, placement, damage, cleanup
+        ├── tower_system        - Cooldowns, targeting, attack creation
+        ├── enemy_system        - Movement, status effects, module ticking
+        └── render_system       - Drawing map, entities, attacks, UI
 ```
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE) for details.

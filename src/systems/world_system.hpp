@@ -8,7 +8,7 @@ class WorldSystem{
 public:
     void PlaceTower(int x, int y, Tower& tower, GameData& gameData);
     void RemoveTower(int x, int y, GameData& gameData);
-    void SpawnEnemy(const int& nest, Enemy enemy,GameData& gameData);
+    void SpawnEnemy(int nest, Enemy&& enemy, GameData& gameData);
     void RemoveEnemy(DenseSlotMap<Enemy>::Key key, GameData& gameData);
 
     void CheckEnemyReachedCore(GameData& gameData);

@@ -13,29 +13,28 @@ void TowerSystem::update(float& dt, GameData& gameData){
         tower.m_cooldown -= dt;
         tower.m_attackFlash = std::max(0.0f, tower.m_attackFlash - dt);
 
-        if(tower.m_cooldown <= 0){
-            auto targets = FindTargets(tower, gameData.enemies, tower.m_targetCount);
-            if (targets.empty()) continue;
+        tower.m_currentTargetKeys = FindTargets(tower, gameData.enemies, tower.m_targetCount);
 
+        if(tower.m_cooldown <= 0 && !tower.m_currentTargetKeys.empty()){
             tower.m_cooldown = 1.0f / tower.m_fireRate;
             tower.m_attackFlash = 0.15f;
 
             std::vector<Vector2> targetPositions;
-            targetPositions.reserve(targets.size());
-            for (auto& key : targets) {
+            targetPositions.reserve(tower.m_currentTargetKeys.size());
+            for (auto& key : tower.m_currentTargetKeys) {
                 if (Enemy* e = gameData.enemies.Get(key))
                     targetPositions.push_back(e->m_position);
             }
 
             constexpr float kAttackDuration = 0.15f;
             Attack attack;
-            attack.m_origin         = tower.m_position;
+            attack.m_origin          = tower.m_position;
             attack.m_targetPositions = std::move(targetPositions);
-            attack.m_targetKeys     = targets;
-            attack.m_type           = tower.m_attackType;
-            attack.m_radius         = tower.m_radius;
-            attack.m_duration       = kAttackDuration;
-            attack.m_maxDuration    = kAttackDuration;
+            attack.m_targetKeys      = tower.m_currentTargetKeys;
+            attack.m_type            = tower.m_attackType;
+            attack.m_radius          = tower.m_radius;
+            attack.m_duration        = kAttackDuration;
+            attack.m_maxDuration     = kAttackDuration;
             BuildAttackPayload(tower, attack);
             gameData.attacks.push_back(std::move(attack));
         }
@@ -89,8 +88,8 @@ bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mo
     switch (mode) {
         case TargetingMode::First: return a.m_progress < b.m_progress;
         case TargetingMode::Last: return a.m_progress > b.m_progress;
-        case TargetingMode::MostHealth: return a.m_health < b.m_health;
-        case TargetingMode::LowestHealth: return a.m_health > b.m_health;
+        case TargetingMode::MostHealth: return a.m_currentHealth < b.m_currentHealth;
+        case TargetingMode::LowestHealth: return a.m_currentHealth > b.m_currentHealth;
         case TargetingMode::Fastest: return a.m_speed < b.m_speed;
         case TargetingMode::Slowest: return a.m_speed > b.m_speed;
     }

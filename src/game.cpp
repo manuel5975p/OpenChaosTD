@@ -19,6 +19,9 @@ Game::Game() {
 
     m_jsonio.SetRootPath(SearchFolderParentPath("assets", 5).parent_path());
 
+    m_towerFactory.Load(m_jsonio);
+    m_enemyFactory.Load(m_jsonio);
+
     LoadAssets();
     LoadActions();
 
@@ -61,7 +64,7 @@ void Game::Run() {
 }
 
 std::filesystem::path Game::SearchFolderParentPath(const std::string& folderName, size_t searchDepth){
-    std::filesystem::path currentDir = GetWorkingDirectory();
+    std::filesystem::path currentDir = GetApplicationDirectory();
     std::cout << "Searching for '" << folderName << "' folder starting from " << currentDir << "\n";
 
     for (size_t i = 0; i < searchDepth; i++) {

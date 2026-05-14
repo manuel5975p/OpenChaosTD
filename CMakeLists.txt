@@ -6,6 +6,7 @@ project(OpenChaosDefender VERSION 1.0)
 # Set the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 ##########################################################################################
 # Configurable options
@@ -41,7 +42,7 @@ if(USE_RAYLIB)
     message(STATUS "Fetching raylib...")
     fetchcontent_declare(raylib
         GIT_REPOSITORY https://github.com/raysan5/raylib.git
-        GIT_TAG        master
+        GIT_TAG        5.5
         GIT_SHALLOW    TRUE
         GIT_PROGRESS   TRUE
     )
@@ -63,7 +64,7 @@ if(USE_RAYGUI)
     message(STATUS "Fetching raygui...")
     fetchcontent_declare(raygui
         GIT_REPOSITORY https://github.com/raysan5/raygui.git
-        GIT_TAG        master
+        GIT_TAG        4.0
         GIT_SHALLOW    TRUE
         GIT_PROGRESS   TRUE
     )
@@ -85,14 +86,14 @@ if(USE_BOX2D)
     message(STATUS "Fetching box2d...")
     fetchcontent_declare(box2d
         GIT_REPOSITORY https://github.com/erincatto/box2d.git
-        GIT_TAG        main
+        GIT_TAG        v3.0.0
         GIT_SHALLOW    TRUE
         GIT_PROGRESS   TRUE
     )
     fetchcontent_makeavailable(box2d)
 
     # add the dependency here to be linked
-    list(APPEND LIBRARIES box2d)
+    list(APPEND LINK_LIBRARIES box2d)
 endif()
 
 
@@ -101,12 +102,10 @@ endif()
 ##########################################################################################
 
 if(USE_NLOHMANN_JSON)
-    set(BUILD_RAYGUI_EXAMPLES OFF CACHE BOOL "" FORCE)
-
     message(STATUS "Fetching nlohmann json...")
     fetchcontent_declare(nlohmann_json
         GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG        master
+        GIT_TAG        v3.11.3
         GIT_SHALLOW    TRUE
         GIT_PROGRESS   TRUE
     )
@@ -173,4 +172,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wextra      # More warnings
     -Wpedantic   # Strict ISO C++ compliance warnings
     # Add other warning flags like -Wshadow, -Wconversion, etc. as needed
+    $<$<CONFIG:Debug>:-g -O0>
+    $<$<CONFIG:Release>:-O2 -DNDEBUG>
 )

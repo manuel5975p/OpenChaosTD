@@ -8,6 +8,8 @@
 #include <core/input_manager.hpp>
 #include <core/jsonio.hpp>
 #include <core/performance_monitor.hpp>
+#include <factory/tower_factory.hpp>
+#include <factory/enemy_factory.hpp>
 #include <world/map.hpp>
 #include <world/tower.hpp>
 #include <world/enemy.hpp>
@@ -64,6 +66,8 @@ public:
     InputManager& GetInput() {return m_input;}
     JsonIO& GetJsonIO(){return m_jsonio;}
     PerformanceMonitor& GetMonitor() {return m_monitor;}
+    TowerFactory& GetTowerFactory() {return m_towerFactory;}
+    EnemyFactory& GetEnemyFactory() {return m_enemyFactory;}
 
 private:
     bool m_running = true;
@@ -81,6 +85,8 @@ private:
     InputManager m_input;
     JsonIO m_jsonio;
     PerformanceMonitor m_monitor;
+    TowerFactory m_towerFactory;
+    EnemyFactory m_enemyFactory;
 
     // Gamestate management
     std::unique_ptr<GameState> m_currentState;

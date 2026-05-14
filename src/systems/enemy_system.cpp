@@ -1,53 +1,56 @@
 #include <systems/enemy_system.hpp>
 
 #include <raymath.h>
+#include <world/enemy_module.hpp>
+#include <algorithm>
 
-void EnemySystem::FollowPath(float& dt, GameData& gameData){
+void EnemySystem::FollowPath(float dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
-        float effectiveSpeed = enemy.m_speed;
-        for (auto& effect : enemy.m_effects) {
-            if (effect.m_type == EffectType::Slow)
-                effectiveSpeed *= effect.m_value;
-        }
-
-        if(effectiveSpeed <= 0.0f) continue;
+        if(enemy.m_currentSpeed <= 0.0f) continue;
 
         float remainingTime = dt;
 
-        // Loop to handle enemies fast enough to cross multiple waypoints in one frame
         while(remainingTime > 0.0f && enemy.m_waypointIndex >= 0){
-
             Vector2 toTarget = Vector2Subtract(gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex], enemy.m_position);
             float distToTarget = Vector2Length(toTarget);
-            float moveDistance = effectiveSpeed * remainingTime;
+            float moveDistance = enemy.m_currentSpeed * remainingTime;
 
             if(moveDistance >= distToTarget){
-                // Snap to waypoint and carry over the unused time
-                remainingTime -= distToTarget / effectiveSpeed;
+                remainingTime -= distToTarget / enemy.m_currentSpeed;
                 enemy.m_position = gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex];
-                enemy.m_waypointIndex--; // Reaches -1 when core is hit
+                enemy.m_waypointIndex--;
             } else {
-                // Move as far as we can this frame
                 Vector2 direction = Vector2Normalize(toTarget);
                 enemy.m_position = Vector2Add(enemy.m_position, Vector2Scale(direction, moveDistance));
                 remainingTime = 0.0f;
-
-                // Update progress to next waypoint
                 enemy.m_progress = enemy.m_waypointIndex + distToTarget / gameData.map.GetTileSize();
             }
         }
     }
 }
 
-void EnemySystem::TickEffects(float& dt, GameData& gameData){
+void EnemySystem::TickEnemies(float dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
-        for (auto& effect : enemy.m_effects){
+        enemy.m_currentSpeed = enemy.m_speed;
+
+        float resistance = 0.0f;
+        for (auto& mod : enemy.m_modules) {
+            if (auto* regen = dynamic_cast<RegenerationModule*>(mod.get()))
+                enemy.m_currentHealth = std::min(enemy.m_health, enemy.m_currentHealth + regen->m_rate * dt);
+            else if (auto* resist = dynamic_cast<ResistanceModule*>(mod.get()))
+                resistance = std::min(1.0f, resistance + resist->m_factor);
+        }
+
+        for (auto& effect : enemy.m_effects) {
             switch (effect.m_type) {
                 case EffectType::Burn:
-                    enemy.m_health -= effect.m_value * dt;
+                    enemy.m_currentHealth -= effect.m_value * (1.0f - resistance) * dt;
                     break;
-                case EffectType::Slow:
+                case EffectType::Slow: {
+                    float weakenedFactor = effect.m_value + (1.0f - effect.m_value) * resistance;
+                    enemy.m_currentSpeed *= weakenedFactor;
                     break;
+                }
             }
             effect.m_duration -= dt;
         }
