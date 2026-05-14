@@ -10,8 +10,11 @@ Game::Game() {
     m_jsonio.SetRootPath(SearchFolderParentPath("assets", 5).parent_path());
     m_gameConfig.Load(m_jsonio);
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE); // Allow free window resizing
-    SetConfigFlags(FLAG_WINDOW_HIGHDPI); // Enable High DPI scaling
+#if defined(PLATFORM_WEB)
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+#else
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
+#endif
 
     InitWindow(m_gameConfig.gameWidth, m_gameConfig.gameHeight, m_gameConfig.title.c_str());
     m_gameConfig.ApplyIcon();
@@ -48,7 +51,7 @@ void Game::Run() {
     while (!WindowShouldClose() && m_running) {
         const float dt = GetFrameTime();
 
-        if (IsWindowResized()) m_renderer.OnResize();
+        m_renderer.OnResize();
 
         // Update
         m_monitor.Begin("Update");

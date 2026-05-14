@@ -1,10 +1,8 @@
 #include <systems/world_system.hpp>
 #include <world/tile.hpp>
-#include <world/enemy_module.hpp>
 #include <iostream>
 #include <raymath.h>
 #include <vector>
-#include <algorithm>
 
 bool WorldSystem::PlaceTower(int x, int y, Tower& tower, GameData& gameData){
     if(!ValidateTowerPlacement(x, y, gameData)) return false;
@@ -125,29 +123,6 @@ void WorldSystem::CheckEnemyDead(GameData& gameData){
     }
 }
 
-void WorldSystem::TickAttacks(float dt, GameData& gameData){
-    for (auto& attack : gameData.attacks) {
-        if (!attack.m_resolved) {
-            attack.m_delay -= dt;
-            if (attack.m_delay <= 0.0f) {
-                for (auto& key : attack.m_targetKeys) {
-                    Enemy* enemy = gameData.enemies.Get(key);
-                    if (!enemy) continue;
-                    float armor = 0.0f;
-                    for (auto& mod : enemy->m_modules)
-                        if (auto* a = dynamic_cast<ArmorModule*>(mod.get()))
-                            armor += a->m_amount;
-                    enemy->m_currentHealth -= std::max(0.0f, attack.m_damage - armor);
-                    for (auto& effect : attack.m_effects)
-                        enemy->AddEffect(effect);
-                }
-                attack.m_resolved = true;
-            }
-        }
-        attack.m_duration -= dt;
-    }
-    std::erase_if(gameData.attacks, [](const Attack& a){ return a.m_duration <= 0.0f; });
-}
 
 void WorldSystem::CheckGameOver(bool& gameOver, GameData& gameData){
     // Core live reaches zero

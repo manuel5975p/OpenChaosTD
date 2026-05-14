@@ -155,11 +155,13 @@ if (${PLATFORM} STREQUAL "Web")
     LINK_FLAGS "\
         --shell-file ${CMAKE_CURRENT_LIST_DIR}/tools/minshell.html \
         --preload-file ${CMAKE_CURRENT_LIST_DIR}/assets@assets \
+        --preload-file ${CMAKE_CURRENT_LIST_DIR}/data@data \
         -s USE_GLFW=3 \
         -s ASSERTIONS=1 \
         -s WASM=1 \
         -s GL_ENABLE_GET_PROC_ADDRESS=1 \
-        -s ASYNCIFY"
+        -s ASYNCIFY \
+        -s EXPORTED_RUNTIME_METHODS=['HEAPF32']"
     )
 endif ()
 

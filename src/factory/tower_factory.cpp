@@ -18,7 +18,7 @@ static TargetingMode ParseTargetingMode(const std::string& s) {
 }
 
 void TowerFactory::Load(JsonIO& jsonio) {
-    auto json = jsonio.Load("data/towers");
+    auto json = jsonio.Load("data/towers.json");
     if (json.is_null() || !json.contains("towers")) {
         std::cerr << "TowerFactory: failed to load towers data\n";
         return;

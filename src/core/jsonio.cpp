@@ -3,6 +3,7 @@
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
+    #include <fstream>
 #else
     #include <fstream>
     #include <filesystem>
@@ -11,23 +12,25 @@
 // RootPath
 void JsonIO::SetRootPath(const std::string& rootPath) {
 #if defined(PLATFORM_WEB)
-    // No filesystem on web — root path is unused
-    m_rootPath = "";
-    std::cout << "jsonio: initialized (web — using localStorage)\n";
+    m_rootPath = rootPath;
+    std::cout << "jsonio: root set to '" << m_rootPath << "' (web)\n";
 #else
-    // Derive project root from the parent of assets/
     std::filesystem::path root = std::filesystem::path(rootPath);
     m_rootPath = root.string();
     std::cout << "jsonio: root set to '" << m_rootPath << "'\n";
 #endif
 }
 
-// Private: path resolution (native only)
+// Private: path resolution
 std::string JsonIO::ResolvePath(const std::string& path) const {
     if (m_rootPath.empty())
         throw std::runtime_error("jsonio: SetRootPath() must be called before any file operations");
 
-    return (std::filesystem::path(m_rootPath) / (path + ".json")).string();
+#if defined(PLATFORM_WEB)
+    return path;
+#else
+    return (std::filesystem::path(m_rootPath) / path).string();
+#endif
 }
 
 // Save
@@ -62,6 +65,22 @@ void JsonIO::Save(const std::string& path, const nlohmann::json& data) {
 nlohmann::json JsonIO::Load(const std::string& path) {
 #if defined(PLATFORM_WEB)
 
+    // Try VFS first (preloaded read-only game data)
+    {
+        std::ifstream vfsFile(path);
+        if (vfsFile.is_open()) {
+            try {
+                nlohmann::json data;
+                vfsFile >> data;
+                return data;
+            } catch (const nlohmann::json::parse_error& e) {
+                std::cerr << "jsonio: parse error loading '" << path << "': " << e.what() << "\n";
+                return {};
+            }
+        }
+    }
+
+    // Fall back to localStorage (runtime save data)
     char* raw = (char*)EM_ASM_PTR({
         var value = localStorage.getItem(UTF8ToString($0));
         if (!value) return 0;
@@ -72,7 +91,7 @@ nlohmann::json JsonIO::Load(const std::string& path) {
     }, path.c_str());
 
     if (!raw) {
-        std::cout << "jsonio: no data found for '" << path << "' in localStorage\n";
+        std::cout << "jsonio: no data found for '" << path << "'\n";
         return {};
     }
 
@@ -111,6 +130,13 @@ nlohmann::json JsonIO::Load(const std::string& path) {
 bool JsonIO::Exists(const std::string& path) {
 #if defined(PLATFORM_WEB)
 
+    // Check VFS first
+    if (FILE* f = fopen(path.c_str(), "r")) {
+        fclose(f);
+        return true;
+    }
+
+    // Check localStorage
     int exists = EM_ASM_INT({
         return localStorage.getItem(UTF8ToString($0)) !== null ? 1 : 0;
     }, path.c_str());

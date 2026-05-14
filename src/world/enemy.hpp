@@ -37,7 +37,7 @@ public:
             // Replace only if the incoming effect is stronger
             switch (effect.m_type) {
                 case EffectType::Burn: if (effect.m_value > existing.m_value) existing = effect; break;
-                case EffectType::Slow: if (effect.m_value < existing.m_value) existing = effect; break;
+                case EffectType::Slow: if (effect.m_value <= existing.m_value) existing = effect; break;
             }
             return;
         }

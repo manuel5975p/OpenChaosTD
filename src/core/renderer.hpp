@@ -27,6 +27,9 @@ public:
     int GetGameWidth()  const { return m_virtualWidth;  }
     int GetGameHeight() const { return m_virtualHeight; }
 
+    float GetScale()          const { return m_scale; }
+    Rectangle GetDestRect()   const { return m_destRect; }
+
     void Shutdown();
 
 private:

@@ -5,6 +5,7 @@
 
 #include <world/tower.hpp>
 #include <world/tower_modules.hpp>
+#include <world/enemy_module.hpp>
 #include <world/effect.hpp>
 
 
@@ -22,7 +23,7 @@ void TowerSystem::update(float dt, GameData& gameData){
             continue;
         }
 
-        tower.m_cooldown    = 1.0f / tower.m_fireRate;
+        tower.m_cooldown = 1.0f / tower.m_fireRate;
         tower.m_attackFlash = tower.m_attackDuration;
 
         std::vector<Vector2> targetPositions;
@@ -33,13 +34,13 @@ void TowerSystem::update(float dt, GameData& gameData){
         }
 
         Attack attack;
-        attack.m_origin          = tower.m_position;
+        attack.m_origin = tower.m_position;
         attack.m_targetPositions = std::move(targetPositions);
-        attack.m_targetKeys      = tower.m_currentTargetKeys;
-        attack.m_type            = tower.m_attackType;
-        attack.m_radius          = tower.m_radius;
-        attack.m_duration        = tower.m_attackDuration;
-        attack.m_maxDuration     = tower.m_attackDuration;
+        attack.m_targetKeys = tower.m_currentTargetKeys;
+        attack.m_type = tower.m_attackType;
+        attack.m_radius = tower.m_radius;
+        attack.m_duration = tower.m_attackDuration;
+        attack.m_maxDuration = tower.m_attackDuration;
         BuildAttackPayload(tower, attack);
         gameData.attacks.push_back(std::move(attack));
     }
@@ -86,6 +87,35 @@ void TowerSystem::BuildAttackPayload(const Tower& tower, Attack& attack) {
             attack.m_effects.push_back(Effect(EffectType::Slow, slow->m_duration, slow->m_factor));
         }
     }
+}
+
+static float ComputeArmor(const Enemy& enemy) {
+    float armor = 0.0f;
+    for (auto& mod : enemy.m_modules)
+        if (auto* a = dynamic_cast<ArmorModule*>(mod.get()))
+            armor += a->m_amount;
+    return armor;
+}
+
+void TowerSystem::TickAttacks(float dt, GameData& gameData) {
+    for (auto& attack : gameData.attacks) {
+        attack.m_duration -= dt;
+
+        if (attack.m_resolved) continue;
+        attack.m_delay -= dt;
+        if (attack.m_delay > 0.0f) continue;
+
+        for (auto& key : attack.m_targetKeys) {
+            Enemy* enemy = gameData.enemies.Get(key);
+            if (!enemy) continue;
+            float armor = ComputeArmor(*enemy);
+            enemy->m_currentHealth -= std::max(0.0f, attack.m_damage - armor);
+            for (auto& effect : attack.m_effects)
+                enemy->AddEffect(effect);
+        }
+        attack.m_resolved = true;
+    }
+    std::erase_if(gameData.attacks, [](const Attack& a){ return a.m_duration <= 0.0f; });
 }
 
 bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mode) {

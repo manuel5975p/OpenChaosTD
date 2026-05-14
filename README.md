@@ -41,25 +41,34 @@ All fetched automatically via CMake FetchContent — no manual installation need
 ```
 OpenChaosTD/
 ├── assets/
-│   ├── data/
-│   │   ├── towers.json         - Tower type definitions (stats, modules)
-│   │   └── enemies.json        - Enemy type definitions (stats, modules)
 │   └── textures/               - Sprites for towers, enemies and tiles
+│
+├── data/
+│   ├── config.json             - Window and display settings
+│   ├── gameplay.json           - Starting lives and gold
+│   ├── keybindings.json        - Input action bindings (rebindable)
+│   ├── towers.json             - Tower type definitions (stats, modules)
+│   └── enemies.json            - Enemy type definitions (stats, modules)
 │
 └── src/
     ├── main.cpp                - Entry point
-    ├── game.hpp/.cpp           - Window, game loop, state machine, factories
+    ├── game.hpp/.cpp           - Game loop, state machine, manager accessors
     │
-    ├── core/                   Engine infrastructure
+    ├── core/                   Engine infrastructure — see core/CORE.md
     │   ├── asset_manager       - Load/cache textures, sounds, fonts, music
-    │   ├── renderer            - Rendering with letterbox scaling
-    │   ├── input_manager       - Action-based input and keybindings
+    │   ├── renderer            - Virtual resolution + letterbox scaling
+    │   ├── input_manager       - Action-based input with JSON keybindings
+    │   ├── game_config         - Window/display settings loaded from JSON
     │   ├── jsonio              - Cross-platform JSON read/write (desktop + web)
-    │   └── performance_monitor - Frame-time profiling (avg, last, peak)
+    │   ├── performance_monitor - Frame-time profiling (avg, last, peak)
+    │   └── button              - Shared UI primitive (hit-test + draw)
     │
     ├── factory/                Data-driven entity construction from JSON
     │   ├── tower_factory       - Builds Tower instances from towers.json
     │   └── enemy_factory       - Builds Enemy instances from enemies.json
+    │
+    ├── hud/                    In-game HUD elements
+    │   └── tower_hud           - Tower selection panel with cost display
     │
     ├── lib/                    Reusable data structures
     │   ├── dense_slotmap.hpp   - Stable-ID container optimised for iteration
@@ -70,9 +79,10 @@ OpenChaosTD/
     │   ├── game_state.hpp      - Abstract base (ProcessInput, Update, Draw)
     │   ├── menu_state          - Main menu
     │   ├── play_state          - Active gameplay
-    │   └── game_over_state     - Game over screen
+    │   └── end_state           - Victory / game over screen
     │
     ├── world/                  Entity definitions and data
+    │   ├── game_data           - Runtime world state + starting values (JSON)
     │   ├── tower               - Tower entity (position, stats, modules)
     │   ├── tower_modules.hpp   - FlatDamageModule, SlowModule
     │   ├── enemy               - Enemy entity (position, health, effects, modules)
@@ -84,8 +94,8 @@ OpenChaosTD/
     │
     └── systems/                Per-frame game logic
         ├── pathfinder.hpp      - BFS pathfinding from core to all nests
-        ├── world_system        - Spawning, placement, damage, cleanup
-        ├── tower_system        - Cooldowns, targeting, attack creation
+        ├── world_system        - Placement, spawning, game-over checks
+        ├── tower_system        - Cooldowns, targeting, attack creation and resolution
         ├── enemy_system        - Movement, status effects, module ticking
         └── render_system       - Drawing map, entities, attacks, UI
 ```

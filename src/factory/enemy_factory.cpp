@@ -4,7 +4,7 @@
 #include <iostream>
 
 void EnemyFactory::Load(JsonIO& jsonio) {
-    auto json = jsonio.Load("data/enemies");
+    auto json = jsonio.Load("data/enemies.json");
     if (json.is_null() || !json.contains("enemies")) {
         std::cerr << "EnemyFactory: failed to load enemies data\n";
         return;

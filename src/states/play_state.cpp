@@ -70,7 +70,7 @@ void PlayingState::Update(Game& game, float dt) {
     m_towerSystem.update(dt, game.GetGameData());
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
-    m_worldSystem.TickAttacks(dt, game.GetGameData());
+    m_towerSystem.TickAttacks(dt, game.GetGameData());
     m_worldSystem.CheckEnemyDead(game.GetGameData());
     m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
 }
@@ -90,12 +90,6 @@ void PlayingState::Draw(Game& game) {
         m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
         m_renderSystem.DrawAttacks(game.GetGameData().attacks);
 
-        for(auto& tower : game.GetGameData().towers){
-            for(auto& key : tower.m_currentTargetKeys){
-                const Enemy* enemy = game.GetGameData().enemies.Get(key);
-                if (enemy) DrawCircleV(enemy->m_position, 4, RED);
-            }
-        }
     EndMode2D();
 
     m_towerHUD.Draw(game);
