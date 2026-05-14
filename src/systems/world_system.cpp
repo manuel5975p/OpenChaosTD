@@ -2,6 +2,7 @@
 #include <world/tile.hpp>
 #include <iostream>
 #include <raymath.h>
+#include <vector>
 
 void WorldSystem::PlaceTower(int x, int y, Tower& tower, GameData& gameData){
     if(ValidateTowerPlacement(x, y, gameData)){
@@ -116,6 +117,38 @@ void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
         gameData.lives --;
         RemoveEnemy(erase, gameData);
     }
+}
+
+void WorldSystem::CheckEnemyDead(GameData& gameData){
+    std::vector<DenseSlotMap<Enemy>::Key> toRemove;
+    for (auto& enemy : gameData.enemies) {
+        if (enemy.m_health <= 0.0f)
+            toRemove.push_back(gameData.enemies.KeyOf(&enemy));
+    }
+    for (auto& key : toRemove) {
+        gameData.gold += gameData.enemies.Get(key)->m_reward;
+        RemoveEnemy(key, gameData);
+    }
+}
+
+void WorldSystem::TickAttacks(float dt, GameData& gameData){
+    for (auto& attack : gameData.attacks) {
+        if (!attack.m_resolved) {
+            attack.m_delay -= dt;
+            if (attack.m_delay <= 0.0f) {
+                for (auto& key : attack.m_targetKeys) {
+                    Enemy* enemy = gameData.enemies.Get(key);
+                    if (!enemy) continue;
+                    enemy->m_health -= attack.m_damage;
+                    for (auto& effect : attack.m_effects)
+                        enemy->AddEffect(effect);
+                }
+                attack.m_resolved = true;
+            }
+        }
+        attack.m_duration -= dt;
+    }
+    std::erase_if(gameData.attacks, [](const Attack& a){ return a.m_duration <= 0.0f; });
 }
 
 void WorldSystem::CheckGameOver(bool& gameOver, GameData& gameData){

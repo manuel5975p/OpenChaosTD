@@ -6,6 +6,7 @@
 #include <core/renderer.hpp>
 #include <world/tower.hpp>
 #include <world/enemy.hpp>
+#include <world/attack.hpp>
 #include <lib/dense_slotmap.hpp>
 
 class RenderSystem{
@@ -16,6 +17,7 @@ public:
     void DebugDrawMap(const Map& Map);
     void DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& assets);
     void DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets);
+    void DrawAttacks(const std::vector<Attack>& attacks);
     
     void CenterCamera(Map& map, Renderer& renderer);
     void ControlCamera(float& dt, InputManager& input);

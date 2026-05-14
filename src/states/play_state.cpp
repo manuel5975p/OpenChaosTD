@@ -32,13 +32,14 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     int x, y;
     if(game.GetInput().IsMouseLeftPressed() && game.GetGameData().map.WorldToTile(GetScreenToWorld2D(game.GetInput().GetMousePosition(), m_renderSystem.GetCamera()), x, y)){
         Tower slowTower;
-        slowTower.m_targetCount = 0;
+        slowTower.m_targetCount = 2;
         slowTower.m_fireRate = 1;
         slowTower.m_radius = 128;
+        slowTower.m_attackType = AttackType::Line;
         slowTower.m_targetingMode = TargetingMode::First;
 
         slowTower.AddModule(std::make_unique<FlatDamageModule>(1));
-        slowTower.AddModule(std::make_unique<SlowModule>(0.6f, 2.0f));
+        //slowTower.AddModule(std::make_unique<SlowModule>(0.6f, 2.0f));
 
         m_worldSystem.PlaceTower(x, y, slowTower, game.GetGameData());
     }
@@ -54,7 +55,8 @@ void PlayingState::ProcessInput(Game& game, float dt) {
         enemy.m_speed = 50;
         enemy.m_health = 10;
         enemy.m_maxhealth = 10;
-        enemy.AddEffect({EffectType::Burn, 5, 1});
+        enemy.m_reward = 5;
+        // enemy.AddEffect({EffectType::Burn, 5, 1});
 
         m_worldSystem.SpawnEnemy(0, enemy, game.GetGameData());
         m_worldSystem.SpawnEnemy(1, enemy, game.GetGameData());
@@ -73,7 +75,9 @@ void PlayingState::Update(Game& game, float dt) {
 
     m_towerSystem.update(dt, game.GetGameData());
 
+    m_worldSystem.CheckEnemyDead(game.GetGameData());
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
+    m_worldSystem.TickAttacks(dt, game.GetGameData());
     m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
 }
 
@@ -88,6 +92,7 @@ void PlayingState::Draw(Game& game) {
         m_renderSystem.DrawTowers(game.GetGameData().towers, game.GetAssets());
 
         m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
+        m_renderSystem.DrawAttacks(game.GetGameData().attacks);
 
         for(auto& tower : game.GetGameData().towers){
             std::vector<DenseSlotMap<Enemy>::Key> keys = m_towerSystem.FindTargets(tower, game.GetGameData().enemies, tower.m_targetCount);

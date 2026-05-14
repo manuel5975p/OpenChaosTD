@@ -1,18 +1,43 @@
 #include <systems/tower_system.hpp>
 
 #include <raymath.h>
+#include <algorithm>
 
 #include <world/tower.hpp>
+#include <world/tower_modules.hpp>
+#include <world/effect.hpp>
 
 
 void TowerSystem::update(float& dt, GameData& gameData){
     for (Tower& tower : gameData.towers) {
         tower.m_cooldown -= dt;
+        tower.m_attackFlash = std::max(0.0f, tower.m_attackFlash - dt);
 
-        // Attack
         if(tower.m_cooldown <= 0){
-            std::cout << "Attack" << std::endl;
-            tower.m_cooldown = 1.0f / tower.m_fireRate; // Reset
+            auto targets = FindTargets(tower, gameData.enemies, tower.m_targetCount);
+            if (targets.empty()) continue;
+
+            tower.m_cooldown = 1.0f / tower.m_fireRate;
+            tower.m_attackFlash = 0.15f;
+
+            std::vector<Vector2> targetPositions;
+            targetPositions.reserve(targets.size());
+            for (auto& key : targets) {
+                if (Enemy* e = gameData.enemies.Get(key))
+                    targetPositions.push_back(e->m_position);
+            }
+
+            constexpr float kAttackDuration = 0.15f;
+            Attack attack;
+            attack.m_origin         = tower.m_position;
+            attack.m_targetPositions = std::move(targetPositions);
+            attack.m_targetKeys     = targets;
+            attack.m_type           = tower.m_attackType;
+            attack.m_radius         = tower.m_radius;
+            attack.m_duration       = kAttackDuration;
+            attack.m_maxDuration    = kAttackDuration;
+            BuildAttackPayload(tower, attack);
+            gameData.attacks.push_back(std::move(attack));
         }
     }
 }
@@ -48,6 +73,16 @@ std::vector<Enemy*> TowerSystem::FindEnemiesInRange(Tower& tower, DenseSlotMap<E
             result.push_back(&enemy);
     }
     return result;
+}
+
+void TowerSystem::BuildAttackPayload(const Tower& tower, Attack& attack) {
+    for (auto& mod : tower.m_modules) {
+        if (auto* dmg = dynamic_cast<FlatDamageModule*>(mod.get())) {
+            attack.m_damage += dmg->m_damage;
+        } else if (auto* slow = dynamic_cast<SlowModule*>(mod.get())) {
+            attack.m_effects.push_back(Effect(EffectType::Slow, slow->m_duration, slow->m_factor));
+        }
+    }
 }
 
 bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mode) {

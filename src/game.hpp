@@ -11,6 +11,7 @@
 #include <world/map.hpp>
 #include <world/tower.hpp>
 #include <world/enemy.hpp>
+#include <world/attack.hpp>
 #include <lib/dense_slotmap.hpp>
 
 struct GameConfig {
@@ -28,6 +29,7 @@ struct GameData {
     Map map;
     DenseSlotMap<Tower> towers;
     DenseSlotMap<Enemy> enemies;
+    std::vector<Attack> attacks;
 
     void Reset(){
         lives = 20;
@@ -36,6 +38,7 @@ struct GameData {
         map = Map();
         towers = DenseSlotMap<Tower>();
         enemies = DenseSlotMap<Enemy>();
+        attacks.clear();
     }
 };
 

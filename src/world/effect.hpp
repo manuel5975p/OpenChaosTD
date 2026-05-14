@@ -1,7 +1,8 @@
 #pragma once
 
 enum class EffectType {
-    Burn
+    Burn,
+    Slow
 };
 
 struct Effect {

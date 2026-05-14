@@ -8,6 +8,7 @@ public:
     std::vector<DenseSlotMap<Enemy>::Key> FindTargets(Tower& tower, DenseSlotMap<Enemy>& enemies, int max_targets);
 
 private:
+    void BuildAttackPayload(const Tower& tower, Attack& attack);
     bool CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mode);
     std::vector<Enemy*> FindEnemiesInRange(Tower& tower, DenseSlotMap<Enemy>& enemies);
 };

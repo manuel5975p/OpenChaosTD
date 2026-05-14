@@ -12,6 +12,8 @@ public:
     void RemoveEnemy(DenseSlotMap<Enemy>::Key key, GameData& gameData);
 
     void CheckEnemyReachedCore(GameData& gameData);
+    void CheckEnemyDead(GameData& gameData);
+    void TickAttacks(float dt, GameData& gameData);
     void GenerateMap(Map& map, int x, int y);
     void CheckGameOver(bool& gameOver, GameData& gameData);
 

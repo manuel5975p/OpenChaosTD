@@ -8,7 +8,7 @@ class TowerModule{
 class FlatDamageModule : public TowerModule{
     public:
     float m_damage;
-    explicit FlatDamageModule(float damage) : m_damage(damage) {}
+    FlatDamageModule(float damage) : m_damage(damage) {}
 };
 
 class SlowModule : public TowerModule{

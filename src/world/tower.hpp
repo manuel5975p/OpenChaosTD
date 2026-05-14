@@ -6,6 +6,7 @@
 #include <string>
 
 #include <world/tower_modules.hpp>
+#include <world/attack.hpp>
 
 enum class TargetingMode {
     First,
@@ -26,6 +27,8 @@ public:
     float m_radius;
     float m_fireRate;
     float m_cooldown;
+    float m_attackFlash = 0.0f;
+    AttackType m_attackType;
     TargetingMode m_targetingMode;
     std::vector<std::unique_ptr<TowerModule>> m_modules;
 

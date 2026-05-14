@@ -14,6 +14,7 @@ public:
     float m_maxhealth;
     float m_health;
     float m_speed;
+    int m_reward;
 
     float m_progress;
     int m_spawnedNest;

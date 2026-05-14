@@ -56,8 +56,16 @@ void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& a
         Texture2D& texture = assets.GetTexture("tower_freezer");
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
-        DrawTexture(texture, tower.m_position.x -hw, tower.m_position.y -hh, WHITE);
+
+        float flashRatio = tower.m_attackFlash / 0.15f;
+        Color tint = (flashRatio > 0.0f) ? ColorLerp(WHITE, ORANGE, flashRatio) : WHITE;
+        DrawTexture(texture, tower.m_position.x - hw, tower.m_position.y - hh, tint);
+
         DrawCircleLinesV(tower.m_position, tower.m_radius, BLACK);
+        if (flashRatio > 0.0f) {
+            unsigned char alpha = static_cast<unsigned char>(flashRatio * 200);
+            DrawCircleLinesV(tower.m_position, tower.m_radius, {255, 165, 0, alpha});
+        }
     }
 }
 
@@ -71,6 +79,22 @@ void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager&
 
         // Health bar: 24px wide, 4px tall, floats above the sprite
         DrawHealthBar({enemy.m_position.x, enemy.m_position.y + hh + 2.0f}, enemy.m_health, enemy.m_maxhealth, 20.0f, 4.0f );
+    }
+}
+
+void RenderSystem::DrawAttacks(const std::vector<Attack>& attacks){
+    for (auto& attack : attacks) {
+        float t = attack.Progress();
+        unsigned char alpha = static_cast<unsigned char>(t * 220);
+        
+        if (attack.m_type == AttackType::Area) {
+            DrawCircleV(attack.m_origin, attack.m_radius, {255, 200, 50, static_cast<unsigned char>(t * 60)});
+            DrawCircleLinesV(attack.m_origin, attack.m_radius, {255, 200, 50, alpha});
+        } else {
+            for (auto& target : attack.m_targetPositions) {
+                DrawLineEx(attack.m_origin, target, 2.0f, {255, 220, 50, alpha});
+            }
+        }
     }
 }
 
