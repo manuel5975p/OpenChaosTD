@@ -1,0 +1,13 @@
+{
+    "Up": "W",
+    "Down": "S",
+    "Right": "D",
+    "Left": "A",
+    "Confirm": "ENTER",
+    "Cancel": "ESCAPE",
+    "Debug": "GRAVE",
+    "Select": "MOUSE_LEFT",
+    "PlaceTower": "MOUSE_LEFT",
+    "RemoveTower": "MOUSE_RIGHT",
+    "DragCamera": "MOUSE_RIGHT"
+}

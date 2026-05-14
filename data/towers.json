@@ -3,6 +3,7 @@
         {
             "name": "zapper",
             "texture": "tower_zapper",
+            "cost": 75,
             "fireRate": 2.0,
             "attackDuration": 0.1,
             "radius": 100,
@@ -16,6 +17,7 @@
         {
             "name": "freezer",
             "texture": "tower_freezer",
+            "cost": 100,
             "fireRate": 0.8,
             "attackDuration": 0.3,
             "radius": 128,
@@ -30,6 +32,7 @@
         {
             "name": "sniper",
             "texture": "tower_sniper",
+            "cost": 150,
             "fireRate": 0.5,
             "attackDuration": 0.4,
             "radius": 300,

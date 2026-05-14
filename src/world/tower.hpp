@@ -24,6 +24,7 @@ public:
     std::string m_texture;
     Vector2 m_position;
 
+    int m_cost = 0;
     int m_targetCount = 1;
     float m_radius = 0.0f;
     float m_fireRate = 1.0f;

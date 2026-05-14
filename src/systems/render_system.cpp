@@ -129,7 +129,7 @@ void RenderSystem::ControlCamera(float& dt, InputManager& input){
     direction *= 300 * dt;
 
     // Move camera by draging
-    if(input.IsMouseRightDown()){
+    if(input.IsDown("DragCamera")){
         direction = (input.GetMousePosition() -mousePositionLast) / camera.zoom;
     }
 
@@ -141,7 +141,7 @@ void RenderSystem::ControlCamera(float& dt, InputManager& input){
     // ------------------------------
     // Zooming Camera
     // ------------------------------
-    float wheel = input.IsMouseWheelMoved();
+    float wheel = input.GetMouseWheelDelta();
     if(wheel != 0){
         Vector2 mouseScreen = input.GetMousePosition();
 

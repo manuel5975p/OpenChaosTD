@@ -7,42 +7,11 @@
 #include <core/renderer.hpp>
 #include <core/input_manager.hpp>
 #include <core/jsonio.hpp>
+#include <core/game_config.hpp>
 #include <core/performance_monitor.hpp>
 #include <factory/tower_factory.hpp>
 #include <factory/enemy_factory.hpp>
-#include <world/map.hpp>
-#include <world/tower.hpp>
-#include <world/enemy.hpp>
-#include <world/attack.hpp>
-#include <lib/dense_slotmap.hpp>
-
-struct GameConfig {
-    // Initial window size - can be resize freely
-    int gameWidth = 1200;
-    int gameHeight = 1200;
-    int fps = 120;
-    const char* title = "OpenChaos TD";
-};
-
-struct GameData {
-    int lives = 20;
-    int gold = 150;
-    int score = 0;
-    Map map;
-    DenseSlotMap<Tower> towers;
-    DenseSlotMap<Enemy> enemies;
-    std::vector<Attack> attacks;
-
-    void Reset(){
-        lives = 20;
-        gold  = 150;
-        score = 0;
-        map = Map();
-        towers = DenseSlotMap<Tower>();
-        enemies = DenseSlotMap<Enemy>();
-        attacks.clear();
-    }
-};
+#include <world/game_data.hpp>
 
 class Game {
 public:
@@ -56,6 +25,7 @@ public:
 
     // State machine
     void ChangeState(std::unique_ptr<GameState> newState);
+    void Quit() { m_running = false; }
     
     const GameConfig& GetGameConfig() const {return m_gameConfig;}
     GameData& GetGameData() {return m_gameData;}

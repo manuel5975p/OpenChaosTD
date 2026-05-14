@@ -12,6 +12,10 @@ public:
     Tower Create(const std::string& name) const;
     bool Has(const std::string& name) const;
 
+    const std::vector<std::string>& GetNames() const { return m_order; }
+    int GetCost(const std::string& name) const;
+    const std::string& GetTexture(const std::string& name) const;
+
 private:
     struct ModuleData {
         std::string type;
@@ -23,6 +27,7 @@ private:
     struct TowerTemplate {
         std::string name;
         std::string texture;
+        int cost = 100;
         float fireRate = 1.0f;
         float attackDuration = 0.15f;
         float radius = 64.0f;
@@ -33,4 +38,5 @@ private:
     };
 
     std::unordered_map<std::string, TowerTemplate> m_templates;
+    std::vector<std::string> m_order;
 };

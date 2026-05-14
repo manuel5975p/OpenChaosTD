@@ -6,20 +6,17 @@
 #include <vector>
 #include <algorithm>
 
-void WorldSystem::PlaceTower(int x, int y, Tower& tower, GameData& gameData){
-    if(ValidateTowerPlacement(x, y, gameData)){
-        Tile& tile = gameData.map.Get(x, y);
+bool WorldSystem::PlaceTower(int x, int y, Tower& tower, GameData& gameData){
+    if(!ValidateTowerPlacement(x, y, gameData)) return false;
 
-        // Add tower
-        tower.m_position = Vector2Add(gameData.map.TileToWorld(x, y), {gameData.map.GetTileSize() /2.f, gameData.map.GetTileSize() /2.f});
-        DenseSlotMap<Tower>::Key towerKey = gameData.towers.Insert(std::move(tower));
-        
-        tile.m_walkable = false;
-        tile.m_buildable = false;
-        tile.m_towerKey = towerKey;
+    Tile& tile = gameData.map.Get(x, y);
+    tower.m_position = Vector2Add(gameData.map.TileToWorld(x, y), {gameData.map.GetTileSize() /2.f, gameData.map.GetTileSize() /2.f});
+    DenseSlotMap<Tower>::Key towerKey = gameData.towers.Insert(std::move(tower));
 
-        std::cout << "Tower placed x: " << x << " y: " << y << std::endl;
-    }
+    tile.m_walkable = false;
+    tile.m_buildable = false;
+    tile.m_towerKey = towerKey;
+    return true;
 }
 
 void WorldSystem::RemoveTower(int x, int y, GameData& gameData){

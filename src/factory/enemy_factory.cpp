@@ -4,7 +4,7 @@
 #include <iostream>
 
 void EnemyFactory::Load(JsonIO& jsonio) {
-    auto json = jsonio.Load("assets/data/enemies");
+    auto json = jsonio.Load("data/enemies");
     if (json.is_null() || !json.contains("enemies")) {
         std::cerr << "EnemyFactory: failed to load enemies data\n";
         return;
@@ -12,17 +12,17 @@ void EnemyFactory::Load(JsonIO& jsonio) {
 
     for (auto& entry : json["enemies"]) {
         EnemyTemplate tmpl;
-        tmpl.name    = entry["name"];
+        tmpl.name = entry["name"];
         tmpl.texture = entry.value("texture", "");
-        tmpl.health  = entry.value("health", 10.0f);
-        tmpl.speed  = entry.value("speed", 50.0f);
+        tmpl.health = entry.value("health", 10.0f);
+        tmpl.speed = entry.value("speed", 50.0f);
         tmpl.reward = entry.value("reward", 5);
 
         if (entry.contains("modules")) {
             for (auto& mod : entry["modules"]) {
                 ModuleData m;
-                m.type   = mod["type"];
-                m.rate   = mod.value("rate",   0.0f);
+                m.type = mod["type"];
+                m.rate = mod.value("rate", 0.0f);
                 m.amount = mod.value("amount", 0.0f);
                 m.factor = mod.value("factor", 0.0f);
                 tmpl.modules.push_back(m);
@@ -42,13 +42,13 @@ Enemy EnemyFactory::Create(const std::string& name) const {
 
     const EnemyTemplate& tmpl = it->second;
     Enemy enemy;
-    enemy.m_name      = tmpl.name;
-    enemy.m_texture   = tmpl.texture;
-    enemy.m_currentHealth       = tmpl.health;
-    enemy.m_health    = tmpl.health;
-    enemy.m_speed        = tmpl.speed;
+    enemy.m_name = tmpl.name;
+    enemy.m_texture = tmpl.texture;
+    enemy.m_health = tmpl.health;
+    enemy.m_currentHealth = tmpl.health;
+    enemy.m_speed = tmpl.speed;
     enemy.m_currentSpeed = tmpl.speed;
-    enemy.m_reward       = tmpl.reward;
+    enemy.m_reward = tmpl.reward;
 
     for (auto& mod : tmpl.modules) {
         if (mod.type == "Regeneration")

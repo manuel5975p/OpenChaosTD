@@ -7,23 +7,27 @@
 
 // Constructor / Destructor
 Game::Game() {
+    m_jsonio.SetRootPath(SearchFolderParentPath("assets", 5).parent_path());
+    m_gameConfig.Load(m_jsonio);
+
     SetConfigFlags(FLAG_WINDOW_RESIZABLE); // Allow free window resizing
     SetConfigFlags(FLAG_WINDOW_HIGHDPI); // Enable High DPI scaling
 
-    InitWindow(m_gameConfig.gameWidth, m_gameConfig.gameHeight, m_gameConfig.title);
+    InitWindow(m_gameConfig.gameWidth, m_gameConfig.gameHeight, m_gameConfig.title.c_str());
+    m_gameConfig.ApplyIcon();
     SetTargetFPS(m_gameConfig.fps);
     SetExitKey(KEY_NULL);
     InitAudioDevice();
 
     m_renderer.Init(m_gameConfig.gameWidth, m_gameConfig.gameHeight);
 
-    m_jsonio.SetRootPath(SearchFolderParentPath("assets", 5).parent_path());
-
+    m_gameData.Load(m_jsonio);
     m_towerFactory.Load(m_jsonio);
     m_enemyFactory.Load(m_jsonio);
 
     LoadAssets();
     LoadActions();
+    m_input.Load(m_jsonio);
 
     // Init initial state
     m_currentState = std::make_unique<MenuState>();
@@ -111,10 +115,13 @@ void Game::LoadActions() {
     m_input.AddAction("Down", KEY_S);
     m_input.AddAction("Right", KEY_D);
     m_input.AddAction("Left", KEY_A);
-
     m_input.AddAction("Confirm", KEY_ENTER);
-    m_input.AddAction("Cancle", KEY_ESCAPE);
+    m_input.AddAction("Cancel", KEY_ESCAPE);
     m_input.AddAction("Debug", KEY_GRAVE);
+    m_input.AddAction("Select", MOUSE_LEFT_BUTTON);
+    m_input.AddAction("PlaceTower", MOUSE_LEFT_BUTTON);
+    m_input.AddAction("RemoveTower", MOUSE_RIGHT_BUTTON);
+    m_input.AddAction("DragCamera", MOUSE_RIGHT_BUTTON);
 }
 
 // State machine

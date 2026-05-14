@@ -1,25 +1,22 @@
 #include <states/play_state.hpp>
 
-#include <states/game_over_state.hpp>
+#include <states/end_state.hpp>
 #include <game.hpp>
 #include <raylib.h>
 
 
 void PlayingState::OnEnter(Game& game) {
-    // Reset GameData
     game.GetGameData().Reset();
 
     m_worldSystem.GenerateMap(game.GetGameData().map, 15, 19);
     game.GetGameData().map.BuildPathMesh();
 
-    // Center the map in the middle of the screen
     m_renderSystem.CenterCamera(game.GetGameData().map, game.GetRenderer());
 
+    m_towerHUD.Build(game);
 }
 
-void PlayingState::OnExit(Game& game) {
-    
-}
+void PlayingState::OnExit(Game& /*game*/) {}
 
 void PlayingState::ProcessInput(Game& game, float dt) {
     // Toggle debug mode
@@ -28,16 +25,28 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     // Control camera
     m_renderSystem.ControlCamera(dt, game.GetInput());
 
+    m_towerHUD.ProcessInput(game);
+
+    Vector2 mousePos = game.GetInput().GetMousePosition();
+
     // Place tower
-    int x, y;
-    if(game.GetInput().IsMouseLeftPressed() && game.GetGameData().map.WorldToTile(GetScreenToWorld2D(game.GetInput().GetMousePosition(), m_renderSystem.GetCamera()), x, y)){
-        Tower tower = game.GetTowerFactory().Create("freezer");
-        m_worldSystem.PlaceTower(x, y, tower, game.GetGameData());
+    if (game.GetInput().IsPressed("PlaceTower") && !game.GetInput().IsMouseInputConsumed()) {
+        int x, y;
+        if (game.GetGameData().map.WorldToTile(GetScreenToWorld2D(mousePos, m_renderSystem.GetCamera()), x, y)) {
+            int cost = game.GetTowerFactory().GetCost(m_towerHUD.GetSelectedTower());
+            if (game.GetGameData().gold >= cost) {
+                Tower tower = game.GetTowerFactory().Create(m_towerHUD.GetSelectedTower());
+                if (m_worldSystem.PlaceTower(x, y, tower, game.GetGameData()))
+                    game.GetGameData().gold -= cost;
+            }
+        }
     }
 
     // Remove tower
-    if(game.GetInput().IsMouseRightPressed() && game.GetGameData().map.WorldToTile(GetScreenToWorld2D(game.GetInput().GetMousePosition(), m_renderSystem.GetCamera()), x, y)){
-         m_worldSystem.RemoveTower(x, y, game.GetGameData());
+    if (game.GetInput().IsPressed("RemoveTower") && !game.GetInput().IsMouseInputConsumed()) {
+        int x, y;
+        if (game.GetGameData().map.WorldToTile(GetScreenToWorld2D(mousePos, m_renderSystem.GetCamera()), x, y))
+            m_worldSystem.RemoveTower(x, y, game.GetGameData());
     }
 
     // Spawn enemies
@@ -49,10 +58,11 @@ void PlayingState::ProcessInput(Game& game, float dt) {
 }
 
 void PlayingState::Update(Game& game, float dt) {
-    if(m_gameOver){
-        std::cout << "Game Over" <<  std::endl;
-        game.ChangeState(std::make_unique<GameOverState>());
-    }
+    if (game.GetGameData().victory)
+        game.ChangeState(std::make_unique<EndState>(true));
+
+    if (m_gameOver)
+        game.ChangeState(std::make_unique<EndState>(false));
 
     m_enemySystem.TickEnemies(dt, game.GetGameData());
     m_enemySystem.FollowPath(dt, game.GetGameData());
@@ -88,9 +98,12 @@ void PlayingState::Draw(Game& game) {
         }
     EndMode2D();
 
+    m_towerHUD.Draw(game);
+
     DrawText(
         TextFormat("Lives: %d   Gold: %d   Score: %d",
                    game.GetGameData().lives, game.GetGameData().gold, game.GetGameData().score),
-        20, game.GetRenderer().GetGameHeight() - 30, 18, RAYWHITE
+        20, 10, 18, RAYWHITE
     );
 }
+

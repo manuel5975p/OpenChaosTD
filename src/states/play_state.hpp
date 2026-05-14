@@ -6,6 +6,7 @@
 #include <systems/world_system.hpp>
 #include <systems/enemy_system.hpp>
 #include <systems/tower_system.hpp>
+#include <hud/tower_hud.hpp>
 
 class PlayingState : public GameState {
 public:
@@ -19,6 +20,8 @@ public:
 private:
     bool m_debug = false;
     bool m_gameOver = false;
+
+    TowerHUD m_towerHUD;
     RenderSystem m_renderSystem;
     WorldSystem m_worldSystem;
     TowerSystem m_towerSystem;

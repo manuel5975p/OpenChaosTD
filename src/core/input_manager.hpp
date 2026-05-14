@@ -3,48 +3,37 @@
 #include <raylib.h>
 #include <unordered_map>
 #include <string>
+#include <variant>
 
+class Renderer;
+class JsonIO;
 
 class InputManager {
 public:
     InputManager() = default;
-    ~InputManager() { Shutdown(); }
-    
-    // Non-copyable
+
     InputManager(const InputManager&) = delete;
     InputManager& operator=(const InputManager&) = delete;
 
-    // Call once at the start of every frame
-    void Update(const class Renderer& renderer);
+    void Update(const Renderer& renderer);
+    void Load(JsonIO& jsonio);
 
-    // Keyboard actions
-    bool IsPressed(std::string action) const;
-    bool IsDown(std::string action) const;
-    bool IsReleased(std::string action) const;
+    bool IsPressed(const std::string& action) const;
+    bool IsDown(const std::string& action) const;
+    bool IsReleased(const std::string& action) const;
 
-    // Mouse buttons
-    bool IsMouseLeftPressed() const;
-    bool IsMouseRightPressed() const;
-    bool IsMouseLeftDown() const;
-    bool IsMouseRightDown() const;
-    float IsMouseWheelMoved() const;
-
-    // Mouse position (virtual / letterbox-corrected)
+    float GetMouseWheelDelta() const;
     Vector2 GetMousePosition() const { return m_virtualMouse; }
 
-    // Mouse consumption
-    void ConsumeMouseClick();
-    bool IsMouseConsumed() const { return m_mouseConsumed; }
+    void ConsumeMouseInput();
+    bool IsMouseInputConsumed() const { return m_mouseConsumed; }
 
-    //Add action
-    void AddAction(std::string action, KeyboardKey key);
-
-    // Shutdown
-    void Shutdown();
+    void AddAction(const std::string& action, KeyboardKey key);
+    void AddAction(const std::string& action, MouseButton button);
 
 private:
-    std::unordered_map<std::string, KeyboardKey> m_bindings;
-
-    Vector2 m_virtualMouse  = {};
+    using Binding = std::variant<KeyboardKey, MouseButton>;
+    std::unordered_map<std::string, Binding> m_bindings;
+    Vector2 m_virtualMouse = {};
     bool m_mouseConsumed = false;
 };

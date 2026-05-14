@@ -9,16 +9,16 @@ static AttackType ParseAttackType(const std::string& s) {
 }
 
 static TargetingMode ParseTargetingMode(const std::string& s) {
-    if (s == "Last")         return TargetingMode::Last;
-    if (s == "MostHealth")   return TargetingMode::MostHealth;
+    if (s == "Last") return TargetingMode::Last;
+    if (s == "MostHealth") return TargetingMode::MostHealth;
     if (s == "LowestHealth") return TargetingMode::LowestHealth;
-    if (s == "Fastest")      return TargetingMode::Fastest;
-    if (s == "Slowest")      return TargetingMode::Slowest;
+    if (s == "Fastest") return TargetingMode::Fastest;
+    if (s == "Slowest") return TargetingMode::Slowest;
     return TargetingMode::First;
 }
 
 void TowerFactory::Load(JsonIO& jsonio) {
-    auto json = jsonio.Load("assets/data/towers");
+    auto json = jsonio.Load("data/towers");
     if (json.is_null() || !json.contains("towers")) {
         std::cerr << "TowerFactory: failed to load towers data\n";
         return;
@@ -26,27 +26,29 @@ void TowerFactory::Load(JsonIO& jsonio) {
 
     for (auto& entry : json["towers"]) {
         TowerTemplate tmpl;
-        tmpl.name          = entry["name"];
-        tmpl.texture       = entry.value("texture", "");
-        tmpl.fireRate        = entry.value("fireRate", 1.0f);
+        tmpl.name = entry["name"];
+        tmpl.texture = entry.value("texture", "");
+        tmpl.cost = entry.value("cost", 100);
+        tmpl.fireRate = entry.value("fireRate", 1.0f);
         tmpl.attackDuration = entry.value("attackDuration", 0.15f);
-        tmpl.radius          = entry.value("radius", 64.0f);
-        tmpl.targetCount   = entry.value("targetCount", 1);
-        tmpl.attackType    = ParseAttackType(entry.value("attackType", "Line"));
+        tmpl.radius = entry.value("radius", 64.0f);
+        tmpl.targetCount = entry.value("targetCount", 1);
+        tmpl.attackType = ParseAttackType(entry.value("attackType", "Line"));
         tmpl.targetingMode = ParseTargetingMode(entry.value("targetingMode", "First"));
 
         if (entry.contains("modules")) {
             for (auto& mod : entry["modules"]) {
                 ModuleData m;
-                m.type     = mod["type"];
-                m.damage   = mod.value("damage", 0.0f);
-                m.factor   = mod.value("factor", 1.0f);
+                m.type = mod["type"];
+                m.damage = mod.value("damage", 0.0f);
+                m.factor = mod.value("factor", 1.0f);
                 m.duration = mod.value("duration", 0.0f);
                 tmpl.modules.push_back(m);
             }
         }
 
         std::string name = tmpl.name;
+        m_order.push_back(name);
         m_templates[name] = std::move(tmpl);
         std::cout << "TowerFactory: loaded '" << name << "'\n";
     }
@@ -59,13 +61,14 @@ Tower TowerFactory::Create(const std::string& name) const {
 
     const TowerTemplate& tmpl = it->second;
     Tower tower;
-    tower.m_name          = tmpl.name;
-    tower.m_texture       = tmpl.texture;
-    tower.m_fireRate        = tmpl.fireRate;
+    tower.m_name = tmpl.name;
+    tower.m_texture = tmpl.texture;
+    tower.m_cost = tmpl.cost;
+    tower.m_fireRate = tmpl.fireRate;
     tower.m_attackDuration = tmpl.attackDuration;
-    tower.m_radius          = tmpl.radius;
-    tower.m_targetCount   = tmpl.targetCount;
-    tower.m_attackType    = tmpl.attackType;
+    tower.m_radius = tmpl.radius;
+    tower.m_targetCount = tmpl.targetCount;
+    tower.m_attackType = tmpl.attackType;
     tower.m_targetingMode = tmpl.targetingMode;
 
     for (auto& mod : tmpl.modules) {
@@ -80,4 +83,15 @@ Tower TowerFactory::Create(const std::string& name) const {
 
 bool TowerFactory::Has(const std::string& name) const {
     return m_templates.count(name) > 0;
+}
+
+int TowerFactory::GetCost(const std::string& name) const {
+    auto it = m_templates.find(name);
+    return (it != m_templates.end()) ? it->second.cost : 0;
+}
+
+const std::string& TowerFactory::GetTexture(const std::string& name) const {
+    static const std::string empty;
+    auto it = m_templates.find(name);
+    return (it != m_templates.end()) ? it->second.texture : empty;
 }
