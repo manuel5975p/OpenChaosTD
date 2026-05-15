@@ -17,6 +17,11 @@ struct GameData {
     int gold = 150;
     int score = 0;
     bool victory = false;
+
+    // Wave state
+    int   waveNumber = 0;
+    bool  waveActive = false;
+    float waveTimer  = 0.0f;  // seconds elapsed since wave started
     Map map;
     DenseSlotMap<Tower> towers;
     DenseSlotMap<Enemy> enemies;

@@ -43,7 +43,6 @@ private:
     bool m_running = true;
 
     void LoadAssets();
-    void LoadActions();
 
     // Data and config
     GameConfig m_gameConfig;

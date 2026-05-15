@@ -18,6 +18,9 @@ void GameData::Reset() {
     gold = startingGold;
     score = 0;
     victory = false;
+    waveNumber = 0;
+    waveActive = false;
+    waveTimer  = 0.0f;
     map = Map();
     towers = DenseSlotMap<Tower>();
     enemies = DenseSlotMap<Enemy>();

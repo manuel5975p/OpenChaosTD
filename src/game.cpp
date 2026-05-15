@@ -24,7 +24,6 @@ Game::Game() {
     m_enemyFactory.Load(m_jsonio);
 
     LoadAssets();
-    LoadActions();
     m_input.Load(m_jsonio);
 
     // Init initial state
@@ -105,21 +104,6 @@ void Game::LoadAssets() {
 
     // Enemy textures
     m_assets.LoadTexture("enemy_voidno", "textures/enemy_voidno.png");
-}
-
-// Action loading
-void Game::LoadActions() {
-    m_input.AddAction("Up", KEY_W);
-    m_input.AddAction("Down", KEY_S);
-    m_input.AddAction("Right", KEY_D);
-    m_input.AddAction("Left", KEY_A);
-    m_input.AddAction("Confirm", KEY_ENTER);
-    m_input.AddAction("Cancel", KEY_ESCAPE);
-    m_input.AddAction("Debug", KEY_GRAVE);
-    m_input.AddAction("Select", MOUSE_LEFT_BUTTON);
-    m_input.AddAction("PlaceTower", MOUSE_LEFT_BUTTON);
-    m_input.AddAction("RemoveTower", MOUSE_RIGHT_BUTTON);
-    m_input.AddAction("DragCamera", MOUSE_RIGHT_BUTTON);
 }
 
 // State machine
