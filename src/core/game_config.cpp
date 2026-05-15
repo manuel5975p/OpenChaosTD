@@ -7,10 +7,11 @@ void GameConfig::Load(JsonIO& jsonio) {
         return;
 
     auto j = jsonio.Load("data/config.json");
-    if (j.contains("gameWidth")) gameWidth = j["gameWidth"].get<int>();
+    if (j.contains("gameWidth"))  gameWidth  = j["gameWidth"].get<int>();
     if (j.contains("gameHeight")) gameHeight = j["gameHeight"].get<int>();
-    if (j.contains("fps")) fps = j["fps"].get<int>();
-    if (j.contains("title")) title = j["title"].get<std::string>();
+    if (j.contains("fps"))        fps        = j["fps"].get<int>();
+    if (j.contains("hudScale"))   hudScale   = j["hudScale"].get<float>();
+    if (j.contains("title"))      title      = j["title"].get<std::string>();
 }
 
 void GameConfig::ApplyIcon() {

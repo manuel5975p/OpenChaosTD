@@ -2,33 +2,30 @@
 #include <game.hpp>
 #include <raylib.h>
 
-static constexpr float PANEL_H    = 36.0f;
-static constexpr float BTN_H      = 24.0f;
-static constexpr float BTN_WAVE_W = 90.0f;
-static constexpr float BTN_AUTO_W = 48.0f;
-static constexpr float MARGIN     = 6.0f;
-
 void ScoreHUD::Build(Game& game) {
+    LoadScale(game);
+    float panelH   = Scaled(36.0f);
+    float btnH     = Scaled(24.0f);
+    float btnWaveW = Scaled(90.0f);
+    float btnAutoW = Scaled(48.0f);
+    float margin   = Scaled(6.0f);
     float w = static_cast<float>(game.GetRenderer().GetGameWidth());
 
-    m_panelRect = { 0.0f, 0.0f, w, PANEL_H };
+    m_panelRect = { 0.0f, 0.0f, w, panelH };
+    m_textY = static_cast<int>((panelH - Scaled(16.0f)) / 2.0f);
 
-    float btnY = (PANEL_H - BTN_H) / 2.0f;
-
+    float btnY = (panelH - btnH) / 2.0f;
     m_startWaveBtn.m_label = "Start Wave";
-    m_startWaveBtn.m_rect = { w - BTN_WAVE_W - MARGIN, btnY, BTN_WAVE_W, BTN_H };
-
+    m_startWaveBtn.m_rect = { w - btnWaveW - margin, btnY, btnWaveW, btnH };
     m_autoBtn.m_label = "Auto";
-    m_autoBtn.m_rect = { w - BTN_WAVE_W - MARGIN - BTN_AUTO_W - MARGIN, btnY, BTN_AUTO_W, BTN_H };
+    m_autoBtn.m_rect = { w - btnWaveW - margin - btnAutoW - margin, btnY, btnAutoW, btnH };
 }
 
 void ScoreHUD::ProcessInput(Game& game) {
     const auto& data = game.GetGameData();
     Vector2 mousePos = game.GetInput().GetMousePosition();
 
-    // Consume panel clicks so they don't bleed through to the world
-    if (game.GetInput().IsPressed("Select") && CheckCollisionPointRec(mousePos, m_panelRect))
-        game.GetInput().ConsumeMouseInput();
+    ConsumePanelClick(game, "Select");
 
     if (game.GetInput().IsPressed("Select")) {
         // Auto toggle is always clickable, even mid-wave
@@ -57,11 +54,16 @@ void ScoreHUD::Draw(Game& game, bool autoSpawn) {
     const auto& data     = game.GetGameData();
     Vector2     mousePos = game.GetInput().GetMousePosition();
 
-    DrawRectangleRec(m_panelRect, {20, 20, 20, 200});
+    DrawPanelBackground(200);
+
+    int fontMain = ScaledInt(16.0f);
+    int fontBtn  = ScaledInt(12.0f);
+    int marginX  = ScaledInt(6.0f);
+    int goldX    = marginX + ScaledInt(110.0f);
 
     // Left side: lives and gold
-    DrawText(TextFormat("Lives: %d", data.lives), static_cast<int>(MARGIN), 10, 16, RAYWHITE);
-    DrawText(TextFormat("Gold: %d",  data.gold),  static_cast<int>(MARGIN) + 110, 10, 16, GOLD);
+    DrawText(TextFormat("Lives: %d", data.lives), marginX, m_textY, fontMain, RAYWHITE);
+    DrawText(TextFormat("Gold: %d",  data.gold),  goldX,   m_textY, fontMain, GOLD);
 
     // Center: wave number and elapsed time
     const char* waveStr;
@@ -72,21 +74,21 @@ void ScoreHUD::Draw(Game& game, bool autoSpawn) {
     else
         waveStr = TextFormat("Wave: %d  |  Done", data.waveNumber);
 
-    int waveW   = MeasureText(waveStr, 16);
+    int waveW   = MeasureText(waveStr, fontMain);
     int centerX = static_cast<int>(m_panelRect.width / 2.0f - waveW / 2.0f);
-    DrawText(waveStr, centerX, 10, 16, RAYWHITE);
+    DrawText(waveStr, centerX, m_textY, fontMain, RAYWHITE);
 
     // Auto toggle — highlighted when active
     m_autoBtn.Draw(mousePos, autoSpawn);
-    m_autoBtn.DrawLabel(12, autoSpawn ? GOLD : RAYWHITE);
+    m_autoBtn.DrawLabel(fontBtn, autoSpawn ? GOLD : RAYWHITE);
 
     // Start wave button — greyed out while a wave is running
     if (data.waveActive) {
         DrawRectangleRec(m_startWaveBtn.m_rect, {30, 30, 30, 200});
         DrawRectangleLinesEx(m_startWaveBtn.m_rect, 1.0f, {60, 60, 60, 255});
-        m_startWaveBtn.DrawLabel(12, DARKGRAY);
+        m_startWaveBtn.DrawLabel(fontBtn, DARKGRAY);
     } else {
         m_startWaveBtn.Draw(mousePos);
-        m_startWaveBtn.DrawLabel(12, RAYWHITE);
+        m_startWaveBtn.DrawLabel(fontBtn, RAYWHITE);
     }
 }

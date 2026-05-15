@@ -1,11 +1,12 @@
 #pragma once
 
-#include <core/button.hpp>
+#include <hud/hud.hpp>
+#include <hud/button.hpp>
 #include <raylib.h>
 
 class Game;
 
-class ScoreHUD {
+class ScoreHUD : public HUD {
 public:
     void Build(Game& game);
     void ProcessInput(Game& game);
@@ -22,7 +23,7 @@ public:
 private:
     Button m_startWaveBtn;
     Button m_autoBtn;
-    Rectangle m_panelRect = {};
+    int m_textY = 10;
     bool m_waveRequested = false;
     bool m_autoToggled = false;
 };

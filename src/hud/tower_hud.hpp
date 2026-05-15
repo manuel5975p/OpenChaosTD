@@ -1,13 +1,14 @@
 #pragma once
 
-#include <core/button.hpp>
+#include <hud/hud.hpp>
+#include <hud/button.hpp>
 #include <raylib.h>
 #include <vector>
 #include <string>
 
 class Game;
 
-class TowerHUD {
+class TowerHUD : public HUD {
 public:
     void Build(Game& game);
     void ProcessInput(Game& game);
@@ -24,5 +25,5 @@ public:
 private:
     std::vector<Button> m_buttons;
     std::string m_selectedTower;
-    Rectangle m_panelRect = {};
+    float m_btnSize = 64.0f;
 };

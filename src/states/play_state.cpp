@@ -16,6 +16,8 @@ void PlayingState::OnEnter(Game& game) {
 
     m_scoreHUD.Build(game);
     m_towerHUD.Build(game);
+    m_towerInfoHUD.Build(game);
+    m_eventLog.Build(game);
 }
 
 void PlayingState::OnExit(Game& /*game*/) {}

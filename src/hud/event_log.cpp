@@ -1,6 +1,11 @@
 #include <hud/event_log.hpp>
+#include <game.hpp>
 #include <raylib.h>
 #include <algorithm>
+
+void EventLog::Build(Game& game) {
+    LoadScale(game);
+}
 
 void EventLog::Add(const std::string& message, float duration) {
     // Reset timer if this message is already the newest — prevents visual spam
@@ -26,12 +31,13 @@ void EventLog::Update(float dt) {
 void EventLog::Draw() {
     if (m_entries.empty()) return;
 
-    constexpr float MARGIN      = 8.0f;
-    constexpr float LINE_H      = 20.0f;
-    constexpr float SCORE_HUD_H = 36.0f; // keep messages below the top panel
+    const float margin    = Scaled(8.0f);
+    const float lineH     = Scaled(20.0f);
+    const float scoreHudH = Scaled(36.0f); // keep messages below the top panel
+    const int   fontSize  = ScaledInt(12.0f);
 
     int n = static_cast<int>(m_entries.size());
-    float baseY = SCORE_HUD_H + MARGIN;
+    float baseY = scoreHudH + margin;
 
     for (int i = 0; i < n; i++) {
         const Entry& entry = m_entries[i];
@@ -42,10 +48,12 @@ void EventLog::Draw() {
         unsigned char bgAlpha   = static_cast<unsigned char>(t * 160.0f);
 
         // Stack downward: oldest (index 0) at baseY, newer entries below it
-        float y = baseY + static_cast<float>(i) * LINE_H;
+        float y = baseY + static_cast<float>(i) * lineH;
 
-        int textW = MeasureText(entry.message.c_str(), 12);
-        DrawRectangleRec({MARGIN - 2, y - 1, static_cast<float>(textW + 10), LINE_H - 2}, {20, 20, 20, bgAlpha});
-        DrawText(entry.message.c_str(), static_cast<int>(MARGIN + 3), static_cast<int>(y + 2), 12, {255, 220, 80, textAlpha});
+        int textW = MeasureText(entry.message.c_str(), fontSize);
+        DrawRectangleRec({margin - Scaled(2.0f), y - Scaled(1.0f),
+                          textW + Scaled(10.0f), lineH - Scaled(2.0f)}, {20, 20, 20, bgAlpha});
+        DrawText(entry.message.c_str(), static_cast<int>(margin + Scaled(3.0f)),
+                 static_cast<int>(y + Scaled(2.0f)), fontSize, {255, 220, 80, textAlpha});
     }
 }
