@@ -27,7 +27,7 @@ void TowerHUD::Build(Game& game) {
 
 void TowerHUD::ProcessInput(Game& game) {
     Vector2 mousePos = game.GetInput().GetMousePosition();
-    bool anyPressed = game.GetInput().IsPressed("PlaceTower") || game.GetInput().IsPressed("RemoveTower");
+    bool anyPressed = game.GetInput().IsPressed("PlaceTower");
 
     if (anyPressed && CheckCollisionPointRec(mousePos, m_panelRect))
         game.GetInput().ConsumeMouseInput();
@@ -42,6 +42,21 @@ void TowerHUD::ProcessInput(Game& game) {
             }
         }
     }
+}
+
+const std::string& TowerHUD::GetHoveredTower(Vector2 mousePos) const {
+    static const std::string empty;
+    for (const auto& btn : m_buttons)
+        if (CheckCollisionPointRec(mousePos, btn.m_rect))
+            return btn.m_label;
+    return empty;
+}
+
+Vector2 TowerHUD::GetHoveredButtonTopCenter(Vector2 mousePos) const {
+    for (const auto& btn : m_buttons)
+        if (CheckCollisionPointRec(mousePos, btn.m_rect))
+            return { btn.m_rect.x + btn.m_rect.width / 2.0f, btn.m_rect.y };
+    return {};
 }
 
 void TowerHUD::Draw(Game& game) {

@@ -11,6 +11,7 @@
 class Enemy{
 public:
     std::string m_name;
+    std::string m_description;
     std::string m_texture;
     Vector2 m_position = {0.0f, 0.0f};
     

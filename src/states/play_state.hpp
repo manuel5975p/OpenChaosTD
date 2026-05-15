@@ -9,7 +9,9 @@
 #include <hud/tower_hud.hpp>
 #include <hud/score_hud.hpp>
 #include <hud/tower_info_hud.hpp>
+#include <hud/event_log.hpp>
 #include <systems/wave_manager.hpp>
+#include <optional>
 
 class PlayingState : public GameState {
 public:
@@ -21,22 +23,24 @@ public:
     void Draw(Game& game) override;
 
 private:
-    // ProcessInput helpers — each owns one concern
     void HandleHUDInput(Game& game);
     void HandleTowerPlacement(Game& game, Vector2 mouseWorld);
-    void HandleTowerRemoval(Game& game, Vector2 mouseWorld);
+
     bool m_debug = false;
     bool m_gameOver = false;
 
-    ScoreHUD     m_scoreHUD;
-    TowerHUD     m_towerHUD;
+    ScoreHUD m_scoreHUD;
+    TowerHUD m_towerHUD;
     TowerInfoHUD m_towerInfoHUD;
+    EventLog m_eventLog;
 
-    // Key of the tower the player has clicked to inspect; INVALID_KEY when nothing is selected
+    // INVALID_KEY when no placed tower is selected
     DenseSlotMap<Tower>::Key m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
+    std::optional<Tower> m_hoveredTower;
+
     RenderSystem m_renderSystem;
-    WorldSystem  m_worldSystem;
-    TowerSystem  m_towerSystem;
-    EnemySystem  m_enemySystem;
-    WaveManager  m_waveManager;
+    WorldSystem m_worldSystem;
+    TowerSystem m_towerSystem;
+    EnemySystem m_enemySystem;
+    WaveManager m_waveManager;
 };

@@ -45,10 +45,10 @@ OpenChaosTD/
 │
 ├── data/
 │   ├── config.json             - Window and display settings
-│   ├── gameplay.json           - Starting lives and gold
+│   ├── gameplay.json           - Starting lives, gold, sell rate, wave count, auto-spawn delay
 │   ├── keybindings.json        - Input action bindings (rebindable)
-│   ├── towers.json             - Tower type definitions (stats, modules)
-│   └── enemies.json            - Enemy type definitions (stats, modules)
+│   ├── towers.json             - Tower type definitions (stats, modules, description)
+│   └── enemies.json            - Enemy type definitions (stats, modules, description)
 │
 └── src/
     ├── main.cpp                - Entry point
@@ -68,7 +68,10 @@ OpenChaosTD/
     │   └── enemy_factory       - Builds Enemy instances from enemies.json
     │
     ├── hud/                    In-game HUD elements
-    │   └── tower_hud           - Tower selection panel with cost display
+    │   ├── score_hud           - Top bar: lives, gold, wave info, start/auto buttons
+    │   ├── tower_hud           - Bottom panel: tower selection with cost and icon
+    │   ├── tower_info_hud      - Floating panel: stats and sell button for selected/hovered tower
+    │   └── event_log           - Top-left message log with timed fade-out
     │
     ├── lib/                    Reusable data structures
     │   ├── dense_slotmap.hpp   - Stable-ID container optimised for iteration
@@ -83,9 +86,9 @@ OpenChaosTD/
     │
     ├── world/                  Entity definitions and data
     │   ├── game_data           - Runtime world state + starting values (JSON)
-    │   ├── tower               - Tower entity (position, stats, modules)
+    │   ├── tower               - Tower entity (position, stats, description, modules)
     │   ├── tower_modules.hpp   - FlatDamageModule, SlowModule
-    │   ├── enemy               - Enemy entity (position, health, effects, modules)
+    │   ├── enemy               - Enemy entity (position, health, description, effects, modules)
     │   ├── enemy_module.hpp    - RegenerationModule, ArmorModule, ResistanceModule
     │   ├── attack.hpp          - Attack object (origin, targets, payload, visual)
     │   ├── effect.hpp          - Status effect (Burn, Slow) with duration
@@ -94,6 +97,7 @@ OpenChaosTD/
     │
     └── systems/                Per-frame game logic
         ├── pathfinder.hpp      - BFS pathfinding from core to all nests
+        ├── wave_manager        - Wave lifecycle, auto-spawn, victory detection
         ├── world_system        - Placement, spawning, game-over checks
         ├── tower_system        - Cooldowns, targeting, attack creation and resolution
         ├── enemy_system        - Movement, status effects, module ticking

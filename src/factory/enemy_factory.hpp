@@ -22,6 +22,7 @@ private:
 
     struct EnemyTemplate {
         std::string name;
+        std::string description;
         std::string texture;
         float health = 10.0f;
         float speed = 50.0f;

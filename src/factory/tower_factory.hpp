@@ -27,6 +27,7 @@ private:
 
     struct TowerTemplate {
         std::string name;
+        std::string description;
         std::string texture;
         int cost = 100;
         float fireRate = 1.0f;

@@ -2,6 +2,7 @@
     "towers": [
         {
             "name": "zapper",
+            "description": "Fast attack, low damage. Good against swarms.",
             "texture": "tower_zapper",
             "cost": 75,
             "fireRate": 2.0,
@@ -16,6 +17,7 @@
         },
         {
             "name": "freezer",
+            "description": "Slows all nearby enemies. Pairs well with high-damage towers.",
             "texture": "tower_freezer",
             "cost": 100,
             "fireRate": 0.8,
@@ -31,6 +33,7 @@
         },
         {
             "name": "sniper",
+            "description": "Extreme range, high damage. Targets the toughest enemy.",
             "texture": "tower_sniper",
             "cost": 150,
             "fireRate": 0.5,

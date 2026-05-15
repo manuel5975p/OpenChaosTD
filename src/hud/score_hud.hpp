@@ -20,9 +20,9 @@ public:
     bool WasAutoToggled();
 
 private:
-    Button    m_startWaveBtn;
-    Button    m_autoBtn;
-    Rectangle m_panelRect    = {};
-    bool      m_waveRequested = false;
-    bool      m_autoToggled   = false;
+    Button m_startWaveBtn;
+    Button m_autoBtn;
+    Rectangle m_panelRect = {};
+    bool m_waveRequested = false;
+    bool m_autoToggled = false;
 };

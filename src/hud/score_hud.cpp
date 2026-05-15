@@ -15,13 +15,11 @@ void ScoreHUD::Build(Game& game) {
 
     float btnY = (PANEL_H - BTN_H) / 2.0f;
 
-    // "Start Wave" anchored to the right edge
     m_startWaveBtn.m_label = "Start Wave";
-    m_startWaveBtn.m_rect  = { w - BTN_WAVE_W - MARGIN, btnY, BTN_WAVE_W, BTN_H };
+    m_startWaveBtn.m_rect = { w - BTN_WAVE_W - MARGIN, btnY, BTN_WAVE_W, BTN_H };
 
-    // "Auto" toggle sits immediately to the left of "Start Wave"
     m_autoBtn.m_label = "Auto";
-    m_autoBtn.m_rect  = { w - BTN_WAVE_W - MARGIN - BTN_AUTO_W - MARGIN, btnY, BTN_AUTO_W, BTN_H };
+    m_autoBtn.m_rect = { w - BTN_WAVE_W - MARGIN - BTN_AUTO_W - MARGIN, btnY, BTN_AUTO_W, BTN_H };
 }
 
 void ScoreHUD::ProcessInput(Game& game) {

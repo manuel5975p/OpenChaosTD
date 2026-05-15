@@ -2,6 +2,7 @@
     "enemies": [
         {
             "name": "voidno",
+            "description": "Standard void creature. Balanced speed and health.",
             "texture": "enemy_voidno",
             "health": 10,
             "speed": 50,
@@ -9,6 +10,7 @@
         },
         {
             "name": "voidno_fast",
+            "description": "Fragile but very quick. Difficult to target.",
             "texture": "enemy_voidno",
             "health": 5,
             "speed": 100,
@@ -16,6 +18,7 @@
         },
         {
             "name": "voidno_tank",
+            "description": "Armored, regenerating brute. Resists most attacks.",
             "texture": "enemy_voidno",
             "health": 50,
             "speed": 25,

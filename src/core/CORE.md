@@ -111,8 +111,10 @@ Minimal UI primitive shared between HUD and state menus. Handles hit-testing and
 
 ```cpp
 Button btn;
-btn.m_rect = { x, y, w, h };
+btn.m_rect  = { x, y, w, h };
+btn.m_label = "Start Wave";
 
 bool clicked = btn.IsClicked(mousePos, input.IsPressed("Select"));
 btn.Draw(mousePos, /*selected=*/true);  // gold border when selected
+btn.DrawLabel(fontSize, color);         // centered label; no-op if m_label is empty
 ```

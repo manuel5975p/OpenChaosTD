@@ -3,8 +3,27 @@
 #include <world/tower_modules.hpp>
 #include <raylib.h>
 #include <algorithm>
+#include <sstream>
 
-void TowerInfoHUD::SetAnchor(Vector2 screenPos, int screenW, int screenH, const Tower& tower) {
+static std::vector<std::string> WrapText(const std::string& text, float maxWidth, int fontSize) {
+    std::vector<std::string> lines;
+    std::istringstream stream(text);
+    std::string word, current;
+    while (stream >> word) {
+        std::string candidate = current.empty() ? word : current + " " + word;
+        if (MeasureText(candidate.c_str(), fontSize) <= static_cast<int>(maxWidth))
+            current = candidate;
+        else {
+            if (!current.empty()) lines.push_back(current);
+            current = word;
+        }
+    }
+    if (!current.empty()) lines.push_back(current);
+    return lines;
+}
+
+void TowerInfoHUD::SetAnchor(Vector2 screenPos, int screenW, int screenH, const Tower& tower, bool showSell) {
+    m_showSell = showSell;
     // Count how many module rows this specific tower needs
     int moduleRows = 0;
     for (const auto& mod : tower.m_modules) {
@@ -12,40 +31,31 @@ void TowerInfoHUD::SetAnchor(Vector2 screenPos, int screenW, int screenH, const 
         if (dynamic_cast<const SlowModule*>(mod.get())) moduleRows++;
     }
 
-    // Height = top margin + name header + 3 core stats + module stats + gap + sell button + bottom margin
+    m_descLines = WrapText(tower.m_description, PANEL_W - MARGIN * 2.0f, FONT_DESC);
+
     constexpr float HEADER_H = 20.0f;
-    constexpr float SELL_H   = 22.0f;
+    constexpr float SELL_H = 22.0f;
     constexpr float SELL_GAP = 6.0f;
-    m_panelH = MARGIN + HEADER_H + (3 + moduleRows) * LINE_H + SELL_GAP + SELL_H + MARGIN;
+    float panelH = MARGIN + HEADER_H
+        + static_cast<float>(m_descLines.size()) * DESC_LINE_H
+        + (3 + moduleRows) * LINE_H
+        + (m_showSell ? SELL_GAP + SELL_H : 0.0f) + MARGIN;
 
-    // Float panel above the tower sprite, centered on it horizontally
-    float px = screenPos.x - PANEL_W / 2.0f;
-    float py = screenPos.y - m_panelH - 20.0f;
+    float px = std::clamp(screenPos.x - PANEL_W / 2.0f, 0.0f, static_cast<float>(screenW) - PANEL_W);
+    float py = std::clamp(screenPos.y - panelH - 20.0f,  0.0f, static_cast<float>(screenH) - panelH);
 
-    // Clamp so the panel never goes off-screen
-    px = std::clamp(px, 0.0f, static_cast<float>(screenW) - PANEL_W);
-    py = std::clamp(py, 0.0f, static_cast<float>(screenH) - m_panelH);
+    m_panelRect = { px, py, PANEL_W, panelH };
 
-    m_panelRect = { px, py, PANEL_W, m_panelH };
-
-    // Sell button anchored to the bottom of the panel; label set here so Draw stays pure
     m_sellBtn.m_label = TextFormat("Sell: $%d", tower.m_cost / 2);
-    m_sellBtn.m_rect  = {
-        px + MARGIN,
-        py + m_panelH - MARGIN - SELL_H,
-        PANEL_W - MARGIN * 2.0f,
-        SELL_H
-    };
+    m_sellBtn.m_rect = { px + MARGIN, py + panelH - MARGIN - SELL_H, PANEL_W - MARGIN * 2.0f, SELL_H };
 }
 
 void TowerInfoHUD::ProcessInput(Game& game) {
+    if (!game.GetInput().IsPressed("Select")) return;
     Vector2 mousePos = game.GetInput().GetMousePosition();
-
-    // Prevent clicks from passing through the panel to the world
-    if (game.GetInput().IsPressed("Select") && CheckCollisionPointRec(mousePos, m_panelRect))
+    if (CheckCollisionPointRec(mousePos, m_panelRect))
         game.GetInput().ConsumeMouseInput();
-
-    if (game.GetInput().IsPressed("Select") && m_sellBtn.IsClicked(mousePos, true))
+    if (m_sellBtn.IsClicked(mousePos, true))
         m_sellRequested = true;
 }
 
@@ -69,6 +79,12 @@ void TowerInfoHUD::Draw(Game& game, const Tower& tower) {
     DrawText(tower.m_name.c_str(), static_cast<int>(x), static_cast<int>(y), 14, GOLD);
     y += 20.0f;
 
+    // Description (word-wrapped, computed in SetAnchor)
+    for (const auto& line : m_descLines) {
+        DrawText(line.c_str(), static_cast<int>(x), static_cast<int>(y), FONT_DESC, {180, 180, 180, 255});
+        y += DESC_LINE_H;
+    }
+
     // Core stats
     DrawText(TextFormat("Range:   %.0f",   tower.m_radius),     static_cast<int>(x), static_cast<int>(y), FONT_SM, RAYWHITE); y += LINE_H;
     DrawText(TextFormat("Rate:    %.1f/s", tower.m_fireRate),   static_cast<int>(x), static_cast<int>(y), FONT_SM, RAYWHITE); y += LINE_H;
@@ -88,7 +104,8 @@ void TowerInfoHUD::Draw(Game& game, const Tower& tower) {
         }
     }
 
-    // Sell button — label and refund amount were set in SetAnchor
-    m_sellBtn.Draw(mousePos);
-    m_sellBtn.DrawLabel(FONT_SM, GREEN);
+    if (m_showSell) {
+        m_sellBtn.Draw(mousePos);
+        m_sellBtn.DrawLabel(FONT_SM, GREEN);
+    }
 }

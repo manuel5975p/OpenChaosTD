@@ -13,6 +13,7 @@ void EnemyFactory::Load(JsonIO& jsonio) {
     for (auto& entry : json["enemies"]) {
         EnemyTemplate tmpl;
         tmpl.name = entry["name"];
+        tmpl.description = entry.value("description", "");
         tmpl.texture = entry.value("texture", "");
         tmpl.health = entry.value("health", 10.0f);
         tmpl.speed = entry.value("speed", 50.0f);
@@ -44,6 +45,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     const EnemyTemplate& tmpl = it->second;
     Enemy enemy;
     enemy.m_name = tmpl.name;
+    enemy.m_description = tmpl.description;
     enemy.m_texture = tmpl.texture;
     enemy.m_health = tmpl.health;
     enemy.m_currentHealth = tmpl.health;

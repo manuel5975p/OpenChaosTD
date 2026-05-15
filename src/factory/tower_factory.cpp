@@ -27,6 +27,7 @@ void TowerFactory::Load(JsonIO& jsonio) {
     for (auto& entry : json["towers"]) {
         TowerTemplate tmpl;
         tmpl.name = entry["name"];
+        tmpl.description = entry.value("description", "");
         tmpl.texture = entry.value("texture", "");
         tmpl.cost = entry.value("cost", 100);
         tmpl.fireRate = entry.value("fireRate", 1.0f);
@@ -62,6 +63,7 @@ Tower TowerFactory::Create(const std::string& name) const {
     const TowerTemplate& tmpl = it->second;
     Tower tower;
     tower.m_name = tmpl.name;
+    tower.m_description = tmpl.description;
     tower.m_texture = tmpl.texture;
     tower.m_cost = tmpl.cost;
     tower.m_fireRate = tmpl.fireRate;
