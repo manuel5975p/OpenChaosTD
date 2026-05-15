@@ -90,6 +90,11 @@ int TowerFactory::GetCost(const std::string& name) const {
     return (it != m_templates.end()) ? it->second.cost : 0;
 }
 
+float TowerFactory::GetRadius(const std::string& name) const {
+    auto it = m_templates.find(name);
+    return (it != m_templates.end()) ? it->second.radius : 0.0f;
+}
+
 const std::string& TowerFactory::GetTexture(const std::string& name) const {
     static const std::string empty;
     auto it = m_templates.find(name);

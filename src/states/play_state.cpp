@@ -3,6 +3,7 @@
 #include <states/end_state.hpp>
 #include <game.hpp>
 #include <raylib.h>
+#include <raymath.h>
 
 
 void PlayingState::OnEnter(Game& game) {
@@ -20,13 +21,18 @@ void PlayingState::OnEnter(Game& game) {
 void PlayingState::OnExit(Game& /*game*/) {}
 
 void PlayingState::ProcessInput(Game& game, float dt) {
-    // Toggle debug mode
-    if(game.GetInput().IsPressed("Debug")) m_debug = !m_debug;
-
-    // Control camera
+    if (game.GetInput().IsPressed("Debug")) m_debug = !m_debug;
     m_renderSystem.ControlCamera(dt, game.GetInput());
 
-    // HUDs consume input first so clicks don't bleed through to the world
+    HandleHUDInput(game);
+
+    Vector2 mouseWorld = game.GetInput().GetWorldMousePosition(m_renderSystem.GetCamera());
+    HandleTowerPlacement(game, mouseWorld);
+    HandleTowerRemoval(game, mouseWorld);
+}
+
+void PlayingState::HandleHUDInput(Game& game) {
+    // HUDs consume mouse input first so clicks don't bleed through to the world
     m_scoreHUD.ProcessInput(game);
     m_towerHUD.ProcessInput(game);
 
@@ -39,12 +45,12 @@ void PlayingState::ProcessInput(Game& game, float dt) {
         }
     }
 
-    // Sell: refund 50%, remove tower, deselect
+    // Handle signals from HUDs — sell, wave start, auto-spawn toggle
     if (m_towerInfoHUD.WasSellRequested()) {
         if (Tower* tower = game.GetGameData().towers.Get(m_selectedTowerKey)) {
             int x, y;
             if (game.GetGameData().map.WorldToTile(tower->m_position, x, y)) {
-                game.GetGameData().gold += tower->m_cost / 2;
+                game.GetGameData().gold += static_cast<int>(tower->m_cost * game.GetGameData().sellRefundRate);
                 m_worldSystem.RemoveTower(x, y, game.GetGameData());
             }
         }
@@ -56,45 +62,54 @@ void PlayingState::ProcessInput(Game& game, float dt) {
 
     if (m_scoreHUD.WasAutoToggled())
         m_waveManager.ToggleAutoSpawn();
+}
 
-    Vector2 mouseWorld = game.GetInput().GetWorldMousePosition(m_renderSystem.GetCamera());
+void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
+    if (!game.GetInput().IsPressed("PlaceTower")) return;
+    if (game.GetInput().IsMouseInputConsumed()) return;
 
-    bool waveActive = game.GetGameData().waveActive;
-
-    // Left-click: select an existing tower, or place a new one on empty ground (blocked during waves)
-    if (game.GetInput().IsPressed("PlaceTower") && !game.GetInput().IsMouseInputConsumed()) {
-        int x, y;
-        if (game.GetGameData().map.WorldToTile(mouseWorld, x, y)) {
-            Tile& tile = game.GetGameData().map.Get(x, y);
-            if (tile.m_towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
-                // Tile has a tower — select it regardless of wave state
-                m_selectedTowerKey = tile.m_towerKey;
-            } else if (!waveActive) {
-                // Empty tile and no active wave — deselect and attempt placement
-                m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
-                int cost = game.GetTowerFactory().GetCost(m_towerHUD.GetSelectedTower());
-                if (game.GetGameData().gold >= cost) {
-                    Tower tower = game.GetTowerFactory().Create(m_towerHUD.GetSelectedTower());
-                    if (m_worldSystem.PlaceTower(x, y, tower, game.GetGameData()))
-                        game.GetGameData().gold -= cost;
-                }
-            }
-        } else {
-            // Clicked outside the map — deselect
-            m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
-        }
+    int x, y;
+    if (!game.GetGameData().map.WorldToTile(mouseWorld, x, y)) {
+        // Clicked outside the map — deselect
+        m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
+        return;
     }
 
-    // Right-click: remove tower (blocked during waves); deselect if it was selected
-    if (!waveActive && game.GetInput().IsPressed("RemoveTower") && !game.GetInput().IsMouseInputConsumed()) {
-        int x, y;
-        if (game.GetGameData().map.WorldToTile(mouseWorld, x, y)) {
-            Tile& tile = game.GetGameData().map.Get(x, y);
-            if (tile.m_towerKey == m_selectedTowerKey)
-                m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
-            m_worldSystem.RemoveTower(x, y, game.GetGameData());
+    Tile& tile = game.GetGameData().map.Get(x, y);
+
+    // Tile has a tower — select it regardless of wave state
+    if (tile.m_towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
+        m_selectedTowerKey = tile.m_towerKey;
+        return;
+    }
+
+    // Placement is blocked during waves or when no tower type is selected
+    if (game.GetGameData().waveActive) return;
+    if (m_towerHUD.GetSelectedTower().empty()) return;
+
+    m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
+    int cost = game.GetTowerFactory().GetCost(m_towerHUD.GetSelectedTower());
+    if (game.GetGameData().gold >= cost) {
+        Tower tower = game.GetTowerFactory().Create(m_towerHUD.GetSelectedTower());
+        if (m_worldSystem.PlaceTower(x, y, tower, game.GetGameData())) {
+            game.GetGameData().gold -= cost;
+            m_towerHUD.ClearSelection();
         }
     }
+}
+
+void PlayingState::HandleTowerRemoval(Game& game, Vector2 mouseWorld) {
+    if (!game.GetInput().IsPressed("RemoveTower")) return;
+    if (game.GetInput().IsMouseInputConsumed()) return;
+    if (game.GetGameData().waveActive) return;
+
+    int x, y;
+    if (!game.GetGameData().map.WorldToTile(mouseWorld, x, y)) return;
+
+    Tile& tile = game.GetGameData().map.Get(x, y);
+    if (tile.m_towerKey == m_selectedTowerKey)
+        m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
+    m_worldSystem.RemoveTower(x, y, game.GetGameData());
 }
 
 void PlayingState::Update(Game& game, float dt) {
@@ -103,12 +118,6 @@ void PlayingState::Update(Game& game, float dt) {
 
     if (m_gameOver)
         game.ChangeState(std::make_unique<EndState>(false));
-
-    // Deselect if the selected tower was removed by something other than player input
-    if (m_selectedTowerKey != DenseSlotMap<Tower>::INVALID_KEY) {
-        if (!game.GetGameData().towers.Get(m_selectedTowerKey))
-            m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
-    }
 
     m_waveManager.Update(dt, game.GetGameData(), m_worldSystem, game.GetEnemyFactory());
 
@@ -134,6 +143,26 @@ void PlayingState::Draw(Game& game) {
             m_renderSystem.DebugDrawEnemies(game.GetGameData().enemies);
         }
         m_renderSystem.DrawTowers(game.GetGameData().towers, game.GetAssets());
+
+        // Range indicator for the selected tower
+        if (m_selectedTowerKey != DenseSlotMap<Tower>::INVALID_KEY) {
+            if (const Tower* t = game.GetGameData().towers.Get(m_selectedTowerKey))
+                m_renderSystem.DrawTowerRange(t->m_position, t->m_radius, {255, 200, 50, 220});
+        }
+
+        // Ghost tower preview: only when a tower type is selected in the HUD and no wave is active
+        if (!game.GetGameData().waveActive && m_selectedTowerKey == DenseSlotMap<Tower>::INVALID_KEY
+            && !m_towerHUD.GetSelectedTower().empty()) {
+            Vector2 mouseWorld = game.GetInput().GetWorldMousePosition(m_renderSystem.GetCamera());
+            int x, y;
+            if (game.GetGameData().map.WorldToTile(mouseWorld, x, y)) {
+                float half = game.GetGameData().map.GetTileSize() / 2.0f;
+                Vector2 tileCenter = Vector2Add(game.GetGameData().map.TileToWorld(x, y), {half, half});
+                const std::string& name = m_towerHUD.GetSelectedTower();
+                Texture2D& tex = game.GetAssets().GetTexture(game.GetTowerFactory().GetTexture(name));
+                m_renderSystem.DrawGhostTower(tileCenter, game.GetTowerFactory().GetRadius(name), tex);
+            }
+        }
 
         m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
         m_renderSystem.DrawAttacks(game.GetGameData().attacks);

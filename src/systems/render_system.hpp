@@ -17,6 +17,8 @@ public:
     void DebugDrawMap(const Map& Map);
     void DebugDrawEnemies(const DenseSlotMap<Enemy>& enemies);
     void DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& assets);
+    void DrawTowerRange(Vector2 position, float radius, Color color);
+    void DrawGhostTower(Vector2 position, float radius, Texture2D& texture);
     void DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets);
     void DrawAttacks(const std::vector<Attack>& attacks);
     

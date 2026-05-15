@@ -14,6 +14,7 @@ public:
     void Draw(Game& game);
 
     const std::string& GetSelectedTower() const { return m_selectedTower; }
+    void ClearSelection() { m_selectedTower = ""; }
 
 private:
     std::vector<Button> m_buttons;

@@ -21,6 +21,10 @@ public:
     void Draw(Game& game) override;
 
 private:
+    // ProcessInput helpers — each owns one concern
+    void HandleHUDInput(Game& game);
+    void HandleTowerPlacement(Game& game, Vector2 mouseWorld);
+    void HandleTowerRemoval(Game& game, Vector2 mouseWorld);
     bool m_debug = false;
     bool m_gameOver = false;
 

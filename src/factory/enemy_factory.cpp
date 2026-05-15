@@ -17,6 +17,7 @@ void EnemyFactory::Load(JsonIO& jsonio) {
         tmpl.health = entry.value("health", 10.0f);
         tmpl.speed = entry.value("speed", 50.0f);
         tmpl.reward = entry.value("reward", 5);
+        tmpl.livesOnReach = entry.value("livesOnReach", 1);
 
         if (entry.contains("modules")) {
             for (auto& mod : entry["modules"]) {
@@ -49,6 +50,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     enemy.m_speed = tmpl.speed;
     enemy.m_currentSpeed = tmpl.speed;
     enemy.m_reward = tmpl.reward;
+    enemy.m_livesOnReach = tmpl.livesOnReach;
 
     for (auto& mod : tmpl.modules) {
         if (mod.type == "Regeneration")

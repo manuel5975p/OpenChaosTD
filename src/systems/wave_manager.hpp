@@ -20,4 +20,5 @@ private:
     void SpawnWave(GameData& data, WorldSystem& worldSystem, EnemyFactory& enemyFactory);
 
     bool m_autoSpawn = false;
+    float m_autoSpawnTimer = 0.0f; // counts up after a wave ends; triggers next wave at autoSpawnDelay
 };

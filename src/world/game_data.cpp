@@ -8,6 +8,9 @@ void GameData::Load(JsonIO& jsonio) {
     auto j = jsonio.Load("data/gameplay.json");
     if (j.contains("startingLives")) startingLives = j["startingLives"].get<int>();
     if (j.contains("startingGold")) startingGold = j["startingGold"].get<int>();
+    if (j.contains("sellRefundRate")) sellRefundRate = j["sellRefundRate"].get<float>();
+    if (j.contains("totalWaves")) totalWaves = j["totalWaves"].get<int>();
+    if (j.contains("autoSpawnDelay")) autoSpawnDelay = j["autoSpawnDelay"].get<float>();
 
     lives = startingLives;
     gold = startingGold;

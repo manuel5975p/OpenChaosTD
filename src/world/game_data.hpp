@@ -10,8 +10,12 @@
 class JsonIO;
 
 struct GameData {
+    // Gameplay config — loaded from gameplay.json, not reset between games
     int startingLives = 20;
     int startingGold = 150;
+    float sellRefundRate = 0.5f;
+    int totalWaves = 0;          // 0 = endless, >0 = victory after this many waves
+    float autoSpawnDelay = 3.0f; // seconds between waves when auto-spawn is on
 
     int lives = 20;
     int gold = 150;

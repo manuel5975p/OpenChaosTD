@@ -61,12 +61,22 @@ void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& a
         Color tint = (flashRatio > 0.0f) ? ColorLerp(WHITE, ORANGE, flashRatio) : WHITE;
         DrawTextureV(texture, {tower.m_position.x - hw, tower.m_position.y - hh}, tint);
 
-        DrawCircleLinesV(tower.m_position, tower.m_radius, BLACK);
-        if (flashRatio > 0.0f) {
-            unsigned char alpha = static_cast<unsigned char>(flashRatio * 200);
-            DrawCircleLinesV(tower.m_position, tower.m_radius, {255, 165, 0, alpha});
-        }
     }
+}
+
+void RenderSystem::DrawTowerRange(Vector2 position, float radius, Color color) {
+    // Faint fill + solid outline for clear visibility
+    DrawCircleV(position, radius, {color.r, color.g, color.b, 30});
+    DrawCircleLinesV(position, radius, color);
+}
+
+void RenderSystem::DrawGhostTower(Vector2 position, float radius, Texture2D& texture) {
+    float hw = static_cast<float>(texture.width)  / 2.0f;
+    float hh = static_cast<float>(texture.height) / 2.0f;
+    DrawTextureV(texture, {position.x - hw, position.y - hh}, {255, 255, 255, 140});
+    // Faint fill + outline to match the selected range style
+    DrawCircleV(position, radius, {255, 255, 255, 15});
+    DrawCircleLinesV(position, radius, {255, 255, 255, 140});
 }
 
 void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets) {

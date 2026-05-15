@@ -14,6 +14,7 @@ public:
 
     const std::vector<std::string>& GetNames() const { return m_order; }
     int GetCost(const std::string& name) const;
+    float GetRadius(const std::string& name) const;
     const std::string& GetTexture(const std::string& name) const;
 
 private:

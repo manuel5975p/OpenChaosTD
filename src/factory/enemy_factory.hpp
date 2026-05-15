@@ -24,8 +24,9 @@ private:
         std::string name;
         std::string texture;
         float health = 10.0f;
-        float speed  = 50.0f;
-        int   reward = 5;
+        float speed = 50.0f;
+        int reward = 5;
+        int livesOnReach = 1;
         std::vector<ModuleData> modules;
     };
 

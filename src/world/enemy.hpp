@@ -19,6 +19,7 @@ public:
     float m_speed = 0.0f;
     float m_currentSpeed = 0.0f;
     int m_reward = 0;
+    int m_livesOnReach = 1; // lives deducted when this enemy reaches the core
 
     float m_progress = 0.0f;
     int m_spawnedNest = 0;

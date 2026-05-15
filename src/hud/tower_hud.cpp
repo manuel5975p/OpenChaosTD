@@ -22,8 +22,7 @@ void TowerHUD::Build(Game& game) {
         m_buttons.push_back(btn);
     }
 
-    if (!names.empty())
-        m_selectedTower = names[0];
+    m_selectedTower = ""; // nothing selected by default
 }
 
 void TowerHUD::ProcessInput(Game& game) {
@@ -37,7 +36,8 @@ void TowerHUD::ProcessInput(Game& game) {
         const auto& names = game.GetTowerFactory().GetNames();
         for (size_t i = 0; i < m_buttons.size(); i++) {
             if (m_buttons[i].IsClicked(mousePos, true)) {
-                m_selectedTower = names[i];
+                // Toggle: clicking the active type again clears the selection
+                m_selectedTower = (m_selectedTower == names[i]) ? "" : names[i];
                 break;
             }
         }

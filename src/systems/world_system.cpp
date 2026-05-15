@@ -106,7 +106,7 @@ void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
     }
 
     for(auto& erase : enemyErase){
-        gameData.lives --;
+        gameData.lives -= gameData.enemies.Get(erase)->m_livesOnReach;
         RemoveEnemy(erase, gameData);
     }
 }
