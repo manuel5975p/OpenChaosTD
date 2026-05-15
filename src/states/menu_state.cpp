@@ -50,16 +50,4 @@ void MenuState::Draw(Game& game){
 
     drawButton(m_playButton);
     drawButton(m_exitButton);
-
-    // Coordinate debug overlay — remove once web input is confirmed working
-    Vector2 raw = GetMousePosition();
-    Rectangle dest = game.GetRenderer().GetDestRect();
-    DrawText(TextFormat("Screen:%dx%d  Scale:%.2f  Dest:(%.0f,%.0f,%.0f,%.0f)",
-        GetScreenWidth(), GetScreenHeight(),
-        game.GetRenderer().GetScale(),
-        dest.x, dest.y, dest.width, dest.height),
-        4, 4, 16, YELLOW);
-    DrawText(TextFormat("RawMouse:(%.0f,%.0f)  Virtual:(%.0f,%.0f)",
-        raw.x, raw.y, mousePos.x, mousePos.y),
-        4, 24, 16, YELLOW);
 }

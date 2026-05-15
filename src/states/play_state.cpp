@@ -27,12 +27,12 @@ void PlayingState::ProcessInput(Game& game, float dt) {
 
     m_towerHUD.ProcessInput(game);
 
-    Vector2 mousePos = game.GetInput().GetMousePosition();
+    Vector2 mouseWorld = game.GetInput().GetWorldMousePosition(m_renderSystem.GetCamera());
 
     // Place tower
     if (game.GetInput().IsPressed("PlaceTower") && !game.GetInput().IsMouseInputConsumed()) {
         int x, y;
-        if (game.GetGameData().map.WorldToTile(GetScreenToWorld2D(mousePos, m_renderSystem.GetCamera()), x, y)) {
+        if (game.GetGameData().map.WorldToTile(mouseWorld, x, y)) {
             int cost = game.GetTowerFactory().GetCost(m_towerHUD.GetSelectedTower());
             if (game.GetGameData().gold >= cost) {
                 Tower tower = game.GetTowerFactory().Create(m_towerHUD.GetSelectedTower());
@@ -45,7 +45,7 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     // Remove tower
     if (game.GetInput().IsPressed("RemoveTower") && !game.GetInput().IsMouseInputConsumed()) {
         int x, y;
-        if (game.GetGameData().map.WorldToTile(GetScreenToWorld2D(mousePos, m_renderSystem.GetCamera()), x, y))
+        if (game.GetGameData().map.WorldToTile(mouseWorld, x, y))
             m_worldSystem.RemoveTower(x, y, game.GetGameData());
     }
 

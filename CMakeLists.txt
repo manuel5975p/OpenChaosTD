@@ -42,7 +42,7 @@ if(USE_RAYLIB)
     message(STATUS "Fetching raylib...")
     fetchcontent_declare(raylib
         GIT_REPOSITORY https://github.com/raysan5/raylib.git
-        GIT_TAG        5.5
+        GIT_TAG        6.0
         GIT_SHALLOW    TRUE
         GIT_PROGRESS   TRUE
     )
@@ -51,49 +51,6 @@ if(USE_RAYLIB)
 
     list(APPEND LINK_LIBRARIES raylib)
     list(APPEND PROJECT_INCLUDE ${raylib_SOURCE_DIR}/src)  # ensure raylib.h is always found
-endif()
-
-
-##########################################################################################
-# Raygui Setup
-##########################################################################################
-
-if(USE_RAYGUI)
-    set(BUILD_RAYGUI_EXAMPLES OFF CACHE BOOL "" FORCE)
-
-    message(STATUS "Fetching raygui...")
-    fetchcontent_declare(raygui
-        GIT_REPOSITORY https://github.com/raysan5/raygui.git
-        GIT_TAG        4.0
-        GIT_SHALLOW    TRUE
-        GIT_PROGRESS   TRUE
-    )
-    fetchcontent_makeavailable(raygui)
-
-    # Adding raygui include paths
-    list(APPEND PROJECT_INCLUDE ${raygui_SOURCE_DIR}/src/)
-endif()
-
-
-##########################################################################################
-# Box2D Setup
-##########################################################################################
-
-if(USE_BOX2D)
-    set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE) # don't build the supplied examples
-    set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE) # don't build the supplied examples
-
-    message(STATUS "Fetching box2d...")
-    fetchcontent_declare(box2d
-        GIT_REPOSITORY https://github.com/erincatto/box2d.git
-        GIT_TAG        v3.0.0
-        GIT_SHALLOW    TRUE
-        GIT_PROGRESS   TRUE
-    )
-    fetchcontent_makeavailable(box2d)
-
-    # add the dependency here to be linked
-    list(APPEND LINK_LIBRARIES box2d)
 endif()
 
 

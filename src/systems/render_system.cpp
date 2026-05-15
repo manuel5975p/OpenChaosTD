@@ -146,7 +146,7 @@ void RenderSystem::ControlCamera(float& dt, InputManager& input){
         Vector2 mouseScreen = input.GetMousePosition();
 
         // 1. Where in the world is the mouse RIGHT NOW?
-        Vector2 mouseWorld = GetScreenToWorld2D(mouseScreen, camera);
+        Vector2 mouseWorld = input.GetWorldMousePosition(camera);
 
         // 2. Shift offset to mouse (makes mouse the anchor)
         camera.offset = mouseScreen;

@@ -10,12 +10,7 @@ Game::Game() {
     m_jsonio.SetRootPath(SearchFolderParentPath("assets", 5).parent_path());
     m_gameConfig.Load(m_jsonio);
 
-#if defined(PLATFORM_WEB)
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-#else
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
-#endif
-
     InitWindow(m_gameConfig.gameWidth, m_gameConfig.gameHeight, m_gameConfig.title.c_str());
     m_gameConfig.ApplyIcon();
     SetTargetFPS(m_gameConfig.fps);

@@ -10,7 +10,7 @@ void Renderer::Init(int virtualWidth, int virtualHeight) {
     if (m_target.id == 0)
         throw std::runtime_error("Renderer: failed to create RenderTexture");
 
-    SetTextureFilter(m_target.texture, TEXTURE_FILTER_BILINEAR);
+    SetTextureFilter(m_target.texture, TEXTURE_FILTER_POINT);
 
     UpdateScale();
 }
@@ -50,7 +50,6 @@ void Renderer::UpdateScale() {
 // Frame
 void Renderer::BeginFrame() {
     BeginTextureMode(m_target);
-        ClearBackground(BLACK);
 }
 
 void Renderer::EndFrame() {
@@ -65,7 +64,7 @@ void Renderer::EndFrame() {
             static_cast<float>(m_virtualWidth),
             static_cast<float>(-m_virtualHeight)  // negative = flip
         };
-
+        
         DrawTexturePro(m_target.texture, src, m_destRect, { 0.0f, 0.0f }, 0.0f, WHITE);
 
     EndDrawing();
