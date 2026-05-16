@@ -3,7 +3,7 @@
 #include <raylib.h>
 
 void ScoreHUD::Build(Game& game) {
-    LoadScale(game);
+    HUD::Build(game);
     float panelH   = Scaled(36.0f);
     float btnH     = Scaled(24.0f);
     float btnWaveW = Scaled(90.0f);
@@ -21,7 +21,7 @@ void ScoreHUD::Build(Game& game) {
     m_autoBtn.m_rect = { w - btnWaveW - margin - btnAutoW - margin, btnY, btnAutoW, btnH };
 }
 
-void ScoreHUD::ProcessInput(Game& game) {
+void ScoreHUD::OnProcessInput(Game& game) {
     const auto& data = game.GetGameData();
     Vector2 mousePos = game.GetInput().GetMousePosition();
 
@@ -30,27 +30,15 @@ void ScoreHUD::ProcessInput(Game& game) {
     if (game.GetInput().IsPressed("Select")) {
         // Auto toggle is always clickable, even mid-wave
         if (m_autoBtn.IsClicked(mousePos, true))
-            m_autoToggled = true;
+            m_autoSignal.Raise();
 
         // Start wave only when no wave is running
         if (!data.waveActive && m_startWaveBtn.IsClicked(mousePos, true))
-            m_waveRequested = true;
+            m_waveSignal.Raise();
     }
 }
 
-bool ScoreHUD::WasWaveRequested() {
-    if (!m_waveRequested) return false;
-    m_waveRequested = false;
-    return true;
-}
-
-bool ScoreHUD::WasAutoToggled() {
-    if (!m_autoToggled) return false;
-    m_autoToggled = false;
-    return true;
-}
-
-void ScoreHUD::Draw(Game& game, bool autoSpawn) {
+void ScoreHUD::OnDraw(Game& game) {
     const auto& data     = game.GetGameData();
     Vector2     mousePos = game.GetInput().GetMousePosition();
 
@@ -74,13 +62,11 @@ void ScoreHUD::Draw(Game& game, bool autoSpawn) {
     else
         waveStr = TextFormat("Wave: %d  |  Done", data.waveNumber);
 
-    int waveW   = MeasureText(waveStr, fontMain);
-    int centerX = static_cast<int>(m_panelRect.width / 2.0f - waveW / 2.0f);
-    DrawText(waveStr, centerX, m_textY, fontMain, RAYWHITE);
+    DrawTextCenteredX(waveStr, static_cast<int>(m_panelRect.width / 2.0f), m_textY, fontMain, RAYWHITE);
 
     // Auto toggle — highlighted when active
-    m_autoBtn.Draw(mousePos, autoSpawn);
-    m_autoBtn.DrawLabel(fontBtn, autoSpawn ? GOLD : RAYWHITE);
+    m_autoBtn.Draw(mousePos, m_autoSpawn);
+    m_autoBtn.DrawLabel(fontBtn, m_autoSpawn ? GOLD : RAYWHITE);
 
     // Start wave button — greyed out while a wave is running
     if (data.waveActive) {

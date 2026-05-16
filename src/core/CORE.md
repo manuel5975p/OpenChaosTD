@@ -82,7 +82,7 @@ Used by all factories and config types. On web builds the path resolution accoun
 Window and display settings loaded from `data/config.json` at startup, before `InitWindow` is called. Falls back to compiled-in defaults if the file is absent.
 
 ```json
-{ "gameWidth": 1200, "gameHeight": 1200, "fps": 120, "title": "OpenChaos TD" }
+{ "gameWidth": 1200, "gameHeight": 1200, "fps": 120, "hudScale": 1.0, "title": "OpenChaos TD" }
 ```
 
 `ApplyIcon()` generates a procedural 64×64 window icon and must be called after `InitWindow`.
@@ -102,19 +102,3 @@ double avg = m_monitor.GetAvgMs("Update");
 ```
 
 The window size defaults to 120 frames (2 s at 60 fps).
-
----
-
-## Button
-
-Minimal UI primitive shared between HUD and state menus. Handles hit-testing and draws a background and border only — callers draw labels, icons, and cost text on top.
-
-```cpp
-Button btn;
-btn.m_rect  = { x, y, w, h };
-btn.m_label = "Start Wave";
-
-bool clicked = btn.IsClicked(mousePos, input.IsPressed("Select"));
-btn.Draw(mousePos, /*selected=*/true);  // gold border when selected
-btn.DrawLabel(fontSize, color);         // centered label; no-op if m_label is empty
-```

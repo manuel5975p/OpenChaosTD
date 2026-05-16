@@ -8,22 +8,22 @@ class Game;
 
 class ScoreHUD : public HUD {
 public:
-    void Build(Game& game);
-    void ProcessInput(Game& game);
+    void Build(Game& game) override;
 
-    // autoSpawn drives the visual state of the auto toggle button
-    void Draw(Game& game, bool autoSpawn);
+    void SetAutoSpawn(bool autoSpawn) { m_autoSpawn = autoSpawn; }
 
-    // Returns true once per wave request, then resets — caller handles spawning
-    bool WasWaveRequested();
+    bool WasWaveRequested() { return m_waveSignal.Consume(); }
+    bool WasAutoToggled()   { return m_autoSignal.Consume(); }
 
-    // Returns true once when the auto toggle is clicked, then resets
-    bool WasAutoToggled();
+protected:
+    void OnProcessInput(Game& game) override;
+    void OnDraw(Game& game) override;
 
 private:
     Button m_startWaveBtn;
     Button m_autoBtn;
+    HudSignal m_waveSignal;
+    HudSignal m_autoSignal;
     int m_textY = 10;
-    bool m_waveRequested = false;
-    bool m_autoToggled = false;
+    bool m_autoSpawn = false;
 };

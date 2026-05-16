@@ -23,7 +23,8 @@ public:
     void Draw(Game& game) override;
 
 private:
-    void HandleHUDInput(Game& game);
+    void SyncHUDState(Game& game);
+    void HandleHudSignals(Game& game);
     void HandleTowerPlacement(Game& game, Vector2 mouseWorld);
 
     bool m_debug = false;

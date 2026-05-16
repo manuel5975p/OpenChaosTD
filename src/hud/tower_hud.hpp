@@ -10,9 +10,7 @@ class Game;
 
 class TowerHUD : public HUD {
 public:
-    void Build(Game& game);
-    void ProcessInput(Game& game);
-    void Draw(Game& game);
+    void Build(Game& game) override;
 
     const std::string& GetSelectedTower() const { return m_selectedTower; }
     void ClearSelection() { m_selectedTower = ""; }
@@ -22,8 +20,11 @@ public:
     // Returns the top-center screen position of the button under mousePos
     Vector2 GetHoveredButtonTopCenter(Vector2 mousePos) const;
 
+protected:
+    void OnProcessInput(Game& game) override;
+    void OnDraw(Game& game) override;
+
 private:
     std::vector<Button> m_buttons;
     std::string m_selectedTower;
-    float m_btnSize = 64.0f;
 };

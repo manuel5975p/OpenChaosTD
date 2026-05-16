@@ -14,8 +14,8 @@ void PlayingState::OnEnter(Game& game) {
 
     m_renderSystem.CenterCamera(game.GetGameData().map, game.GetRenderer());
 
-    m_scoreHUD.Build(game);
     m_towerHUD.Build(game);
+    m_scoreHUD.Build(game);
     m_towerInfoHUD.Build(game);
     m_eventLog.Build(game);
 }
@@ -26,39 +26,49 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     if (game.GetInput().IsPressed("Debug")) m_debug = !m_debug;
     m_renderSystem.ControlCamera(dt, game.GetInput());
 
-    HandleHUDInput(game);
+    // HUDs consume mouse input first so clicks don't bleed through to the world.
+    // Each call is a no-op while that HUD is hidden.
+    m_towerHUD.ProcessInput(game);
+    m_scoreHUD.ProcessInput(game);
+    m_towerInfoHUD.ProcessInput(game);
+    HandleHudSignals(game);
 
     Vector2 mouseWorld = game.GetInput().GetWorldMousePosition(m_renderSystem.GetCamera());
     HandleTowerPlacement(game, mouseWorld);
+
+    // Re-point the info panel once this frame's selection changes have settled
+    SyncHUDState(game);
 }
 
-void PlayingState::HandleHUDInput(Game& game) {
-    // HUDs consume mouse input first so clicks don't bleed through to the world
-    m_scoreHUD.ProcessInput(game);
-    m_towerHUD.ProcessInput(game);
-
+void PlayingState::SyncHUDState(Game& game) {
     if (m_selectedTowerKey != DenseSlotMap<Tower>::INVALID_KEY) {
         if (Tower* tower = game.GetGameData().towers.Get(m_selectedTowerKey)) {
             Vector2 screenPos = GetWorldToScreen2D(tower->m_position, m_renderSystem.GetCamera());
-            m_towerInfoHUD.SetAnchor(screenPos, game.GetRenderer().GetGameWidth(), game.GetRenderer().GetGameHeight(), *tower);
-            m_towerInfoHUD.ProcessInput(game);
+            m_towerInfoHUD.SetTarget(game, *tower, screenPos, true);
+        } else {
+            m_towerInfoHUD.Hide();
         }
         m_hoveredTower.reset();
-    } else {
-        Vector2 mousePos = game.GetInput().GetMousePosition();
-        const std::string& hovered = m_towerHUD.GetHoveredTower(mousePos);
-        if (!hovered.empty()) {
-            // Only re-create when the hovered type changes
-            if (!m_hoveredTower.has_value() || m_hoveredTower->m_name != hovered)
-                m_hoveredTower = game.GetTowerFactory().Create(hovered);
-            Vector2 topCenter = m_towerHUD.GetHoveredButtonTopCenter(mousePos);
-            m_towerInfoHUD.SetAnchor(topCenter, game.GetRenderer().GetGameWidth(), game.GetRenderer().GetGameHeight(), *m_hoveredTower, false);
-        } else {
-            m_hoveredTower.reset();
-        }
+        return;
     }
 
-    // Handle signals from HUDs — sell, wave start, auto-spawn toggle
+    // Nothing selected — show a preview panel for the hovered tower-bar button
+    Vector2 mousePos = game.GetInput().GetMousePosition();
+    const std::string& hovered = m_towerHUD.GetHoveredTower(mousePos);
+    if (hovered.empty()) {
+        m_hoveredTower.reset();
+        m_towerInfoHUD.Hide();
+        return;
+    }
+
+    // Only re-create the preview tower when the hovered type changes
+    if (!m_hoveredTower.has_value() || m_hoveredTower->m_name != hovered)
+        m_hoveredTower = game.GetTowerFactory().Create(hovered);
+    Vector2 topCenter = m_towerHUD.GetHoveredButtonTopCenter(mousePos);
+    m_towerInfoHUD.SetTarget(game, *m_hoveredTower, topCenter, false);
+}
+
+void PlayingState::HandleHudSignals(Game& game) {
     if (m_towerInfoHUD.WasSellRequested()) {
         if (Tower* tower = game.GetGameData().towers.Get(m_selectedTowerKey)) {
             int x, y;
@@ -124,7 +134,9 @@ void PlayingState::Update(Game& game, float dt) {
     if (m_gameOver)
         game.ChangeState(std::make_unique<EndState>(false));
 
-    m_eventLog.Update(dt);
+    m_scoreHUD.SetAutoSpawn(m_waveManager.IsAutoSpawn());
+    m_eventLog.Update(game, dt);
+
     m_waveManager.Update(dt, game.GetGameData(), m_worldSystem, game.GetEnemyFactory());
 
     m_enemySystem.TickEnemies(dt, game.GetGameData());
@@ -172,16 +184,9 @@ void PlayingState::Draw(Game& game) {
     m_renderSystem.DrawAttacks(game.GetGameData().attacks);
     EndMode2D();
 
+    // Draw order: info panel last so it sits on top. Hidden HUDs skip themselves.
     m_towerHUD.Draw(game);
-    m_scoreHUD.Draw(game, m_waveManager.IsAutoSpawn());
-    m_eventLog.Draw();
-
-    // Draw tower info panel: selected tower takes priority over hover preview
-    if (m_selectedTowerKey != DenseSlotMap<Tower>::INVALID_KEY) {
-        if (const Tower* tower = game.GetGameData().towers.Get(m_selectedTowerKey))
-            m_towerInfoHUD.Draw(game, *tower);
-    } else if (m_hoveredTower.has_value()) {
-        m_towerInfoHUD.Draw(game, *m_hoveredTower);
-    }
+    m_scoreHUD.Draw(game);
+    m_eventLog.Draw(game);
+    m_towerInfoHUD.Draw(game);
 }
-

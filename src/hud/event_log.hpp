@@ -8,11 +8,12 @@ class Game;
 
 class EventLog : public HUD {
 public:
-    void Build(Game& game);
     // Add a message; adding the same message as the newest entry resets its timer
     void Add(const std::string& message, float duration = 3.0f);
-    void Update(float dt);
-    void Draw();
+    void Update(Game& game, float dt) override;
+
+protected:
+    void OnDraw(Game& game) override;
 
 private:
     static constexpr int   MAX_ENTRIES = 5;
@@ -21,7 +22,6 @@ private:
     struct Entry {
         std::string message;
         float timeLeft;
-        float duration;
     };
 
     std::vector<Entry> m_entries;

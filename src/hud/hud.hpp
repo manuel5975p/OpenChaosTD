@@ -4,22 +4,47 @@
 
 class Game;
 
-// Shared state and helpers for on-screen HUD components.
-class HUD {
-protected:
-    // Cache the configured HUD scale into m_scale; call once from a derived Build()
-    void LoadScale(Game& game);
+// One-shot flag: a HUD raises it on an event, the owner consumes it exactly once.
+struct HudSignal {
+    void Raise() { m_pending = true; }
+    bool Consume() { bool p = m_pending; m_pending = false; return p; }
 
-    // Multiply an unscaled design value by the HUD scale
+private:
+    bool m_pending = false;
+};
+
+void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color);
+
+// Base for every HUD component: a uniform lifecycle plus shared scaling and
+// panel helpers. Input and draw are skipped automatically while hidden.
+class HUD {
+public:
+    virtual ~HUD() = default;
+
+    virtual void Build(Game& game);                    // base caches the HUD scale
+    virtual void Update(Game& /*game*/, float /*dt*/) {}
+
+    void ProcessInput(Game& game) { if (m_visible) OnProcessInput(game); }
+    void Draw(Game& game)         { if (m_visible) OnDraw(game); }
+
+    void Show() { m_visible = true; }
+    void Hide() { m_visible = false; }
+
+protected:
+    // Implemented by concrete HUDs; invoked only while the HUD is visible.
+    virtual void OnProcessInput(Game& /*game*/) {}
+    virtual void OnDraw(Game& /*game*/) {}
+
     float Scaled(float base) const { return base * m_scale; }
     int   ScaledInt(float base) const { return static_cast<int>(base * m_scale); }
 
-    // Fill m_panelRect with the standard dark HUD background
     void DrawPanelBackground(unsigned char alpha, bool border = false) const;
-
-    // Swallow a click landing on the panel so it doesn't bleed through to the world
     void ConsumePanelClick(Game& game, const char* action) const;
 
+    // Keep m_panelRect fully inside the given screen bounds
+    void ClampPanelToScreen(int screenW, int screenH);
+
     float m_scale = 1.0f;
+    bool m_visible = true;
     Rectangle m_panelRect = {};
 };

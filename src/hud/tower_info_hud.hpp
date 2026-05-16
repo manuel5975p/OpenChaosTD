@@ -11,13 +11,16 @@ class Game;
 
 class TowerInfoHUD : public HUD {
 public:
-    void Build(Game& game);
-    void SetAnchor(Vector2 screenPos, int screenW, int screenH, const Tower& tower, bool showSell = true);
+    void Build(Game& game) override;
 
-    void ProcessInput(Game& game);
-    void Draw(Game& game, const Tower& tower);
+    // Point the panel at a tower, position it near a screen anchor, and show it
+    void SetTarget(Game& game, const Tower& tower, Vector2 screenPos, bool showSell);
 
-    bool WasSellRequested();
+    bool WasSellRequested() { return m_sellSignal.Consume(); }
+
+protected:
+    void OnProcessInput(Game& game) override;
+    void OnDraw(Game& game) override;
 
 private:
     float m_panelW    = 160.0f;
@@ -32,8 +35,9 @@ private:
     int   m_fontDesc   = 10;
     int   m_fontHeader = 14;
 
+    const Tower* m_target = nullptr;
     Button m_sellBtn;
-    bool m_sellRequested = false;
+    HudSignal m_sellSignal;
     bool m_showSell = true;
     std::vector<std::string> m_descLines;
 };

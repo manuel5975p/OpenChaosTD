@@ -2,11 +2,10 @@
 #include <game.hpp>
 #include <world/tower_modules.hpp>
 #include <raylib.h>
-#include <algorithm>
 #include <sstream>
 
 void TowerInfoHUD::Build(Game& game) {
-    LoadScale(game);
+    HUD::Build(game);
     m_panelW      = Scaled(160.0f);
     m_margin      = Scaled(8.0f);
     m_lineH       = Scaled(15.0f);
@@ -18,6 +17,7 @@ void TowerInfoHUD::Build(Game& game) {
     m_fontSm      = ScaledInt(11.0f);
     m_fontDesc    = ScaledInt(10.0f);
     m_fontHeader  = ScaledInt(14.0f);
+    Hide(); // shown only while a tower is selected or hovered
 }
 
 static std::vector<std::string> WrapText(const std::string& text, float maxWidth, int fontSize) {
@@ -37,8 +37,10 @@ static std::vector<std::string> WrapText(const std::string& text, float maxWidth
     return lines;
 }
 
-void TowerInfoHUD::SetAnchor(Vector2 screenPos, int screenW, int screenH, const Tower& tower, bool showSell) {
+void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, bool showSell) {
+    m_target = &tower;
     m_showSell = showSell;
+
     // Count how many module rows this specific tower needs
     int moduleRows = 0;
     for (const auto& mod : tower.m_modules) {
@@ -53,30 +55,30 @@ void TowerInfoHUD::SetAnchor(Vector2 screenPos, int screenW, int screenH, const 
         + (3 + moduleRows) * m_lineH
         + (m_showSell ? m_sellGap + m_sellH : 0.0f) + m_margin;
 
-    float px = std::clamp(screenPos.x - m_panelW / 2.0f, 0.0f, static_cast<float>(screenW) - m_panelW);
-    float py = std::clamp(screenPos.y - panelH - m_anchorGap, 0.0f, static_cast<float>(screenH) - panelH);
-
-    m_panelRect = { px, py, m_panelW, panelH };
+    // Anchor above the screen point, then clamp so the panel stays on-screen
+    m_panelRect = { screenPos.x - m_panelW / 2.0f, screenPos.y - panelH - m_anchorGap,
+                    m_panelW, panelH };
+    ClampPanelToScreen(game.GetRenderer().GetGameWidth(), game.GetRenderer().GetGameHeight());
 
     m_sellBtn.m_label = TextFormat("Sell: $%d", tower.m_cost / 2);
-    m_sellBtn.m_rect = { px + m_margin, py + panelH - m_margin - m_sellH, m_panelW - m_margin * 2.0f, m_sellH };
+    m_sellBtn.m_rect = { m_panelRect.x + m_margin, m_panelRect.y + panelH - m_margin - m_sellH,
+                         m_panelW - m_margin * 2.0f, m_sellH };
+
+    Show();
 }
 
-void TowerInfoHUD::ProcessInput(Game& game) {
+void TowerInfoHUD::OnProcessInput(Game& game) {
     if (!game.GetInput().IsPressed("Select")) return;
     ConsumePanelClick(game, "Select");
+    if (!m_showSell) return; // hover preview has no sell button
     Vector2 mousePos = game.GetInput().GetMousePosition();
     if (m_sellBtn.IsClicked(mousePos, true))
-        m_sellRequested = true;
+        m_sellSignal.Raise();
 }
 
-bool TowerInfoHUD::WasSellRequested() {
-    if (!m_sellRequested) return false;
-    m_sellRequested = false;
-    return true;
-}
-
-void TowerInfoHUD::Draw(Game& game, const Tower& tower) {
+void TowerInfoHUD::OnDraw(Game& game) {
+    if (!m_target) return;
+    const Tower& tower = *m_target;
     Vector2 mousePos = game.GetInput().GetMousePosition();
 
     DrawPanelBackground(220, true);
@@ -88,7 +90,7 @@ void TowerInfoHUD::Draw(Game& game, const Tower& tower) {
     DrawText(tower.m_name.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
     y += m_headerH;
 
-    // Description (word-wrapped, computed in SetAnchor)
+    // Description (word-wrapped, computed in SetTarget)
     for (const auto& line : m_descLines) {
         DrawText(line.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontDesc, {180, 180, 180, 255});
         y += m_descLineH;

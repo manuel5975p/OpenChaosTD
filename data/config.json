@@ -2,6 +2,6 @@
     "gameWidth": 1200,
     "gameHeight": 1200,
     "fps": 120,
-    "hudScale": 1.5,
+    "hudScale": 1.75,
     "title": "OpenChaos TD"
 }

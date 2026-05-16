@@ -31,7 +31,7 @@ All fetched automatically via CMake FetchContent — no manual installation need
 
 | Library | Version | Purpose |
 |---|---|---|
-| [raylib](https://github.com/raysan5/raylib) | 5.5 | Window, rendering, input, audio |
+| [raylib](https://github.com/raysan5/raylib) | 6.0 | Window, rendering, input, audio |
 | [nlohmann/json](https://github.com/nlohmann/json) | 3.11.3 | JSON parsing for data files |
 
 ## Media
@@ -44,7 +44,7 @@ OpenChaosTD/
 │   └── textures/               - Sprites for towers, enemies and tiles
 │
 ├── data/
-│   ├── config.json             - Window and display settings
+│   ├── config.json             - Window resolution, FPS, HUD scale, title
 │   ├── gameplay.json           - Starting lives, gold, sell rate, wave count, auto-spawn delay
 │   ├── keybindings.json        - Input action bindings (rebindable)
 │   ├── towers.json             - Tower type definitions (stats, modules, description)
@@ -60,14 +60,15 @@ OpenChaosTD/
     │   ├── input_manager       - Action-based input with JSON keybindings
     │   ├── game_config         - Window/display settings loaded from JSON
     │   ├── jsonio              - Cross-platform JSON read/write (desktop + web)
-    │   ├── performance_monitor - Frame-time profiling (avg, last, peak)
-    │   └── button              - Shared UI primitive (hit-test + draw)
+    │   └── performance_monitor - Frame-time profiling (avg, last, peak)
     │
     ├── factory/                Data-driven entity construction from JSON
     │   ├── tower_factory       - Builds Tower instances from towers.json
     │   └── enemy_factory       - Builds Enemy instances from enemies.json
     │
     ├── hud/                    In-game HUD elements
+    │   ├── hud                 - HUD base class: lifecycle, visibility, scaling, panel helpers
+    │   ├── button              - Shared UI primitive (hit-test + draw)
     │   ├── score_hud           - Top bar: lives, gold, wave info, start/auto buttons
     │   ├── tower_hud           - Bottom panel: tower selection with cost and icon
     │   ├── tower_info_hud      - Floating panel: stats and sell button for selected/hovered tower

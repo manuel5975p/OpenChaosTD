@@ -1,11 +1,6 @@
 #include <hud/event_log.hpp>
-#include <game.hpp>
 #include <raylib.h>
 #include <algorithm>
-
-void EventLog::Build(Game& game) {
-    LoadScale(game);
-}
 
 void EventLog::Add(const std::string& message, float duration) {
     // Reset timer if this message is already the newest — prevents visual spam
@@ -18,17 +13,17 @@ void EventLog::Add(const std::string& message, float duration) {
     if (static_cast<int>(m_entries.size()) >= MAX_ENTRIES)
         m_entries.erase(m_entries.begin());
 
-    m_entries.push_back({message, duration, duration});
+    m_entries.push_back({message, duration});
 }
 
-void EventLog::Update(float dt) {
+void EventLog::Update(Game& /*game*/, float dt) {
     for (auto& entry : m_entries)
         entry.timeLeft -= dt;
 
     std::erase_if(m_entries, [](const Entry& e) { return e.timeLeft <= 0.0f; });
 }
 
-void EventLog::Draw() {
+void EventLog::OnDraw(Game& /*game*/) {
     if (m_entries.empty()) return;
 
     const float margin    = Scaled(8.0f);
