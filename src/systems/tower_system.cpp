@@ -73,6 +73,7 @@ std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(Tower& tower, Den
 std::vector<Enemy*> TowerSystem::FindEnemiesInRange(Tower& tower, DenseSlotMap<Enemy>& enemies) {
     std::vector<Enemy*> result;
     for (auto& enemy : enemies) {
+        if (enemy.m_currentHealth <= 0.0f) continue;
         if (tower.m_radius >= Vector2Distance(enemy.m_position, tower.m_position))
             result.push_back(&enemy);
     }
@@ -122,8 +123,8 @@ bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mo
     switch (mode) {
         case TargetingMode::First: return a.m_progress < b.m_progress;
         case TargetingMode::Last: return a.m_progress > b.m_progress;
-        case TargetingMode::MostHealth: return a.m_currentHealth < b.m_currentHealth;
-        case TargetingMode::LowestHealth: return a.m_currentHealth > b.m_currentHealth;
+        case TargetingMode::MostHealth: return a.m_currentHealth > b.m_currentHealth;
+        case TargetingMode::LowestHealth: return a.m_currentHealth < b.m_currentHealth;
         case TargetingMode::Fastest: return a.m_speed < b.m_speed;
         case TargetingMode::Slowest: return a.m_speed > b.m_speed;
     }

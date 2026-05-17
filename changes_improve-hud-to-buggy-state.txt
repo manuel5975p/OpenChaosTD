@@ -19,9 +19,6 @@ details were polished.
   - voidno_ember:    immune to burn damage (counters the igniter).
   - voidno_splitter: on death, splits into two fast "voidno_fast" enemies.
 
-3. GAMEPLAY TUNING  (data/gameplay.json)
-  - Starting gold raised from 150 to 500.
-
 4. TOWER MODULE SYSTEM REWORK  (tower_modules.hpp, tower_system.cpp,
    tower_factory.*, tower_info_hud.*)
   - Tower modules now use two virtual methods:
@@ -39,31 +36,8 @@ details were polished.
     and Split (spawns child enemies on death).
   - Enemy effect handling now checks for an Immune module and skips
     applying an effect the enemy is immune to.
-
-6. ATTACK / COMBAT LOGIC  (attack.hpp, tower_system.cpp)
-  - The Attack struct gained fields for armor pierce and chain behavior
-    (chain count, range, damage falloff).
-  - TickAttacks now handles chain attacks: after hitting the primary
-    target, the attack bounces to the nearest unhit enemies in range,
-    dealing reduced damage each bounce.
-  - Armor piercing is applied: pierce reduces an enemy's effective armor.
-  - Towers no longer target already-dead enemies.
-  - Bug fix: the "Most Health" / "Lowest Health" targeting modes were
-    swapped and now select the correct enemy.
-
-7. WAVE SPAWNING  (wave_manager.*)
-  - Waves are no longer a fixed set of 3 basic enemies.
-  - Enemy types unlock progressively by wave number (wave 2 adds fast,
-    3 adds splitter, 4 adds ember, 5 adds tank).
-  - Wave size scales with wave number, at least one of each unlocked
-    type is guaranteed, and the rest are picked randomly (new RNG added)
-    and spread across spawn nests.
-
-8. WORLD SYSTEM  (world_system.*)
-  - CheckEnemyDead now receives the EnemyFactory so it can create the
-    child enemies spawned by Split-module enemies on death.
-
-9. PLAY STATE  (play_state.cpp/.hpp)
+    
+PLAY STATE  (play_state.cpp/.hpp)
   - Update() and Draw() were moved to the top of the file; range-indicator
     and ghost-tower rendering were extracted into their own helper methods
     (DrawRangeIndicator, DrawGhostTower).
@@ -72,10 +46,6 @@ details were polished.
     removed for reaching the core.
   - The tower info panel's "sell" button now only shows while no wave is
     active; the sell handler got a null-pointer guard.
-
-10. RENDERING / DEBUG  (render_system.cpp)
-  - The debug enemy overlay now shows current/max HP (color-coded)
-    instead of path progress.
 
 11. COSMETIC
   - Removed column-aligned variable declarations in several files

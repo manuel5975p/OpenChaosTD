@@ -30,6 +30,31 @@
             ]
         },
         {
+            "name": "voidno_brute",
+            "description": "Heavily armored. Shrugs off most direct damage.",
+            "texture": "enemy_voidno",
+            "health": 80,
+            "speed": 30,
+            "reward": 30,
+            "modules": [
+                { "type": "Armor", "amount": 3.0 }
+            ]
+        },
+        {
+            "name": "voidno_boss",
+            "description": "Apex predator. Splits into tanks on death.",
+            "texture": "enemy_voidno",
+            "health": 200,
+            "speed": 25,
+            "reward": 75,
+            "modules": [
+                { "type": "Regeneration", "rate": 5.0 },
+                { "type": "Armor",        "amount": 2.0 },
+                { "type": "Resistance",   "factor": 0.3 },
+                { "type": "Split", "child": "voidno_tank", "count": 2 }
+            ]
+        },
+        {
             "name": "voidno_frost",
             "description": "Frozen core. Cannot be slowed.",
             "texture": "enemy_voidno",

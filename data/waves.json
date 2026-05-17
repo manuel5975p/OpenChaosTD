@@ -1,0 +1,80 @@
+{
+    "waves": [
+        {
+            "comment": "Wave 1 — introduction: three nests, slow trickle",
+            "spawns": [
+                { "enemy": "voidno", "count": 5, "nest": -1, "interval": 1.2, "delay": 0.0 }
+            ]
+        },
+        {
+            "comment": "Wave 2 — faster enemies join",
+            "spawns": [
+                { "enemy": "voidno",      "count": 6, "nest": -1, "interval": 1.0, "delay": 0.0 },
+                { "enemy": "voidno_fast", "count": 3, "nest": -1, "interval": 0.6, "delay": 2.0 }
+            ]
+        },
+        {
+            "comment": "Wave 3 — speed pressure increases",
+            "spawns": [
+                { "enemy": "voidno",      "count": 5, "nest": -1, "interval": 0.9, "delay": 0.0 },
+                { "enemy": "voidno_fast", "count": 6, "nest": -1, "interval": 0.5, "delay": 1.5 }
+            ]
+        },
+        {
+            "comment": "Wave 4 — first tanks appear",
+            "spawns": [
+                { "enemy": "voidno",      "count": 5, "nest": -1, "interval": 1.0, "delay": 0.0 },
+                { "enemy": "voidno_tank", "count": 2, "nest": -1, "interval": 2.5, "delay": 2.0 }
+            ]
+        },
+        {
+            "comment": "Wave 5 — slow-immune frost enemies debut",
+            "spawns": [
+                { "enemy": "voidno",       "count": 6, "nest": -1, "interval": 0.8, "delay": 0.0 },
+                { "enemy": "voidno_fast",  "count": 4, "nest": -1, "interval": 0.5, "delay": 1.0 },
+                { "enemy": "voidno_frost", "count": 3, "nest": -1, "interval": 1.5, "delay": 3.0 }
+            ]
+        },
+        {
+            "comment": "Wave 6 — tank wall with fast flankers",
+            "spawns": [
+                { "enemy": "voidno_tank", "count": 4, "nest": -1, "interval": 1.5, "delay": 0.0 },
+                { "enemy": "voidno_fast", "count": 6, "nest": -1, "interval": 0.4, "delay": 3.5 }
+            ]
+        },
+        {
+            "comment": "Wave 7 — swarm enemies appear; killing them spawns more",
+            "spawns": [
+                { "enemy": "voidno",       "count": 5, "nest": -1, "interval": 0.8, "delay": 0.0 },
+                { "enemy": "voidno_frost", "count": 4, "nest": -1, "interval": 1.0, "delay": 1.5 },
+                { "enemy": "voidno_swarm", "count": 2, "nest": -1, "interval": 3.0, "delay": 4.0 }
+            ]
+        },
+        {
+            "comment": "Wave 8 — brutes debut; heavy armor absorbs flat damage",
+            "spawns": [
+                { "enemy": "voidno_fast",  "count": 8, "nest": -1, "interval": 0.4, "delay": 0.0 },
+                { "enemy": "voidno_brute", "count": 3, "nest": -1, "interval": 1.8, "delay": 2.0 },
+                { "enemy": "voidno_swarm", "count": 2, "nest": -1, "interval": 2.5, "delay": 6.0 }
+            ]
+        },
+        {
+            "comment": "Wave 9 — mixed elite force",
+            "spawns": [
+                { "enemy": "voidno_tank",  "count": 3, "nest": -1, "interval": 1.5, "delay": 0.0 },
+                { "enemy": "voidno_frost", "count": 4, "nest": -1, "interval": 0.8, "delay": 2.5 },
+                { "enemy": "voidno_brute", "count": 3, "nest": -1, "interval": 1.5, "delay": 4.0 },
+                { "enemy": "voidno_swarm", "count": 2, "nest": -1, "interval": 2.0, "delay": 7.0 }
+            ]
+        },
+        {
+            "comment": "Wave 10 — boss wave; boss splits into tanks on death",
+            "spawns": [
+                { "enemy": "voidno_boss",  "count": 1, "nest":  1, "interval": 1.0, "delay": 0.0 },
+                { "enemy": "voidno",       "count": 6, "nest": -1, "interval": 0.7, "delay": 2.0 },
+                { "enemy": "voidno_fast",  "count": 4, "nest": -1, "interval": 0.5, "delay": 5.0 },
+                { "enemy": "voidno_swarm", "count": 2, "nest": -1, "interval": 3.0, "delay": 8.0 }
+            ]
+        }
+    ]
+}

@@ -18,6 +18,8 @@ void PlayingState::OnEnter(Game& game) {
     m_scoreHUD.Build(game);
     m_towerInfoHUD.Build(game);
     m_eventLog.Build(game);
+
+    m_waveManager.Load(game.GetJsonIO());
 }
 
 void PlayingState::OnExit(Game& /*game*/) {}
@@ -81,7 +83,7 @@ void PlayingState::HandleHudSignals(Game& game) {
     }
 
     if (m_scoreHUD.WasWaveRequested())
-        m_waveManager.StartWave(game.GetGameData(), m_worldSystem, game.GetEnemyFactory());
+        m_waveManager.StartWave(game.GetGameData());
 
     if (m_scoreHUD.WasAutoToggled())
         m_waveManager.ToggleAutoSpawn();
