@@ -40,4 +40,5 @@ private:
     HudSignal m_sellSignal;
     bool m_showSell = true;
     std::vector<std::string> m_descLines;
+    std::vector<StatRow> m_moduleRows;
 };

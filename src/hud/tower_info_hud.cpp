@@ -1,6 +1,5 @@
 #include <hud/tower_info_hud.hpp>
 #include <game.hpp>
-#include <world/tower_modules.hpp>
 #include <raylib.h>
 #include <sstream>
 
@@ -41,18 +40,15 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
     m_target = &tower;
     m_showSell = showSell;
 
-    // Count how many module rows this specific tower needs
-    int moduleRows = 0;
-    for (const auto& mod : tower.m_modules) {
-        if (dynamic_cast<const FlatDamageModule*>(mod.get())) moduleRows++;
-        if (dynamic_cast<const SlowModule*>(mod.get())) moduleRows++;
-    }
+    m_moduleRows.clear();
+    for (const auto& mod : tower.m_modules)
+        mod->Describe(m_moduleRows);
 
     m_descLines = WrapText(tower.m_description, m_panelW - m_margin * 2.0f, m_fontDesc);
 
     float panelH = m_margin + m_headerH
         + static_cast<float>(m_descLines.size()) * m_descLineH
-        + (3 + moduleRows) * m_lineH
+        + (3 + static_cast<int>(m_moduleRows.size())) * m_lineH
         + (m_showSell ? m_sellGap + m_sellH : 0.0f) + m_margin;
 
     // Anchor above the screen point, then clamp so the panel stays on-screen
@@ -101,18 +97,10 @@ void TowerInfoHUD::OnDraw(Game& game) {
     DrawText(TextFormat("Rate:    %.1f/s", tower.m_fireRate),    static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
     DrawText(TextFormat("Targets: %d",     tower.m_targetCount), static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
 
-    // Module-derived stats — only show what the tower actually has
-    for (const auto& mod : tower.m_modules) {
-        if (auto* dmg = dynamic_cast<FlatDamageModule*>(mod.get())) {
-            DrawText(TextFormat("Damage:  %.0f", dmg->m_damage),
-                static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE);
-            y += m_lineH;
-        }
-        if (auto* slow = dynamic_cast<SlowModule*>(mod.get())) {
-            DrawText(TextFormat("Slow:    %.0f%%  %.1fs", (1.0f - slow->m_factor) * 100.0f, slow->m_duration),
-                static_cast<int>(x), static_cast<int>(y), m_fontSm, SKYBLUE);
-            y += m_lineH;
-        }
+    // Module-derived stats — populated in SetTarget via Describe()
+    for (const auto& row : m_moduleRows) {
+        DrawText(row.text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, row.color);
+        y += m_lineH;
     }
 
     if (m_showSell) {

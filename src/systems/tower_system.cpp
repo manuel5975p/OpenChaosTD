@@ -4,9 +4,7 @@
 #include <algorithm>
 
 #include <world/tower.hpp>
-#include <world/tower_modules.hpp>
 #include <world/enemy_module.hpp>
-#include <world/effect.hpp>
 
 
 void TowerSystem::update(float dt, GameData& gameData){
@@ -81,13 +79,8 @@ std::vector<Enemy*> TowerSystem::FindEnemiesInRange(Tower& tower, DenseSlotMap<E
 }
 
 void TowerSystem::BuildAttackPayload(const Tower& tower, Attack& attack) {
-    for (auto& mod : tower.m_modules) {
-        if (auto* dmg = dynamic_cast<FlatDamageModule*>(mod.get())) {
-            attack.m_damage += dmg->m_damage;
-        } else if (auto* slow = dynamic_cast<SlowModule*>(mod.get())) {
-            attack.m_effects.push_back(Effect(EffectType::Slow, slow->m_duration, slow->m_factor));
-        }
-    }
+    for (auto& mod : tower.m_modules)
+        mod->Contribute(attack);
 }
 
 static float ComputeArmor(const Enemy& enemy) {
