@@ -86,8 +86,7 @@ void TowerSystem::BuildAttackPayload(const Tower& tower, Attack& attack) {
 static float ComputeArmor(const Enemy& enemy) {
     float armor = 0.0f;
     for (auto& mod : enemy.m_modules)
-        if (auto* a = dynamic_cast<ArmorModule*>(mod.get()))
-            armor += a->m_amount;
+        armor += mod->GetArmor();
     return armor;
 }
 
