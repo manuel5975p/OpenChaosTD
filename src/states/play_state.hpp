@@ -23,10 +23,6 @@ public:
     void Draw(Game& game) override;
 
 private:
-    // Draw helpers
-    void DrawRangeIndicator(Game& game);
-    void DrawGhostTower(Game& game);
-
     // Input helpers
     void HandleHudSignals(Game& game);
     void HandleTowerPlacement(Game& game, Vector2 mouseWorld);

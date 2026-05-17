@@ -70,6 +70,24 @@ void RenderSystem::DrawTowerRange(Vector2 position, float radius, Color color) {
     DrawCircleLinesV(position, radius, color);
 }
 
+void RenderSystem::DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, const Map& map, const DenseSlotMap<Tower>& towers, Vector2 mouseWorld) {
+    if (selectedKey != DenseSlotMap<Tower>::INVALID_KEY) {
+        if (const Tower* t = towers.Get(selectedKey))
+            DrawTowerRange(t->m_position, t->m_radius, {255, 200, 50, 220});
+        return;
+    }
+
+    // Show range of whichever placed tower the mouse is hovering
+    int hx, hy;
+    if (map.WorldToTile(mouseWorld, hx, hy)) {
+        const Tile& tile = map.Get(hx, hy);
+        if (tile.m_towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
+            if (const Tower* t = towers.Get(tile.m_towerKey))
+                DrawTowerRange(t->m_position, t->m_radius, {255, 255, 255, 80});
+        }
+    }
+}
+
 void RenderSystem::DrawGhostTower(Vector2 position, float radius, Texture2D& texture) {
     float hw = static_cast<float>(texture.width)  / 2.0f;
     float hh = static_cast<float>(texture.height) / 2.0f;

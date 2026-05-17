@@ -18,10 +18,11 @@ public:
     void DebugDrawEnemies(const DenseSlotMap<Enemy>& enemies);
     void DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& assets);
     void DrawTowerRange(Vector2 position, float radius, Color color);
+    void DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, const Map& map, const DenseSlotMap<Tower>& towers, Vector2 mouseWorld);
     void DrawGhostTower(Vector2 position, float radius, Texture2D& texture);
     void DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets);
     void DrawAttacks(const std::vector<Attack>& attacks);
-    
+
     void CenterCamera(Map& map, Renderer& renderer);
     void ControlCamera(float& dt, InputManager& input);
 
