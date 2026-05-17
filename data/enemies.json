@@ -28,6 +28,28 @@
                 { "type": "Armor",        "amount": 1.0 },
                 { "type": "Resistance",   "factor": 0.4 }
             ]
+        },
+        {
+            "name": "voidno_frost",
+            "description": "Frozen core. Cannot be slowed.",
+            "texture": "enemy_voidno",
+            "health": 20,
+            "speed": 45,
+            "reward": 12,
+            "modules": [
+                { "type": "Immune", "effect": "Slow" }
+            ]
+        },
+        {
+            "name": "voidno_swarm",
+            "description": "Bursts into a swarm of fast creatures on death.",
+            "texture": "enemy_voidno",
+            "health": 30,
+            "speed": 40,
+            "reward": 15,
+            "modules": [
+                { "type": "Split", "child": "voidno_fast", "count": 3 }
+            ]
         }
     ]
 }

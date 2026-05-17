@@ -44,7 +44,7 @@ void PlayingState::SyncHUDState(Game& game) {
     if (m_selectedTowerKey != DenseSlotMap<Tower>::INVALID_KEY) {
         if (Tower* tower = game.GetGameData().towers.Get(m_selectedTowerKey)) {
             Vector2 screenPos = GetWorldToScreen2D(tower->m_position, m_renderSystem.GetCamera());
-            m_towerInfoHUD.SetTarget(game, *tower, screenPos, true);
+            m_towerInfoHUD.SetTarget(game, *tower, screenPos, !game.GetGameData().waveActive);
         } else {
             m_towerInfoHUD.Hide();
         }
@@ -146,7 +146,7 @@ void PlayingState::Update(Game& game, float dt) {
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
     m_towerSystem.TickAttacks(dt, game.GetGameData());
-    m_worldSystem.CheckEnemyDead(game.GetGameData());
+    m_worldSystem.CheckEnemyDead(game.GetGameData(), game.GetEnemyFactory());
     m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
 }
 

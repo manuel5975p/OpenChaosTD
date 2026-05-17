@@ -3,6 +3,11 @@
 #include <stdexcept>
 #include <iostream>
 
+static EffectType ParseEffectType(const std::string& name) {
+    if (name == "Slow") return EffectType::Slow;
+    return EffectType::Burn;
+}
+
 void EnemyFactory::Load(JsonIO& jsonio) {
     auto json = jsonio.Load("data/enemies.json");
     if (json.is_null() || !json.contains("enemies")) {
@@ -27,6 +32,9 @@ void EnemyFactory::Load(JsonIO& jsonio) {
                 m.rate = mod.value("rate", 0.0f);
                 m.amount = mod.value("amount", 0.0f);
                 m.factor = mod.value("factor", 0.0f);
+                m.effect = mod.value("effect", "");
+                m.child = mod.value("child", "");
+                m.count = mod.value("count", 0);
                 tmpl.modules.push_back(m);
             }
         }
@@ -61,6 +69,10 @@ Enemy EnemyFactory::Create(const std::string& name) const {
             enemy.AddModule(std::make_unique<ArmorModule>(mod.amount));
         else if (mod.type == "Resistance")
             enemy.AddModule(std::make_unique<ResistanceModule>(mod.factor));
+        else if (mod.type == "Immune")
+            enemy.AddModule(std::make_unique<ImmuneModule>(ParseEffectType(mod.effect)));
+        else if (mod.type == "Split")
+            enemy.AddModule(std::make_unique<SplitModule>(mod.child, mod.count));
     }
 
     return enemy;

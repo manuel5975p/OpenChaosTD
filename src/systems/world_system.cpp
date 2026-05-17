@@ -1,5 +1,7 @@
 #include <systems/world_system.hpp>
 #include <world/tile.hpp>
+#include <world/enemy_module.hpp>
+#include <factory/enemy_factory.hpp>
 #include <iostream>
 #include <raymath.h>
 #include <vector>
@@ -111,15 +113,34 @@ void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
     }
 }
 
-void WorldSystem::CheckEnemyDead(GameData& gameData){
+void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory){
     std::vector<DenseSlotMap<Enemy>::Key> toRemove;
     for (auto& enemy : gameData.enemies) {
         if (enemy.m_currentHealth <= 0.0f)
             toRemove.push_back(gameData.enemies.KeyOf(&enemy));
     }
     for (auto& key : toRemove) {
-        gameData.gold += gameData.enemies.Get(key)->m_reward;
+        Enemy* enemy = gameData.enemies.Get(key);
+        gameData.gold += enemy->m_reward;
+        SpawnSplitChildren(*enemy, gameData, enemyFactory);
         RemoveEnemy(key, gameData);
+    }
+}
+
+void WorldSystem::SpawnSplitChildren(const Enemy& parent, GameData& gameData, EnemyFactory& enemyFactory){
+    for (const auto& mod : parent.m_modules) {
+        auto* split = dynamic_cast<const SplitModule*>(mod.get());
+        if (!split || !enemyFactory.Has(split->m_childType)) continue;
+
+        for (int i = 0; i < split->m_count; i++) {
+            Enemy child = enemyFactory.Create(split->m_childType);
+            // Children resume the parent's path from where it died
+            child.m_position = parent.m_position;
+            child.m_spawnedNest = parent.m_spawnedNest;
+            child.m_waypointIndex = parent.m_waypointIndex;
+            child.m_progress = parent.m_progress;
+            gameData.enemies.Insert(std::move(child));
+        }
     }
 }
 

@@ -34,6 +34,12 @@ public:
     }
 
     void AddEffect(Effect effect) {
+        // Skip effects this enemy is immune to
+        for (const auto& mod : m_modules) {
+            auto* immune = dynamic_cast<const ImmuneModule*>(mod.get());
+            if (immune && immune->m_effect == effect.m_type) return;
+        }
+
         for (auto& existing : m_effects) {
             if (existing.m_type != effect.m_type) continue;
             // Replace only if the incoming effect is stronger

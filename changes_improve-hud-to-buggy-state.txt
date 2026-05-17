@@ -1,0 +1,82 @@
+OVERVIEW
+The headline change is a content + architecture pass. Three new towers and
+two new enemies were added, and to support their abilities the tower/enemy
+"module" system was rebuilt around virtual methods instead of type checks.
+Waves became progressive and randomized, and several HUD and gameplay
+details were polished.
+
+
+1. NEW TOWERS  (data/towers.json)
+  - igniter:  area tower that deals tiny direct damage but sets all nearby
+              enemies on fire (sustained burn damage over time).
+  - piercer:  single-target tower with armor-piercing rounds, strong
+              against armored enemies; targets the enemy with most health.
+  - bouncer:  single-target tower whose shot chains/arcs to up to 3 extra
+              nearby enemies, each hit dealing reduced damage.
+  - zapper:   fire rate lowered from 2.0 to 1.0 shots/sec (balance tweak).
+
+2. NEW ENEMIES  (data/enemies.json)
+  - voidno_ember:    immune to burn damage (counters the igniter).
+  - voidno_splitter: on death, splits into two fast "voidno_fast" enemies.
+
+3. GAMEPLAY TUNING  (data/gameplay.json)
+  - Starting gold raised from 150 to 500.
+
+4. TOWER MODULE SYSTEM REWORK  (tower_modules.hpp, tower_system.cpp,
+   tower_factory.*, tower_info_hud.*)
+  - Tower modules now use two virtual methods:
+      * contribute() - writes the module's effect into an attack.
+      * describe()   - produces the stat text shown in the info panel.
+    This replaces the old approach of checking each module's concrete type
+    with dynamic_cast in multiple places.
+  - New module types added: Burn, ArmorPierce, and Chain.
+  - Attack payload building and the tower info panel are now driven by
+    these virtual calls, so adding a tower type no longer means editing
+    those systems.
+
+5. ENEMY MODULE SYSTEM  (enemy_module.hpp, enemy_factory.*, enemy.hpp)
+  - New enemy module types added: Immune (ignores a given effect type)
+    and Split (spawns child enemies on death).
+  - Enemy effect handling now checks for an Immune module and skips
+    applying an effect the enemy is immune to.
+
+6. ATTACK / COMBAT LOGIC  (attack.hpp, tower_system.cpp)
+  - The Attack struct gained fields for armor pierce and chain behavior
+    (chain count, range, damage falloff).
+  - TickAttacks now handles chain attacks: after hitting the primary
+    target, the attack bounces to the nearest unhit enemies in range,
+    dealing reduced damage each bounce.
+  - Armor piercing is applied: pierce reduces an enemy's effective armor.
+  - Towers no longer target already-dead enemies.
+  - Bug fix: the "Most Health" / "Lowest Health" targeting modes were
+    swapped and now select the correct enemy.
+
+7. WAVE SPAWNING  (wave_manager.*)
+  - Waves are no longer a fixed set of 3 basic enemies.
+  - Enemy types unlock progressively by wave number (wave 2 adds fast,
+    3 adds splitter, 4 adds ember, 5 adds tank).
+  - Wave size scales with wave number, at least one of each unlocked
+    type is guaranteed, and the rest are picked randomly (new RNG added)
+    and spread across spawn nests.
+
+8. WORLD SYSTEM  (world_system.*)
+  - CheckEnemyDead now receives the EnemyFactory so it can create the
+    child enemies spawned by Split-module enemies on death.
+
+9. PLAY STATE  (play_state.cpp/.hpp)
+  - Update() and Draw() were moved to the top of the file; range-indicator
+    and ghost-tower rendering were extracted into their own helper methods
+    (DrawRangeIndicator, DrawGhostTower).
+  - The per-frame system order changed: attack resolution (TickAttacks)
+    now runs immediately after the tower update, before enemies are
+    removed for reaching the core.
+  - The tower info panel's "sell" button now only shows while no wave is
+    active; the sell handler got a null-pointer guard.
+
+10. RENDERING / DEBUG  (render_system.cpp)
+  - The debug enemy overlay now shows current/max HP (color-coded)
+    instead of path progress.
+
+11. COSMETIC
+  - Removed column-aligned variable declarations in several files
+    (tower_info_hud, enemy_factory) to match the project style.

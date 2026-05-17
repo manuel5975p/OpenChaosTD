@@ -15,9 +15,12 @@ public:
 private:
     struct ModuleData {
         std::string type;
-        float rate   = 0.0f;
+        float rate = 0.0f;
         float amount = 0.0f;
         float factor = 0.0f;
+        std::string effect; // Immune: effect type to ignore
+        std::string child; // Split: child enemy type to spawn
+        int count = 0; // Split: number of children
     };
 
     struct EnemyTemplate {
