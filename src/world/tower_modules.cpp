@@ -9,7 +9,7 @@ void FlatDamageModule::Contribute(Attack& attack) const {
 
 void FlatDamageModule::Describe(std::vector<StatRow>& rows) const {
     char buf[32];
-    snprintf(buf, sizeof(buf), "Damage:  %.0f", m_damage);
+    snprintf(buf, sizeof(buf), "Damage:  %g", m_damage);
     rows.push_back({buf, RAYWHITE});
 }
 
