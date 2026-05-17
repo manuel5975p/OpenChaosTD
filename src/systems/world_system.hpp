@@ -20,7 +20,4 @@ public:
 
 private:
     bool ValidateTowerPlacement(int x, int y, GameData& gameData);
-
-    // Spawns SplitModule children at a dead enemy's position, continuing its path
-    void SpawnSplitChildren(const Enemy& parent, GameData& gameData, EnemyFactory& enemyFactory);
 };

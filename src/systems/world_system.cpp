@@ -1,6 +1,5 @@
 #include <systems/world_system.hpp>
 #include <world/tile.hpp>
-#include <world/enemy_module.hpp>
 #include <factory/enemy_factory.hpp>
 #include <iostream>
 #include <raymath.h>
@@ -122,24 +121,32 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory)
     for (auto& key : toRemove) {
         Enemy* enemy = gameData.enemies.Get(key);
         gameData.gold += enemy->m_reward;
-        SpawnSplitChildren(*enemy, gameData, enemyFactory);
+
+        // Copy parent path state and collect spawn requests before mutating the slotmap
+        Vector2 pos          = enemy->m_position;
+        int     nest         = enemy->m_spawnedNest;
+        int     waypoint     = enemy->m_waypointIndex;
+        float   progress     = enemy->m_progress;
+
+        std::vector<SpawnRequest> requests;
+        for (const auto& mod : enemy->m_modules) {
+            auto req = mod->OnDeath();
+            if (req && enemyFactory.Has(req->type))
+                requests.push_back(*req);
+        }
+
         RemoveEnemy(key, gameData);
-    }
-}
 
-void WorldSystem::SpawnSplitChildren(const Enemy& parent, GameData& gameData, EnemyFactory& enemyFactory){
-    for (const auto& mod : parent.m_modules) {
-        auto* split = dynamic_cast<const SplitModule*>(mod.get());
-        if (!split || !enemyFactory.Has(split->m_childType)) continue;
-
-        for (int i = 0; i < split->m_count; i++) {
-            Enemy child = enemyFactory.Create(split->m_childType);
-            // Children resume the parent's path from where it died
-            child.m_position = parent.m_position;
-            child.m_spawnedNest = parent.m_spawnedNest;
-            child.m_waypointIndex = parent.m_waypointIndex;
-            child.m_progress = parent.m_progress;
-            gameData.enemies.Insert(std::move(child));
+        // Spawn children after parent is removed
+        for (const auto& req : requests) {
+            for (int i = 0; i < req.count; i++) {
+                Enemy child = enemyFactory.Create(req.type);
+                child.m_position     = pos;
+                child.m_spawnedNest  = nest;
+                child.m_waypointIndex = waypoint;
+                child.m_progress     = progress;
+                gameData.enemies.Insert(std::move(child));
+            }
         }
     }
 }

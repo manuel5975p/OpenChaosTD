@@ -1,8 +1,6 @@
 #include <systems/enemy_system.hpp>
 
 #include <raymath.h>
-#include <world/enemy_module.hpp>
-#include <algorithm>
 
 void EnemySystem::FollowPath(float dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
@@ -34,22 +32,18 @@ void EnemySystem::FollowPath(float dt, GameData& gameData){
 void EnemySystem::TickEnemies(float dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
         enemy.m_currentSpeed = enemy.m_speed;
+        enemy.m_resistance = 0.0f;
 
-        float resistance = 0.0f;
-        for (auto& mod : enemy.m_modules) {
-            if (auto* regen = dynamic_cast<RegenerationModule*>(mod.get()))
-                enemy.m_currentHealth = std::min(enemy.m_health, enemy.m_currentHealth + regen->m_rate * dt);
-            else if (auto* resist = dynamic_cast<ResistanceModule*>(mod.get()))
-                resistance = std::min(1.0f, resistance + resist->m_factor);
-        }
+        for (auto& mod : enemy.m_modules)
+            mod->Tick(dt, enemy);
 
         for (auto& effect : enemy.m_effects) {
             switch (effect.m_type) {
                 case EffectType::Burn:
-                    enemy.m_currentHealth -= effect.m_value * (1.0f - resistance) * dt;
+                    enemy.m_currentHealth -= effect.m_value * (1.0f - enemy.m_resistance) * dt;
                     break;
                 case EffectType::Slow: {
-                    float weakenedFactor = effect.m_value + (1.0f - effect.m_value) * resistance;
+                    float weakenedFactor = effect.m_value + (1.0f - effect.m_value) * enemy.m_resistance;
                     enemy.m_currentSpeed *= weakenedFactor;
                     break;
                 }

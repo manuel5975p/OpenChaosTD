@@ -1,5 +1,5 @@
 #include <factory/enemy_factory.hpp>
-#include <world/enemy_module.hpp>
+#include <world/enemy_modules.hpp>
 #include <stdexcept>
 #include <iostream>
 

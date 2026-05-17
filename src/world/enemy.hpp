@@ -6,7 +6,7 @@
 
 #include <memory>
 #include <world/effect.hpp>
-#include <world/enemy_module.hpp>
+#include <world/enemy_modules.hpp>
 
 class Enemy{
 public:
@@ -23,6 +23,7 @@ public:
     int m_livesOnReach = 1; // lives deducted when this enemy reaches the core
 
     float m_progress = 0.0f;
+    float m_resistance = 0.0f; // accumulated per-frame from ResistanceModules
     int m_spawnedNest = 0;
     int m_waypointIndex = -1;
 
@@ -34,11 +35,8 @@ public:
     }
 
     void AddEffect(Effect effect) {
-        // Skip effects this enemy is immune to
-        for (const auto& mod : m_modules) {
-            auto* immune = dynamic_cast<const ImmuneModule*>(mod.get());
-            if (immune && immune->m_effect == effect.m_type) return;
-        }
+        for (const auto& mod : m_modules)
+            if (mod->ShouldBlock(effect.m_type)) return;
 
         for (auto& existing : m_effects) {
             if (existing.m_type != effect.m_type) continue;
