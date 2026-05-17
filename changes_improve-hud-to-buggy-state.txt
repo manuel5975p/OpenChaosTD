@@ -1,24 +1,3 @@
-OVERVIEW
-The headline change is a content + architecture pass. Three new towers and
-two new enemies were added, and to support their abilities the tower/enemy
-"module" system was rebuilt around virtual methods instead of type checks.
-Waves became progressive and randomized, and several HUD and gameplay
-details were polished.
-
-
-1. NEW TOWERS  (data/towers.json)
-  - igniter:  area tower that deals tiny direct damage but sets all nearby
-              enemies on fire (sustained burn damage over time).
-  - piercer:  single-target tower with armor-piercing rounds, strong
-              against armored enemies; targets the enemy with most health.
-  - bouncer:  single-target tower whose shot chains/arcs to up to 3 extra
-              nearby enemies, each hit dealing reduced damage.
-  - zapper:   fire rate lowered from 2.0 to 1.0 shots/sec (balance tweak).
-
-2. NEW ENEMIES  (data/enemies.json)
-  - voidno_ember:    immune to burn damage (counters the igniter).
-  - voidno_splitter: on death, splits into two fast "voidno_fast" enemies.
-
 4. TOWER MODULE SYSTEM REWORK  (tower_modules.hpp, tower_system.cpp,
    tower_factory.*, tower_info_hud.*)
   - Tower modules now use two virtual methods:
@@ -36,16 +15,6 @@ details were polished.
     and Split (spawns child enemies on death).
   - Enemy effect handling now checks for an Immune module and skips
     applying an effect the enemy is immune to.
-    
-PLAY STATE  (play_state.cpp/.hpp)
-  - Update() and Draw() were moved to the top of the file; range-indicator
-    and ghost-tower rendering were extracted into their own helper methods
-    (DrawRangeIndicator, DrawGhostTower).
-  - The per-frame system order changed: attack resolution (TickAttacks)
-    now runs immediately after the tower update, before enemies are
-    removed for reaching the core.
-  - The tower info panel's "sell" button now only shows while no wave is
-    active; the sell handler got a null-pointer guard.
 
 11. COSMETIC
   - Removed column-aligned variable declarations in several files
