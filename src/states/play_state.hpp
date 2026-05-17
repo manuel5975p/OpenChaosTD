@@ -28,6 +28,11 @@ private:
     void HandleTowerPlacement(Game& game, Vector2 mouseWorld);
     void SyncHUDState(Game& game);
 
+    struct SelectionContext {
+        DenseSlotMap<Tower>::Key towerKey = DenseSlotMap<Tower>::INVALID_KEY;
+        std::optional<Tower> hoveredTower;
+    };
+
     bool m_debug = false;
     bool m_gameOver = false;
 
@@ -36,9 +41,7 @@ private:
     TowerInfoHUD m_towerInfoHUD;
     EventLog m_eventLog;
 
-    // INVALID_KEY when no placed tower is selected
-    DenseSlotMap<Tower>::Key m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
-    std::optional<Tower> m_hoveredTower;
+    SelectionContext m_selection;
 
     RenderSystem m_renderSystem;
     WorldSystem m_worldSystem;

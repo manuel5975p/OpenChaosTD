@@ -78,9 +78,9 @@ void PlayingState::Draw(Game& game) {
         m_renderSystem.DebugDrawEnemies(game.GetGameData().enemies);
     }
     m_renderSystem.DrawTowers(game.GetGameData().towers, game.GetAssets());
-    m_renderSystem.DrawRangeIndicator(m_selectedTowerKey, game.GetGameData().map, game.GetGameData().towers, mouseWorld);
+    m_renderSystem.DrawRangeIndicator(m_selection.towerKey, game.GetGameData().map, game.GetGameData().towers, mouseWorld);
     if (!game.GetGameData().waveActive &&
-        m_selectedTowerKey == DenseSlotMap<Tower>::INVALID_KEY &&
+        m_selection.towerKey == DenseSlotMap<Tower>::INVALID_KEY &&
         !m_towerHUD.GetSelectedTower().empty()) {
         int x, y;
         if (game.GetGameData().map.WorldToTile(mouseWorld, x, y)) {
@@ -106,14 +106,14 @@ void PlayingState::Draw(Game& game) {
 
 void PlayingState::HandleHudSignals(Game& game) {
     if (m_towerInfoHUD.WasSellRequested()) {
-        if (Tower* tower = game.GetGameData().towers.Get(m_selectedTowerKey)) {
+        if (Tower* tower = game.GetGameData().towers.Get(m_selection.towerKey)) {
             int x, y;
             if (game.GetGameData().map.WorldToTile(tower->m_position, x, y)) {
                 game.GetGameData().gold += static_cast<int>(tower->m_cost * game.GetGameData().sellRefundRate);
                 m_worldSystem.RemoveTower(x, y, game.GetGameData());
             }
         }
-        m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
+        m_selection.towerKey = DenseSlotMap<Tower>::INVALID_KEY;
     }
 
     if (m_scoreHUD.WasWaveRequested())
@@ -130,7 +130,7 @@ void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
     int x, y;
     if (!game.GetGameData().map.WorldToTile(mouseWorld, x, y)) {
         // Clicked outside the map — deselect
-        m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
+        m_selection.towerKey = DenseSlotMap<Tower>::INVALID_KEY;
         return;
     }
 
@@ -138,12 +138,12 @@ void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
 
     // Tile has a tower — select it regardless of wave state
     if (tile.m_towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
-        m_selectedTowerKey = tile.m_towerKey;
+        m_selection.towerKey = tile.m_towerKey;
         return;
     }
 
     // Empty tile — always deselect the inspected tower
-    m_selectedTowerKey = DenseSlotMap<Tower>::INVALID_KEY;
+    m_selection.towerKey = DenseSlotMap<Tower>::INVALID_KEY;
 
     // Placement is blocked during waves or when no tower type is selected
     if (game.GetGameData().waveActive) {
@@ -163,14 +163,14 @@ void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
 }
 
 void PlayingState::SyncHUDState(Game& game) {
-    if (m_selectedTowerKey != DenseSlotMap<Tower>::INVALID_KEY) {
-        if (Tower* tower = game.GetGameData().towers.Get(m_selectedTowerKey)) {
+    if (m_selection.towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
+        if (Tower* tower = game.GetGameData().towers.Get(m_selection.towerKey)) {
             Vector2 screenPos = GetWorldToScreen2D(tower->m_position, m_renderSystem.GetCamera());
             m_towerInfoHUD.SetTarget(game, *tower, screenPos, !game.GetGameData().waveActive);
         } else {
             m_towerInfoHUD.Hide();
         }
-        m_hoveredTower.reset();
+        m_selection.hoveredTower.reset();
         return;
     }
 
@@ -178,14 +178,14 @@ void PlayingState::SyncHUDState(Game& game) {
     Vector2 mousePos = game.GetInput().GetMousePosition();
     const std::string& hovered = m_towerHUD.GetHoveredTower(mousePos);
     if (hovered.empty()) {
-        m_hoveredTower.reset();
+        m_selection.hoveredTower.reset();
         m_towerInfoHUD.Hide();
         return;
     }
 
     // Only re-create the preview tower when the hovered type changes
-    if (!m_hoveredTower.has_value() || m_hoveredTower->m_name != hovered)
-        m_hoveredTower = game.GetTowerFactory().Create(hovered);
+    if (!m_selection.hoveredTower.has_value() || m_selection.hoveredTower->m_name != hovered)
+        m_selection.hoveredTower = game.GetTowerFactory().Create(hovered);
     Vector2 topCenter = m_towerHUD.GetHoveredButtonTopCenter(mousePos);
-    m_towerInfoHUD.SetTarget(game, *m_hoveredTower, topCenter, false);
+    m_towerInfoHUD.SetTarget(game, *m_selection.hoveredTower, topCenter, false);
 }
