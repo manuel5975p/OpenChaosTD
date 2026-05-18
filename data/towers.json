@@ -5,10 +5,10 @@
             "description": "Fast attack, low damage. Good against swarms.",
             "texture": "tower_zapper",
             "cost": 75,
-            "fireRate": 2.0,
-            "attackDuration": 0.1,
+            "fireRate": 3.0,
+            "attackDuration": 0.08,
             "radius": 100,
-            "targetCount": 1,
+            "targetCount": 2,
             "attackType": "Line",
             "targetingMode": "First",
             "modules": [
@@ -33,7 +33,7 @@
         },
         {
             "name": "sniper",
-            "description": "Extreme range, high damage. Targets the toughest enemy.",
+            "description": "Extreme range, high burst damage. Targets the toughest enemy.",
             "texture": "tower_sniper",
             "cost": 150,
             "fireRate": 0.5,
@@ -43,28 +43,28 @@
             "attackType": "Line",
             "targetingMode": "MostHealth",
             "modules": [
-                { "type": "FlatDamage", "damage": 8.0 }
+                { "type": "FlatDamage", "damage": 10.0 }
             ]
         },
         {
             "name": "flamer",
-            "description": "Short range. Ignites enemies, dealing damage over time.",
+            "description": "Short range. Ignites all nearby enemies, dealing damage over time.",
             "texture": "tower_flamer",
-            "cost": 100,
-            "fireRate": 1.5,
-            "attackDuration": 0.2,
+            "cost": 110,
+            "fireRate": 1.2,
+            "attackDuration": 0.25,
             "radius": 90,
             "targetCount": 0,
             "attackType": "Area",
             "targetingMode": "First",
             "modules": [
-                { "type": "FlatDamage", "damage": 1.0 },
-                { "type": "Burn", "damage": 4.0, "duration": 3.0 }
+                { "type": "FlatDamage", "damage": 0.5 },
+                { "type": "Burn", "damage": 3.0, "duration": 4.0 }
             ]
         },
         {
             "name": "piercer",
-            "description": "Punches through armor. Effective against heavily armored enemies.",
+            "description": "Punches through armor. Seeks out the most armored enemy.",
             "texture": "tower_piercer",
             "cost": 125,
             "fireRate": 1.0,
@@ -72,56 +72,10 @@
             "radius": 150,
             "targetCount": 1,
             "attackType": "Line",
-            "targetingMode": "MostHealth",
-            "modules": [
-                { "type": "FlatDamage", "damage": 5.0 },
-                { "type": "ArmorPiercing", "pierce": 4.0 }
-            ]
-        },
-        {
-            "name": "armor_breaker",
-            "description": "Seeks out armored enemies. Pierce cuts through their defenses.",
-            "texture": "tower_piercer",
-            "cost": 150,
-            "fireRate": 0.8,
-            "attackDuration": 0.2,
-            "radius": 140,
-            "targetCount": 1,
-            "attackType": "Line",
             "targetingMode": "MostArmor",
             "modules": [
-                { "type": "FlatDamage",    "damage": 4.0 },
-                { "type": "ArmorPiercing", "pierce": 6.0 }
-            ]
-        },
-        {
-            "name": "purifier",
-            "description": "Hunts resistant enemies. Raw damage bypasses their resistance.",
-            "texture": "tower_sniper",
-            "cost": 130,
-            "fireRate": 0.7,
-            "attackDuration": 0.3,
-            "radius": 200,
-            "targetCount": 1,
-            "attackType": "Line",
-            "targetingMode": "MostResistance",
-            "modules": [
-                { "type": "FlatDamage", "damage": 10.0 }
-            ]
-        },
-        {
-            "name": "shield_breaker",
-            "description": "Targets shielded enemies and strips their protection.",
-            "texture": "tower_zapper",
-            "cost": 120,
-            "fireRate": 2.5,
-            "attackDuration": 0.1,
-            "radius": 110,
-            "targetCount": 1,
-            "attackType": "Line",
-            "targetingMode": "MostShield",
-            "modules": [
-                { "type": "FlatDamage", "damage": 3.0 }
+                { "type": "FlatDamage", "damage": 4.0 },
+                { "type": "ArmorPiercing", "pierce": 5.0 }
             ]
         },
         {
@@ -136,8 +90,8 @@
             "attackType": "Line",
             "targetingMode": "First",
             "modules": [
-                { "type": "FlatDamage", "damage": 3.0 },
-                { "type": "Crit", "critChance": 0.3, "critMultiplier": 3.0 }
+                { "type": "FlatDamage", "damage": 2.0 },
+                { "type": "Crit", "critChance": 0.35, "critMultiplier": 4.0 }
             ]
         }
     ]

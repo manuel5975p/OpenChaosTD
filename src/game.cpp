@@ -94,7 +94,6 @@ void Game::LoadAssets() {
     m_assets.LoadTexture("tower_zapper", "textures/tower_zapper.png");
     m_assets.LoadTexture("tower_freezer", "textures/tower_freezer.png");
     m_assets.LoadTexture("tower_sniper", "textures/tower_sniper.png");
-    m_assets.LoadTexture("tower_wall", "textures/tower_wall.png");
     m_assets.LoadTexture("tower_flamer", "textures/tower_flamer.png");
     m_assets.LoadTexture("tower_piercer", "textures/tower_piercer.png");
     m_assets.LoadTexture("tower_gambler", "textures/tower_gambler.png");
