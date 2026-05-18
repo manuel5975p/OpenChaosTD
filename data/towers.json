@@ -45,6 +45,54 @@
             "modules": [
                 { "type": "FlatDamage", "damage": 8.0 }
             ]
+        },
+        {
+            "name": "flamer",
+            "description": "Short range. Ignites enemies, dealing damage over time.",
+            "texture": "tower_flamer",
+            "cost": 100,
+            "fireRate": 1.5,
+            "attackDuration": 0.2,
+            "radius": 90,
+            "targetCount": 0,
+            "attackType": "Area",
+            "targetingMode": "First",
+            "modules": [
+                { "type": "FlatDamage", "damage": 1.0 },
+                { "type": "Burn", "damage": 4.0, "duration": 3.0 }
+            ]
+        },
+        {
+            "name": "piercer",
+            "description": "Punches through armor. Effective against heavily armored enemies.",
+            "texture": "tower_piercer",
+            "cost": 125,
+            "fireRate": 1.0,
+            "attackDuration": 0.15,
+            "radius": 150,
+            "targetCount": 1,
+            "attackType": "Line",
+            "targetingMode": "MostHealth",
+            "modules": [
+                { "type": "FlatDamage", "damage": 5.0 },
+                { "type": "ArmorPiercing", "pierce": 4.0 }
+            ]
+        },
+        {
+            "name": "gambler",
+            "description": "Low base damage, but lucky shots hit extremely hard.",
+            "texture": "tower_gambler",
+            "cost": 110,
+            "fireRate": 1.2,
+            "attackDuration": 0.15,
+            "radius": 120,
+            "targetCount": 1,
+            "attackType": "Line",
+            "targetingMode": "First",
+            "modules": [
+                { "type": "FlatDamage", "damage": 3.0 },
+                { "type": "Crit", "critChance": 0.3, "critMultiplier": 3.0 }
+            ]
         }
     ]
 }

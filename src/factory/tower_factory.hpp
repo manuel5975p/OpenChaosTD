@@ -23,6 +23,9 @@ private:
         float damage = 0.0f;
         float factor = 1.0f;
         float duration = 0.0f;
+        float pierce = 0.0f;
+        float critChance = 0.0f;
+        float critMultiplier = 2.0f;
     };
 
     struct TowerTemplate {

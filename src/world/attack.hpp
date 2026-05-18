@@ -18,6 +18,9 @@ struct Attack {
     float m_maxDuration;
 
     float m_damage = 0.0f;
+    float m_armorPierce = 0.0f;
+    float m_critChance = 0.0f;
+    float m_critMultiplier = 1.0f;
     std::vector<Effect> m_effects;
     float m_delay = 0.0f;
     bool m_resolved = false;

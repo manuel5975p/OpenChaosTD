@@ -101,8 +101,11 @@ void TowerSystem::TickAttacks(float dt, GameData& gameData) {
         for (auto& key : attack.m_targetKeys) {
             Enemy* enemy = gameData.enemies.Get(key);
             if (!enemy) continue;
-            float armor = ComputeArmor(*enemy);
-            enemy->m_currentHealth -= std::max(0.0f, attack.m_damage - armor);
+            float armor = std::max(0.0f, ComputeArmor(*enemy) - attack.m_armorPierce);
+            float dmg = attack.m_damage;
+            if (attack.m_critChance > 0.0f && GetRandomValue(0, 99) < (int)(attack.m_critChance * 100.0f))
+                dmg *= attack.m_critMultiplier;
+            enemy->m_currentHealth -= std::max(0.0f, dmg - armor);
             for (auto& effect : attack.m_effects)
                 enemy->AddEffect(effect);
         }

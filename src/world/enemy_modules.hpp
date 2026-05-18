@@ -19,8 +19,7 @@ public:
     virtual std::optional<SpawnRequest> OnDeath() const { return std::nullopt; }
     virtual bool ShouldBlock(EffectType) const { return false; }
     virtual float GetArmor() const { return 0.0f; }
-    virtual std::string Describe() const { return ""; }
-    virtual Color DescribeColor() const { return RAYWHITE; }
+    virtual void Describe(std::string&, Color&) const {}
 };
 
 class RegenerationModule : public EnemyModule {
@@ -28,7 +27,7 @@ public:
     float m_rate;
     explicit RegenerationModule(float rate) : m_rate(rate) {}
     void Tick(float dt, Enemy& enemy) const override;
-    std::string Describe() const override;
+    void Describe(std::string& text, Color& color) const override;
 };
 
 class ArmorModule : public EnemyModule {
@@ -36,7 +35,7 @@ public:
     float m_amount;
     explicit ArmorModule(float amount) : m_amount(amount) {}
     float GetArmor() const override;
-    std::string Describe() const override;
+    void Describe(std::string& text, Color& color) const override;
 };
 
 class ResistanceModule : public EnemyModule {
@@ -44,7 +43,7 @@ public:
     float m_factor;
     explicit ResistanceModule(float factor) : m_factor(factor) {}
     void Tick(float dt, Enemy& enemy) const override;
-    std::string Describe() const override;
+    void Describe(std::string& text, Color& color) const override;
 };
 
 // Enemy ignores any incoming effect of the given type
@@ -53,7 +52,7 @@ public:
     EffectType m_effect;
     explicit ImmuneModule(EffectType effect) : m_effect(effect) {}
     bool ShouldBlock(EffectType type) const override;
-    std::string Describe() const override;
+    void Describe(std::string& text, Color& color) const override;
 };
 
 // On death, spawns m_count children of type m_childType at the death position
@@ -64,5 +63,5 @@ public:
     SplitModule(std::string childType, int count)
         : m_childType(std::move(childType)), m_count(count) {}
     std::optional<SpawnRequest> OnDeath() const override;
-    std::string Describe() const override;
+    void Describe(std::string& text, Color& color) const override;
 };

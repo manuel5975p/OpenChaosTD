@@ -41,8 +41,11 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
     m_showSell = showSell;
 
     int moduleRows = 0;
-    for (const auto& mod : tower.m_modules)
-        if (!mod->Describe().empty()) moduleRows++;
+    for (const auto& mod : tower.m_modules) {
+        std::string text; Color color;
+        mod->Describe(text, color);
+        if (!text.empty()) moduleRows++;
+    }
 
     m_descLines = WrapText(tower.m_description, m_panelW - m_margin * 2.0f, m_fontDesc);
 
@@ -99,9 +102,10 @@ void TowerInfoHUD::OnDraw(Game& game) {
 
     // Module-derived stats
     for (const auto& mod : tower.m_modules) {
-        std::string text = mod->Describe();
+        std::string text; Color color;
+        mod->Describe(text, color);
         if (text.empty()) continue;
-        DrawText(text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, mod->DescribeColor());
+        DrawText(text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, color);
         y += m_lineH;
     }
 

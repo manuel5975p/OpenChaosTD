@@ -44,6 +44,9 @@ void TowerFactory::Load(JsonIO& jsonio) {
                 m.damage = mod.value("damage", 0.0f);
                 m.factor = mod.value("factor", 1.0f);
                 m.duration = mod.value("duration", 0.0f);
+                m.pierce = mod.value("pierce", 0.0f);
+                m.critChance = mod.value("critChance", 0.0f);
+                m.critMultiplier = mod.value("critMultiplier", 2.0f);
                 tmpl.modules.push_back(m);
             }
         }
@@ -78,6 +81,12 @@ Tower TowerFactory::Create(const std::string& name) const {
             tower.AddModule(std::make_unique<FlatDamageModule>(mod.damage));
         else if (mod.type == "Slow")
             tower.AddModule(std::make_unique<SlowModule>(mod.factor, mod.duration));
+        else if (mod.type == "Burn")
+            tower.AddModule(std::make_unique<BurnModule>(mod.damage, mod.duration));
+        else if (mod.type == "ArmorPiercing")
+            tower.AddModule(std::make_unique<ArmorPiercingModule>(mod.pierce));
+        else if (mod.type == "Crit")
+            tower.AddModule(std::make_unique<CritModule>(mod.critChance, mod.critMultiplier));
     }
 
     return tower;

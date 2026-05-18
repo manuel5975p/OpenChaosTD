@@ -9,10 +9,11 @@ void RegenerationModule::Tick(float dt, Enemy& enemy) const {
     enemy.m_currentHealth = std::min(enemy.m_health, enemy.m_currentHealth + m_rate * dt);
 }
 
-std::string RegenerationModule::Describe() const {
+void RegenerationModule::Describe(std::string& text, Color& color) const {
     char buf[32];
     snprintf(buf, sizeof(buf), "Regen:   %g/s", m_rate);
-    return buf;
+    text = buf;
+    color = RAYWHITE;
 }
 
 // --- ArmorModule ---
@@ -21,10 +22,11 @@ float ArmorModule::GetArmor() const {
     return m_amount;
 }
 
-std::string ArmorModule::Describe() const {
+void ArmorModule::Describe(std::string& text, Color& color) const {
     char buf[32];
     snprintf(buf, sizeof(buf), "Armor:   %g", m_amount);
-    return buf;
+    text = buf;
+    color = RAYWHITE;
 }
 
 // --- ResistanceModule ---
@@ -33,10 +35,11 @@ void ResistanceModule::Tick(float, Enemy& enemy) const {
     enemy.m_resistance = std::min(1.0f, enemy.m_resistance + m_factor);
 }
 
-std::string ResistanceModule::Describe() const {
+void ResistanceModule::Describe(std::string& text, Color& color) const {
     char buf[32];
     snprintf(buf, sizeof(buf), "Resist:  %.0f%%", m_factor * 100.0f);
-    return buf;
+    text = buf;
+    color = RAYWHITE;
 }
 
 // --- ImmuneModule ---
@@ -45,12 +48,13 @@ bool ImmuneModule::ShouldBlock(EffectType type) const {
     return m_effect == type;
 }
 
-std::string ImmuneModule::Describe() const {
+void ImmuneModule::Describe(std::string& text, Color& color) const {
     switch (m_effect) {
-        case EffectType::Slow: return "Immune:  Slow";
-        case EffectType::Burn: return "Immune:  Burn";
+        case EffectType::Slow: text = "Immune:  Slow"; color = SKYBLUE; return;
+        case EffectType::Burn: text = "Immune:  Burn"; color = ORANGE;  return;
     }
-    return "";
+    text = "";
+    color = RAYWHITE;
 }
 
 // --- SplitModule ---
@@ -59,8 +63,9 @@ std::optional<SpawnRequest> SplitModule::OnDeath() const {
     return SpawnRequest{m_childType, m_count};
 }
 
-std::string SplitModule::Describe() const {
+void SplitModule::Describe(std::string& text, Color& color) const {
     char buf[48];
     snprintf(buf, sizeof(buf), "Split:   %dx %s", m_count, m_childType.c_str());
-    return buf;
+    text = buf;
+    color = RAYWHITE;
 }
