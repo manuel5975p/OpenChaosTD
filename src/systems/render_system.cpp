@@ -106,7 +106,7 @@ void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager&
         DrawTextureV(texture, {enemy.m_position.x - hw, enemy.m_position.y - hh}, WHITE);
 
         // Health bar: 24px wide, 4px tall, floats above the sprite
-        DrawHealthBar({enemy.m_position.x, enemy.m_position.y + hh + 2.0f}, enemy.m_currentHealth, enemy.m_health, 20.0f, 4.0f );
+        DrawHealthBar({enemy.m_position.x, enemy.m_position.y + hh + 2.0f}, enemy.m_currentHealth, enemy.m_maxHealth, 20.0f, 4.0f );
     }
 }
 

@@ -66,6 +66,17 @@
             ]
         },
         {
+            "name": "voidno_shielded",
+            "description": "Protected by an energy shield that absorbs damage before health is lost.",
+            "texture": "enemy_voidno",
+            "health": 25,
+            "speed": 40,
+            "reward": 18,
+            "modules": [
+                { "type": "Shield", "amount": 15.0 }
+            ]
+        },
+        {
             "name": "voidno_swarm",
             "description": "Bursts into a swarm of fast creatures on death.",
             "texture": "enemy_voidno",

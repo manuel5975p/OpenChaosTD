@@ -8,7 +8,10 @@ enum class TargetingMode {
     MostHealth,
     LowestHealth,
     Fastest,
-    Slowest
+    Slowest,
+    MostArmor,
+    MostResistance,
+    MostShield
 };
 
 struct TowerStats {

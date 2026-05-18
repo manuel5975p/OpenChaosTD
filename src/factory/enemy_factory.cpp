@@ -15,6 +15,7 @@ void EnemyFactory::Load(JsonIO& jsonio) {
     m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("amount", 0.0f)); };
     m_builders["Resistance"]   = [](const json& j){ return std::make_unique<ResistanceModule>(j.value("factor", 0.0f)); };
     m_builders["Immune"]       = [](const json& j){ return std::make_unique<ImmuneModule>(ParseEffectType(j.value("effect", ""))); };
+    m_builders["Shield"]       = [](const json& j){ return std::make_unique<ShieldModule>(j.value("amount", 0.0f)); };
     m_builders["Split"]        = [](const json& j){ return std::make_unique<SplitModule>(j.value("child", ""), j.value("count", 0)); };
 
     auto data = jsonio.Load("data/enemies.json");
@@ -54,10 +55,10 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     enemy.m_name         = tmpl.name;
     enemy.m_description  = tmpl.description;
     enemy.m_texture      = tmpl.texture;
-    enemy.m_health       = tmpl.health;
+    enemy.m_maxHealth     = tmpl.health;
     enemy.m_currentHealth = tmpl.health;
-    enemy.m_speed        = tmpl.speed;
-    enemy.m_currentSpeed = tmpl.speed;
+    enemy.m_base.speed    = tmpl.speed;
+    enemy.m_stats         = enemy.m_base;
     enemy.m_reward       = tmpl.reward;
     enemy.m_livesOnReach = tmpl.livesOnReach;
 

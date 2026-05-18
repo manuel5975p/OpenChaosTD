@@ -11,11 +11,14 @@ static AttackType ParseAttackType(const std::string& s) {
 }
 
 static TargetingMode ParseTargetingMode(const std::string& s) {
-    if (s == "Last")         return TargetingMode::Last;
-    if (s == "MostHealth")   return TargetingMode::MostHealth;
-    if (s == "LowestHealth") return TargetingMode::LowestHealth;
-    if (s == "Fastest")      return TargetingMode::Fastest;
-    if (s == "Slowest")      return TargetingMode::Slowest;
+    if (s == "Last")            return TargetingMode::Last;
+    if (s == "MostHealth")      return TargetingMode::MostHealth;
+    if (s == "LowestHealth")    return TargetingMode::LowestHealth;
+    if (s == "Fastest")         return TargetingMode::Fastest;
+    if (s == "Slowest")         return TargetingMode::Slowest;
+    if (s == "MostArmor")       return TargetingMode::MostArmor;
+    if (s == "MostResistance")  return TargetingMode::MostResistance;
+    if (s == "MostShield")      return TargetingMode::MostShield;
     return TargetingMode::First;
 }
 

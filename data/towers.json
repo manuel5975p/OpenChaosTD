@@ -79,6 +79,52 @@
             ]
         },
         {
+            "name": "armor_breaker",
+            "description": "Seeks out armored enemies. Pierce cuts through their defenses.",
+            "texture": "tower_piercer",
+            "cost": 150,
+            "fireRate": 0.8,
+            "attackDuration": 0.2,
+            "radius": 140,
+            "targetCount": 1,
+            "attackType": "Line",
+            "targetingMode": "MostArmor",
+            "modules": [
+                { "type": "FlatDamage",    "damage": 4.0 },
+                { "type": "ArmorPiercing", "pierce": 6.0 }
+            ]
+        },
+        {
+            "name": "purifier",
+            "description": "Hunts resistant enemies. Raw damage bypasses their resistance.",
+            "texture": "tower_sniper",
+            "cost": 130,
+            "fireRate": 0.7,
+            "attackDuration": 0.3,
+            "radius": 200,
+            "targetCount": 1,
+            "attackType": "Line",
+            "targetingMode": "MostResistance",
+            "modules": [
+                { "type": "FlatDamage", "damage": 10.0 }
+            ]
+        },
+        {
+            "name": "shield_breaker",
+            "description": "Targets shielded enemies and strips their protection.",
+            "texture": "tower_zapper",
+            "cost": 120,
+            "fireRate": 2.5,
+            "attackDuration": 0.1,
+            "radius": 110,
+            "targetCount": 1,
+            "attackType": "Line",
+            "targetingMode": "MostShield",
+            "modules": [
+                { "type": "FlatDamage", "damage": 3.0 }
+            ]
+        },
+        {
             "name": "gambler",
             "description": "Low base damage, but lucky shots hit extremely hard.",
             "texture": "tower_gambler",

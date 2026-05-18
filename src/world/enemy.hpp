@@ -3,29 +3,29 @@
 #include <raylib.h>
 #include <string>
 #include <vector>
-
 #include <memory>
 #include <world/effect.hpp>
 #include <world/enemy_modules.hpp>
+#include <world/enemy_stats.hpp>
 
-class Enemy{
+class Enemy {
 public:
     std::string m_name;
     std::string m_description;
     std::string m_texture;
     Vector2 m_position = {0.0f, 0.0f};
-    
-    float m_health = 0.0f;
+
+    float m_maxHealth     = 0.0f;
     float m_currentHealth = 0.0f;
-    float m_speed = 0.0f;
-    float m_currentSpeed = 0.0f;
-    int m_reward = 0;
-    int m_livesOnReach = 1; // lives deducted when this enemy reaches the core
+    int   m_reward        = 0;
+    int   m_livesOnReach  = 1;
+
+    EnemyStats m_base;   // set from JSON, never modified at runtime
+    EnemyStats m_stats;  // recomputed each tick from base + ContributeStats modules
 
     float m_progress = 0.0f;
-    float m_resistance = 0.0f; // accumulated per-frame from ResistanceModules
-    int m_spawnedNest = 0;
-    int m_waypointIndex = -1;
+    int   m_spawnedNest   = 0;
+    int   m_waypointIndex = -1;
 
     std::vector<Effect> m_effects;
     std::vector<std::unique_ptr<EnemyModule>> m_modules;
@@ -40,7 +40,6 @@ public:
 
         for (auto& existing : m_effects) {
             if (existing.m_type != effect.m_type) continue;
-            // Replace only if the incoming effect is stronger
             switch (effect.m_type) {
                 case EffectType::Burn: if (effect.m_value > existing.m_value) existing = effect; break;
                 case EffectType::Slow: if (effect.m_value <= existing.m_value) existing = effect; break;

@@ -85,13 +85,6 @@ void TowerSystem::BuildAttackPayload(const Tower& tower, Attack& attack) {
         mod->Contribute(attack);
 }
 
-static float ComputeArmor(const Enemy& enemy) {
-    float armor = 0.0f;
-    for (auto& mod : enemy.m_modules)
-        armor += mod->GetArmor();
-    return armor;
-}
-
 void TowerSystem::TickAttacks(float dt, GameData& gameData) {
     for (auto& attack : gameData.attacks) {
         attack.m_duration -= dt;
@@ -103,11 +96,14 @@ void TowerSystem::TickAttacks(float dt, GameData& gameData) {
         for (auto& key : attack.m_targetKeys) {
             Enemy* enemy = gameData.enemies.Get(key);
             if (!enemy) continue;
-            float armor = std::max(0.0f, ComputeArmor(*enemy) - attack.m_armorPierce);
+            float armor = std::max(0.0f, enemy->m_stats.armor - attack.m_armorPierce);
             float dmg = attack.m_damage;
             if (attack.m_critChance > 0.0f && GetRandomValue(0, 99) < (int)(attack.m_critChance * 100.0f))
                 dmg *= attack.m_critMultiplier;
-            enemy->m_currentHealth -= std::max(0.0f, dmg - armor);
+            float net = std::max(0.0f, dmg - armor);
+            for (auto& mod : enemy->m_modules)
+                net = mod->InterceptDamage(net);
+            enemy->m_currentHealth -= net;
             for (auto& effect : attack.m_effects)
                 enemy->AddEffect(effect);
         }
@@ -116,14 +112,24 @@ void TowerSystem::TickAttacks(float dt, GameData& gameData) {
     std::erase_if(gameData.attacks, [](const Attack& a){ return a.m_duration <= 0.0f; });
 }
 
+static float TotalShield(const Enemy& enemy) {
+    float total = 0.0f;
+    for (auto& mod : enemy.m_modules)
+        total += mod->GetShield();
+    return total;
+}
+
 bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mode) {
     switch (mode) {
-        case TargetingMode::First:       return a.m_progress < b.m_progress;
-        case TargetingMode::Last:        return a.m_progress > b.m_progress;
-        case TargetingMode::MostHealth:  return a.m_currentHealth > b.m_currentHealth;
-        case TargetingMode::LowestHealth:return a.m_currentHealth < b.m_currentHealth;
-        case TargetingMode::Fastest:     return a.m_speed < b.m_speed;
-        case TargetingMode::Slowest:     return a.m_speed > b.m_speed;
+        case TargetingMode::First:          return a.m_progress < b.m_progress;
+        case TargetingMode::Last:           return a.m_progress > b.m_progress;
+        case TargetingMode::MostHealth:     return a.m_currentHealth > b.m_currentHealth;
+        case TargetingMode::LowestHealth:   return a.m_currentHealth < b.m_currentHealth;
+        case TargetingMode::Fastest:        return a.m_stats.speed < b.m_stats.speed;
+        case TargetingMode::Slowest:        return a.m_stats.speed > b.m_stats.speed;
+        case TargetingMode::MostArmor:      return a.m_stats.armor > b.m_stats.armor;
+        case TargetingMode::MostResistance: return a.m_stats.resistance > b.m_stats.resistance;
+        case TargetingMode::MostShield:     return TotalShield(a) > TotalShield(b);
     }
     return false;
 }

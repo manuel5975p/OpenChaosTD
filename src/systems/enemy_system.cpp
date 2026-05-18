@@ -4,17 +4,17 @@
 
 void EnemySystem::FollowPath(float dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
-        if(enemy.m_currentSpeed <= 0.0f) continue;
+        if (enemy.m_stats.speed <= 0.0f) continue;
 
         float remainingTime = dt;
 
-        while(remainingTime > 0.0f && enemy.m_waypointIndex >= 0){
+        while (remainingTime > 0.0f && enemy.m_waypointIndex >= 0) {
             Vector2 toTarget = Vector2Subtract(gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex], enemy.m_position);
             float distToTarget = Vector2Length(toTarget);
-            float moveDistance = enemy.m_currentSpeed * remainingTime;
+            float moveDistance = enemy.m_stats.speed * remainingTime;
 
-            if(moveDistance >= distToTarget){
-                remainingTime -= distToTarget / enemy.m_currentSpeed;
+            if (moveDistance >= distToTarget) {
+                remainingTime -= distToTarget / enemy.m_stats.speed;
                 enemy.m_position = gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex];
                 enemy.m_waypointIndex--;
                 enemy.m_progress = static_cast<float>(enemy.m_waypointIndex + 1);
@@ -31,8 +31,10 @@ void EnemySystem::FollowPath(float dt, GameData& gameData){
 
 void EnemySystem::TickEnemies(float dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
-        enemy.m_currentSpeed = enemy.m_speed;
-        enemy.m_resistance = 0.0f;
+        // Recompute live stats from base, then let modules contribute
+        enemy.m_stats = enemy.m_base;
+        for (auto& mod : enemy.m_modules)
+            mod->ContributeStats(enemy.m_stats);
 
         for (auto& mod : enemy.m_modules)
             mod->Tick(dt, enemy);
@@ -40,11 +42,11 @@ void EnemySystem::TickEnemies(float dt, GameData& gameData){
         for (auto& effect : enemy.m_effects) {
             switch (effect.m_type) {
                 case EffectType::Burn:
-                    enemy.m_currentHealth -= effect.m_value * (1.0f - enemy.m_resistance) * dt;
+                    enemy.m_currentHealth -= effect.m_value * (1.0f - enemy.m_stats.resistance) * dt;
                     break;
                 case EffectType::Slow: {
-                    float weakenedFactor = effect.m_value + (1.0f - effect.m_value) * enemy.m_resistance;
-                    enemy.m_currentSpeed *= weakenedFactor;
+                    float weakenedFactor = effect.m_value + (1.0f - effect.m_value) * enemy.m_stats.resistance;
+                    enemy.m_stats.speed *= weakenedFactor;
                     break;
                 }
             }
