@@ -57,7 +57,7 @@ void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& a
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
 
-        float flashRatio = (tower.m_attackDuration > 0.0f) ? tower.m_attackFlash / tower.m_attackDuration : 0.0f;
+        float flashRatio = (tower.m_stats.attackDuration > 0.0f) ? tower.m_attackFlash / tower.m_stats.attackDuration : 0.0f;
         Color tint = (flashRatio > 0.0f) ? ColorLerp(WHITE, ORANGE, flashRatio) : WHITE;
         DrawTextureV(texture, {tower.m_position.x - hw, tower.m_position.y - hh}, tint);
 
@@ -73,7 +73,7 @@ void RenderSystem::DrawTowerRange(Vector2 position, float radius, Color color) {
 void RenderSystem::DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, const Map& map, const DenseSlotMap<Tower>& towers, Vector2 mouseWorld) {
     if (selectedKey != DenseSlotMap<Tower>::INVALID_KEY) {
         if (const Tower* t = towers.Get(selectedKey))
-            DrawTowerRange(t->m_position, t->m_radius, {255, 200, 50, 220});
+            DrawTowerRange(t->m_position, t->m_stats.radius, {255, 200, 50, 220});
         return;
     }
 
@@ -83,7 +83,7 @@ void RenderSystem::DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, cons
         const Tile& tile = map.Get(hx, hy);
         if (tile.m_towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
             if (const Tower* t = towers.Get(tile.m_towerKey))
-                DrawTowerRange(t->m_position, t->m_radius, {255, 255, 255, 80});
+                DrawTowerRange(t->m_position, t->m_stats.radius, {255, 255, 255, 80});
         }
     }
 }

@@ -3,6 +3,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <functional>
+#include <memory>
+#include <nlohmann/json.hpp>
 #include <world/enemy.hpp>
 #include <core/jsonio.hpp>
 
@@ -13,15 +16,7 @@ public:
     bool Has(const std::string& name) const;
 
 private:
-    struct ModuleData {
-        std::string type;
-        float rate = 0.0f;
-        float amount = 0.0f;
-        float factor = 0.0f;
-        std::string effect; // Immune: effect type to ignore
-        std::string child; // Split: child enemy type to spawn
-        int count = 0; // Split: number of children
-    };
+    using ModuleBuilder = std::function<std::unique_ptr<EnemyModule>(const nlohmann::json&)>;
 
     struct EnemyTemplate {
         std::string name;
@@ -31,8 +26,9 @@ private:
         float speed = 50.0f;
         int reward = 5;
         int livesOnReach = 1;
-        std::vector<ModuleData> modules;
+        std::vector<nlohmann::json> modules;
     };
 
+    std::unordered_map<std::string, ModuleBuilder> m_builders;
     std::unordered_map<std::string, EnemyTemplate> m_templates;
 };

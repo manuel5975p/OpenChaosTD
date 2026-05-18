@@ -3,6 +3,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <functional>
+#include <memory>
+#include <nlohmann/json.hpp>
 #include <world/tower.hpp>
 #include <core/jsonio.hpp>
 
@@ -18,15 +21,7 @@ public:
     const std::string& GetTexture(const std::string& name) const;
 
 private:
-    struct ModuleData {
-        std::string type;
-        float damage = 0.0f;
-        float factor = 1.0f;
-        float duration = 0.0f;
-        float pierce = 0.0f;
-        float critChance = 0.0f;
-        float critMultiplier = 2.0f;
-    };
+    using ModuleBuilder = std::function<std::unique_ptr<TowerModule>(const nlohmann::json&)>;
 
     struct TowerTemplate {
         std::string name;
@@ -39,9 +34,10 @@ private:
         int targetCount = 1;
         AttackType attackType = AttackType::Line;
         TargetingMode targetingMode = TargetingMode::First;
-        std::vector<ModuleData> modules;
+        std::vector<nlohmann::json> modules;
     };
 
+    std::unordered_map<std::string, ModuleBuilder> m_builders;
     std::unordered_map<std::string, TowerTemplate> m_templates;
     std::vector<std::string> m_order;
 };

@@ -96,9 +96,9 @@ void TowerInfoHUD::OnDraw(Game& game) {
     }
 
     // Core stats
-    DrawText(TextFormat("Range:   %.0f",   tower.m_radius),      static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-    DrawText(TextFormat("Rate:    %.1f/s", tower.m_fireRate),    static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-    DrawText(TextFormat("Targets: %d",     tower.m_targetCount), static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+    DrawText(TextFormat("Range:   %.0f",   tower.m_stats.radius),       static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+    DrawText(TextFormat("Rate:    %.1f/s", tower.m_stats.fireRate),     static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+    DrawText(TextFormat("Targets: %d",     tower.m_stats.targetCount),  static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
 
     // Module-derived stats
     for (const auto& mod : tower.m_modules) {

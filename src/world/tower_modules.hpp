@@ -2,6 +2,7 @@
 
 #include <string>
 #include <raylib.h>
+#include <world/tower_stats.hpp>
 
 struct Attack;
 
@@ -9,6 +10,7 @@ class TowerModule {
 public:
     virtual ~TowerModule() = default;
     virtual void Contribute(Attack&) const {}
+    virtual void ContributeTower(TowerStats&) const {}
     virtual void Describe(std::string&, Color&) const {}
 };
 

@@ -3,40 +3,39 @@
 #include <stdexcept>
 #include <iostream>
 
+using json = nlohmann::json;
+
 static EffectType ParseEffectType(const std::string& name) {
     if (name == "Slow") return EffectType::Slow;
     return EffectType::Burn;
 }
 
 void EnemyFactory::Load(JsonIO& jsonio) {
-    auto json = jsonio.Load("data/enemies.json");
-    if (json.is_null() || !json.contains("enemies")) {
+    m_builders["Regeneration"] = [](const json& j){ return std::make_unique<RegenerationModule>(j.value("rate", 0.0f)); };
+    m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("amount", 0.0f)); };
+    m_builders["Resistance"]   = [](const json& j){ return std::make_unique<ResistanceModule>(j.value("factor", 0.0f)); };
+    m_builders["Immune"]       = [](const json& j){ return std::make_unique<ImmuneModule>(ParseEffectType(j.value("effect", ""))); };
+    m_builders["Split"]        = [](const json& j){ return std::make_unique<SplitModule>(j.value("child", ""), j.value("count", 0)); };
+
+    auto data = jsonio.Load("data/enemies.json");
+    if (data.is_null() || !data.contains("enemies")) {
         std::cerr << "EnemyFactory: failed to load enemies data\n";
         return;
     }
 
-    for (auto& entry : json["enemies"]) {
+    for (auto& entry : data["enemies"]) {
         EnemyTemplate tmpl;
-        tmpl.name = entry["name"];
+        tmpl.name        = entry["name"];
         tmpl.description = entry.value("description", "");
-        tmpl.texture = entry.value("texture", "");
-        tmpl.health = entry.value("health", 10.0f);
-        tmpl.speed = entry.value("speed", 50.0f);
-        tmpl.reward = entry.value("reward", 5);
+        tmpl.texture     = entry.value("texture", "");
+        tmpl.health      = entry.value("health", 10.0f);
+        tmpl.speed       = entry.value("speed", 50.0f);
+        tmpl.reward      = entry.value("reward", 5);
         tmpl.livesOnReach = entry.value("livesOnReach", 1);
 
         if (entry.contains("modules")) {
-            for (auto& mod : entry["modules"]) {
-                ModuleData m;
-                m.type = mod["type"];
-                m.rate = mod.value("rate", 0.0f);
-                m.amount = mod.value("amount", 0.0f);
-                m.factor = mod.value("factor", 0.0f);
-                m.effect = mod.value("effect", "");
-                m.child = mod.value("child", "");
-                m.count = mod.value("count", 0);
-                tmpl.modules.push_back(m);
-            }
+            for (auto& mod : entry["modules"])
+                tmpl.modules.push_back(mod);
         }
 
         std::string name = tmpl.name;
@@ -52,27 +51,23 @@ Enemy EnemyFactory::Create(const std::string& name) const {
 
     const EnemyTemplate& tmpl = it->second;
     Enemy enemy;
-    enemy.m_name = tmpl.name;
-    enemy.m_description = tmpl.description;
-    enemy.m_texture = tmpl.texture;
-    enemy.m_health = tmpl.health;
+    enemy.m_name         = tmpl.name;
+    enemy.m_description  = tmpl.description;
+    enemy.m_texture      = tmpl.texture;
+    enemy.m_health       = tmpl.health;
     enemy.m_currentHealth = tmpl.health;
-    enemy.m_speed = tmpl.speed;
+    enemy.m_speed        = tmpl.speed;
     enemy.m_currentSpeed = tmpl.speed;
-    enemy.m_reward = tmpl.reward;
+    enemy.m_reward       = tmpl.reward;
     enemy.m_livesOnReach = tmpl.livesOnReach;
 
     for (auto& mod : tmpl.modules) {
-        if (mod.type == "Regeneration")
-            enemy.AddModule(std::make_unique<RegenerationModule>(mod.rate));
-        else if (mod.type == "Armor")
-            enemy.AddModule(std::make_unique<ArmorModule>(mod.amount));
-        else if (mod.type == "Resistance")
-            enemy.AddModule(std::make_unique<ResistanceModule>(mod.factor));
-        else if (mod.type == "Immune")
-            enemy.AddModule(std::make_unique<ImmuneModule>(ParseEffectType(mod.effect)));
-        else if (mod.type == "Split")
-            enemy.AddModule(std::make_unique<SplitModule>(mod.child, mod.count));
+        std::string type = mod.value("type", "");
+        auto bit = m_builders.find(type);
+        if (bit != m_builders.end())
+            enemy.AddModule(bit->second(mod));
+        else
+            std::cerr << "EnemyFactory: unknown module type '" << type << "'\n";
     }
 
     return enemy;

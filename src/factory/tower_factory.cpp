@@ -3,52 +3,51 @@
 #include <stdexcept>
 #include <iostream>
 
+using json = nlohmann::json;
+
 static AttackType ParseAttackType(const std::string& s) {
     if (s == "Area") return AttackType::Area;
     return AttackType::Line;
 }
 
 static TargetingMode ParseTargetingMode(const std::string& s) {
-    if (s == "Last") return TargetingMode::Last;
-    if (s == "MostHealth") return TargetingMode::MostHealth;
+    if (s == "Last")         return TargetingMode::Last;
+    if (s == "MostHealth")   return TargetingMode::MostHealth;
     if (s == "LowestHealth") return TargetingMode::LowestHealth;
-    if (s == "Fastest") return TargetingMode::Fastest;
-    if (s == "Slowest") return TargetingMode::Slowest;
+    if (s == "Fastest")      return TargetingMode::Fastest;
+    if (s == "Slowest")      return TargetingMode::Slowest;
     return TargetingMode::First;
 }
 
 void TowerFactory::Load(JsonIO& jsonio) {
-    auto json = jsonio.Load("data/towers.json");
-    if (json.is_null() || !json.contains("towers")) {
+    m_builders["FlatDamage"]    = [](const json& j){ return std::make_unique<FlatDamageModule>(j.value("damage", 0.0f)); };
+    m_builders["Slow"]          = [](const json& j){ return std::make_unique<SlowModule>(j.value("factor", 1.0f), j.value("duration", 0.0f)); };
+    m_builders["Burn"]          = [](const json& j){ return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f)); };
+    m_builders["ArmorPiercing"] = [](const json& j){ return std::make_unique<ArmorPiercingModule>(j.value("pierce", 0.0f)); };
+    m_builders["Crit"]          = [](const json& j){ return std::make_unique<CritModule>(j.value("critChance", 0.0f), j.value("critMultiplier", 2.0f)); };
+
+    auto data = jsonio.Load("data/towers.json");
+    if (data.is_null() || !data.contains("towers")) {
         std::cerr << "TowerFactory: failed to load towers data\n";
         return;
     }
 
-    for (auto& entry : json["towers"]) {
+    for (auto& entry : data["towers"]) {
         TowerTemplate tmpl;
-        tmpl.name = entry["name"];
-        tmpl.description = entry.value("description", "");
-        tmpl.texture = entry.value("texture", "");
-        tmpl.cost = entry.value("cost", 100);
-        tmpl.fireRate = entry.value("fireRate", 1.0f);
-        tmpl.attackDuration = entry.value("attackDuration", 0.15f);
-        tmpl.radius = entry.value("radius", 64.0f);
-        tmpl.targetCount = entry.value("targetCount", 1);
-        tmpl.attackType = ParseAttackType(entry.value("attackType", "Line"));
-        tmpl.targetingMode = ParseTargetingMode(entry.value("targetingMode", "First"));
+        tmpl.name            = entry["name"];
+        tmpl.description     = entry.value("description", "");
+        tmpl.texture         = entry.value("texture", "");
+        tmpl.cost            = entry.value("cost", 100);
+        tmpl.fireRate        = entry.value("fireRate", 1.0f);
+        tmpl.attackDuration  = entry.value("attackDuration", 0.15f);
+        tmpl.radius          = entry.value("radius", 64.0f);
+        tmpl.targetCount     = entry.value("targetCount", 1);
+        tmpl.attackType      = ParseAttackType(entry.value("attackType", "Line"));
+        tmpl.targetingMode   = ParseTargetingMode(entry.value("targetingMode", "First"));
 
         if (entry.contains("modules")) {
-            for (auto& mod : entry["modules"]) {
-                ModuleData m;
-                m.type = mod["type"];
-                m.damage = mod.value("damage", 0.0f);
-                m.factor = mod.value("factor", 1.0f);
-                m.duration = mod.value("duration", 0.0f);
-                m.pierce = mod.value("pierce", 0.0f);
-                m.critChance = mod.value("critChance", 0.0f);
-                m.critMultiplier = mod.value("critMultiplier", 2.0f);
-                tmpl.modules.push_back(m);
-            }
+            for (auto& mod : entry["modules"])
+                tmpl.modules.push_back(mod);
         }
 
         std::string name = tmpl.name;
@@ -65,28 +64,25 @@ Tower TowerFactory::Create(const std::string& name) const {
 
     const TowerTemplate& tmpl = it->second;
     Tower tower;
-    tower.m_name = tmpl.name;
-    tower.m_description = tmpl.description;
-    tower.m_texture = tmpl.texture;
-    tower.m_cost = tmpl.cost;
-    tower.m_fireRate = tmpl.fireRate;
-    tower.m_attackDuration = tmpl.attackDuration;
-    tower.m_radius = tmpl.radius;
-    tower.m_targetCount = tmpl.targetCount;
-    tower.m_attackType = tmpl.attackType;
-    tower.m_targetingMode = tmpl.targetingMode;
+    tower.m_name             = tmpl.name;
+    tower.m_description      = tmpl.description;
+    tower.m_texture          = tmpl.texture;
+    tower.m_cost             = tmpl.cost;
+    tower.m_base.radius         = tmpl.radius;
+    tower.m_base.fireRate       = tmpl.fireRate;
+    tower.m_base.attackDuration = tmpl.attackDuration;
+    tower.m_base.targetCount    = tmpl.targetCount;
+    tower.m_base.attackType     = tmpl.attackType;
+    tower.m_base.targetingMode  = tmpl.targetingMode;
+    tower.m_stats = tower.m_base;
 
     for (auto& mod : tmpl.modules) {
-        if (mod.type == "FlatDamage")
-            tower.AddModule(std::make_unique<FlatDamageModule>(mod.damage));
-        else if (mod.type == "Slow")
-            tower.AddModule(std::make_unique<SlowModule>(mod.factor, mod.duration));
-        else if (mod.type == "Burn")
-            tower.AddModule(std::make_unique<BurnModule>(mod.damage, mod.duration));
-        else if (mod.type == "ArmorPiercing")
-            tower.AddModule(std::make_unique<ArmorPiercingModule>(mod.pierce));
-        else if (mod.type == "Crit")
-            tower.AddModule(std::make_unique<CritModule>(mod.critChance, mod.critMultiplier));
+        std::string type = mod.value("type", "");
+        auto bit = m_builders.find(type);
+        if (bit != m_builders.end())
+            tower.AddModule(bit->second(mod));
+        else
+            std::cerr << "TowerFactory: unknown module type '" << type << "'\n";
     }
 
     return tower;
