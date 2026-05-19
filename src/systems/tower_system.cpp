@@ -2,6 +2,7 @@
 
 #include <raymath.h>
 #include <algorithm>
+#include <cmath>
 
 #include <world/tower.hpp>
 #include <world/enemy_modules.hpp>
@@ -36,16 +37,33 @@ void TowerSystem::update(float dt, GameData& gameData){
                 targetPositions.push_back(e->m_position);
         }
 
-        Attack attack;
-        attack.m_origin          = tower.m_position;
-        attack.m_targetPositions = std::move(targetPositions);
-        attack.m_targetKeys      = tower.m_currentTargetKeys;
-        attack.m_type            = tower.m_stats.attackType;
-        attack.m_radius          = tower.m_stats.radius;
-        attack.m_duration        = tower.m_stats.attackDuration;
-        attack.m_maxDuration     = tower.m_stats.attackDuration;
-        BuildAttackPayload(tower, attack);
-        gameData.attacks.push_back(std::move(attack));
+        // Damage payload
+        AttackPayload payload;
+        payload.m_ttl = tower.m_stats.attackDuration;
+        payload.m_targetKeys = tower.m_currentTargetKeys;
+        BuildPayload(tower, payload);
+
+        payload.m_impactDesc = tower.m_vfx.impactDesc;
+        payload.m_critImpactDesc = tower.m_vfx.critImpactDesc;
+
+        // Visual effect
+        VfxEffect vfx;
+        vfx.m_origin = tower.m_position;
+        vfx.m_targetPositions = std::move(targetPositions);
+        vfx.m_duration = tower.m_stats.attackDuration;
+        vfx.m_maxDuration = tower.m_stats.attackDuration;
+        vfx.m_radius = tower.m_stats.radius;
+        vfx.m_color = tower.m_vfx.color;
+        vfx.m_style = tower.m_vfx.style;
+        vfx.m_trailDesc = tower.m_vfx.trailDesc;
+        vfx.m_trailRate = tower.m_vfx.trailRate;
+
+        // Muzzle burst
+        if (tower.m_vfx.muzzleDesc.count > 0)
+            gameData.particles.Emit(tower.m_position, tower.m_vfx.muzzleDesc);
+
+        gameData.m_payloads.push_back(std::move(payload));
+        gameData.m_vfx.push_back(std::move(vfx));
     }
 }
 
@@ -80,36 +98,77 @@ std::vector<Enemy*> TowerSystem::FindEnemiesInRange(Tower& tower, DenseSlotMap<E
     return result;
 }
 
-void TowerSystem::BuildAttackPayload(const Tower& tower, Attack& attack) {
+void TowerSystem::BuildPayload(const Tower& tower, AttackPayload& payload) {
     for (auto& mod : tower.m_modules)
-        mod->Contribute(attack);
+        mod->Contribute(payload);
 }
 
-void TowerSystem::TickAttacks(float dt, GameData& gameData) {
-    for (auto& attack : gameData.attacks) {
-        attack.m_duration -= dt;
+void TowerSystem::TickPayloads(float dt, GameData& gameData) {
+    for (auto& payload : gameData.m_payloads) {
+        payload.m_ttl -= dt;
 
-        if (attack.m_resolved) continue;
-        attack.m_delay -= dt;
-        if (attack.m_delay > 0.0f) continue;
+        if (payload.m_resolved) continue;
+        payload.m_delay -= dt;
+        if (payload.m_delay > 0.0f) continue;
 
-        for (auto& key : attack.m_targetKeys) {
+        for (auto& key : payload.m_targetKeys) {
             Enemy* enemy = gameData.enemies.Get(key);
             if (!enemy) continue;
-            float armor = std::max(0.0f, enemy->m_stats.armor - attack.m_armorPierce);
-            float dmg = attack.m_damage;
-            if (attack.m_critChance > 0.0f && GetRandomValue(0, 99) < (int)(attack.m_critChance * 100.0f))
-                dmg *= attack.m_critMultiplier;
+
+            float armor = std::max(0.0f, enemy->m_stats.armor - payload.m_armorPierce);
+            float dmg = payload.m_damage;
+            bool crit = payload.m_critChance > 0.0f
+                && GetRandomValue(0, 99) < (int)(payload.m_critChance * 100.0f);
+            if (crit) {
+                dmg *= payload.m_critMultiplier;
+                payload.m_wasCrit = true;
+            }
             float net = std::max(0.0f, dmg - armor);
             for (auto& mod : enemy->m_modules)
                 net = mod->InterceptDamage(net);
             enemy->m_currentHealth -= net;
-            for (auto& effect : attack.m_effects)
+            for (auto& effect : payload.m_effects)
                 enemy->AddEffect(effect);
+
+            // Impact particles — use crit desc if this hit critted
+            bool useCrit = crit && payload.m_critImpactDesc.count > 0;
+            gameData.particles.Emit(enemy->m_position,
+                useCrit ? payload.m_critImpactDesc : payload.m_impactDesc);
         }
-        attack.m_resolved = true;
+        payload.m_resolved = true;
     }
-    std::erase_if(gameData.attacks, [](const Attack& a){ return a.m_duration <= 0.0f; });
+    std::erase_if(gameData.m_payloads, [](const AttackPayload& p) { return p.m_ttl <= 0.0f; });
+}
+
+// Returns a world-space point suitable for spawning a trail particle from this effect
+static Vector2 SampleVfxPoint(const VfxEffect& vfx) {
+    if (vfx.m_style == VfxStyle::Ring) {
+        float angle = (float)GetRandomValue(0, 62831) / 10000.0f;
+        float r = (1.0f - vfx.Progress()) * vfx.m_radius;
+        return {vfx.m_origin.x + std::cosf(angle) * r,
+                vfx.m_origin.y + std::sinf(angle) * r};
+    }
+    if (!vfx.m_targetPositions.empty()) {
+        int idx = GetRandomValue(0, (int)vfx.m_targetPositions.size() - 1);
+        float t = (float)GetRandomValue(0, 10000) / 10000.0f;
+        return Vector2Lerp(vfx.m_origin, vfx.m_targetPositions[idx], t);
+    }
+    return vfx.m_origin;
+}
+
+void TowerSystem::TickVfx(float dt, GameData& gameData) {
+    for (auto& vfx : gameData.m_vfx) {
+        vfx.m_duration -= dt;
+
+        if (vfx.m_trailRate > 0.0f) {
+            vfx.m_trailAccumulator += vfx.m_trailRate * dt;
+            while (vfx.m_trailAccumulator >= 1.0f) {
+                gameData.particles.Emit(SampleVfxPoint(vfx), vfx.m_trailDesc);
+                vfx.m_trailAccumulator -= 1.0f;
+            }
+        }
+    }
+    std::erase_if(gameData.m_vfx, [](const VfxEffect& v) { return v.m_duration <= 0.0f; });
 }
 
 static float TotalShield(const Enemy& enemy) {

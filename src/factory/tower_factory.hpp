@@ -32,12 +32,15 @@ private:
         float attackDuration = 0.15f;
         float radius = 64.0f;
         int targetCount = 1;
-        AttackType attackType = AttackType::Line;
         TargetingMode targetingMode = TargetingMode::First;
         std::vector<nlohmann::json> modules;
+        TowerVfxDesc vfx;
     };
+
+    void LoadVfxPresets(JsonIO& jsonio);
 
     std::unordered_map<std::string, ModuleBuilder> m_builders;
     std::unordered_map<std::string, TowerTemplate> m_templates;
+    std::unordered_map<std::string, EmitterDesc> m_emitterPresets;
     std::vector<std::string> m_order;
 };

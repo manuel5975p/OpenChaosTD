@@ -6,7 +6,7 @@
 #include <core/renderer.hpp>
 #include <world/tower.hpp>
 #include <world/enemy.hpp>
-#include <world/attack.hpp>
+#include <world/vfx_effect.hpp>
 #include <lib/dense_slotmap.hpp>
 
 class RenderSystem{
@@ -21,7 +21,7 @@ public:
     void DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, const Map& map, const DenseSlotMap<Tower>& towers, Vector2 mouseWorld);
     void DrawGhostTower(Vector2 position, float radius, Texture2D& texture);
     void DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets);
-    void DrawAttacks(const std::vector<Attack>& attacks);
+    void DrawVfx(const std::vector<VfxEffect>& vfx);
 
     void CenterCamera(Map& map, Renderer& renderer);
     void ControlCamera(float& dt, InputManager& input);

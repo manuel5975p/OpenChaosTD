@@ -9,11 +9,16 @@
             "attackDuration": 0.08,
             "radius": 100,
             "targetCount": 2,
-            "attackType": "Line",
             "targetingMode": "First",
             "modules": [
                 { "type": "FlatDamage", "damage": 1.5 }
-            ]
+            ],
+            "vfx": {
+                "style": "Zap",
+                "color": [120, 200, 255, 255],
+                "muzzle": "zapper_muzzle",
+                "impact": "zapper_impact"
+            }
         },
         {
             "name": "freezer",
@@ -24,12 +29,18 @@
             "attackDuration": 0.3,
             "radius": 128,
             "targetCount": 0,
-            "attackType": "Area",
             "targetingMode": "First",
             "modules": [
                 { "type": "FlatDamage", "damage": 0.5 },
                 { "type": "Slow", "factor": 0.5, "duration": 2.0 }
-            ]
+            ],
+            "vfx": {
+                "style": "Ring",
+                "color": [80, 190, 255, 255],
+                "muzzle": "freezer_muzzle",
+                "trail": { "preset": "ice_drift", "rate": 25 },
+                "impact": "freezer_impact"
+            }
         },
         {
             "name": "sniper",
@@ -40,11 +51,17 @@
             "attackDuration": 0.4,
             "radius": 300,
             "targetCount": 1,
-            "attackType": "Line",
             "targetingMode": "MostHealth",
             "modules": [
                 { "type": "FlatDamage", "damage": 10.0 }
-            ]
+            ],
+            "vfx": {
+                "style": "Burst",
+                "color": [240, 240, 255, 255],
+                "muzzle": "sniper_muzzle",
+                "impact": "sniper_impact",
+                "critImpact": "sniper_crit"
+            }
         },
         {
             "name": "flamer",
@@ -55,12 +72,18 @@
             "attackDuration": 0.25,
             "radius": 90,
             "targetCount": 0,
-            "attackType": "Area",
             "targetingMode": "First",
             "modules": [
                 { "type": "FlatDamage", "damage": 0.5 },
                 { "type": "Burn", "damage": 3.0, "duration": 4.0 }
-            ]
+            ],
+            "vfx": {
+                "style": "Ring",
+                "color": [255, 100, 20, 255],
+                "muzzle": "flamer_muzzle",
+                "trail": { "preset": "flamer_ember", "rate": 35 },
+                "impact": "flamer_impact"
+            }
         },
         {
             "name": "piercer",
@@ -71,12 +94,17 @@
             "attackDuration": 0.15,
             "radius": 150,
             "targetCount": 1,
-            "attackType": "Line",
             "targetingMode": "MostArmor",
             "modules": [
                 { "type": "FlatDamage", "damage": 4.0 },
                 { "type": "ArmorPiercing", "pierce": 5.0 }
-            ]
+            ],
+            "vfx": {
+                "style": "Beam",
+                "color": [210, 220, 230, 255],
+                "muzzle": "piercer_muzzle",
+                "impact": "piercer_impact"
+            }
         },
         {
             "name": "gambler",
@@ -87,12 +115,18 @@
             "attackDuration": 0.15,
             "radius": 120,
             "targetCount": 1,
-            "attackType": "Line",
             "targetingMode": "First",
             "modules": [
                 { "type": "FlatDamage", "damage": 2.0 },
                 { "type": "Crit", "critChance": 0.35, "critMultiplier": 4.0 }
-            ]
+            ],
+            "vfx": {
+                "style": "Zap",
+                "color": [255, 220, 50, 255],
+                "muzzle": "gambler_muzzle",
+                "impact": "gambler_impact",
+                "critImpact": "gambler_crit"
+            }
         }
     ]
 }

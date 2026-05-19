@@ -5,8 +5,11 @@
 #include <raylib.h>
 #include <string>
 
+#include <lib/dense_slotmap.hpp>
+#include <world/enemy.hpp>
 #include <world/tower_modules.hpp>
 #include <world/tower_stats.hpp>
+#include <world/tower_vfx.hpp>
 
 class Tower {
 public:
@@ -19,6 +22,8 @@ public:
 
     TowerStats m_base;   // set from JSON, never modified at runtime
     TowerStats m_stats;  // recomputed each tick from base + ContributeTower modules
+
+    TowerVfxDesc m_vfx; // set by factory, never modified at runtime
 
     float m_cooldown    = 0.0f;
     float m_attackFlash = 0.0f;

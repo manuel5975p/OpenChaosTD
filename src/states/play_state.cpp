@@ -59,7 +59,9 @@ void PlayingState::Update(Game& game, float dt) {
     m_enemySystem.FollowPath(dt, game.GetGameData());
 
     m_towerSystem.update(dt, game.GetGameData());
-    m_towerSystem.TickAttacks(dt, game.GetGameData());
+    m_towerSystem.TickPayloads(dt, game.GetGameData());
+    m_towerSystem.TickVfx(dt, game.GetGameData());
+    game.GetGameData().particles.Tick(dt);
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
     m_worldSystem.CheckEnemyDead(game.GetGameData(), game.GetEnemyFactory());
@@ -92,7 +94,8 @@ void PlayingState::Draw(Game& game) {
         }
     }
     m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
-    m_renderSystem.DrawAttacks(game.GetGameData().attacks);
+    m_renderSystem.DrawVfx(game.GetGameData().m_vfx);
+    game.GetGameData().particles.Draw();
     EndMode2D();
 
     // Draw order: info panel last so it sits on top. Hidden HUDs skip themselves.

@@ -5,24 +5,70 @@
 
 using json = nlohmann::json;
 
-static AttackType ParseAttackType(const std::string& s) {
-    if (s == "Area") return AttackType::Area;
-    return AttackType::Line;
-}
-
 static TargetingMode ParseTargetingMode(const std::string& s) {
-    if (s == "Last")            return TargetingMode::Last;
-    if (s == "MostHealth")      return TargetingMode::MostHealth;
-    if (s == "LowestHealth")    return TargetingMode::LowestHealth;
-    if (s == "Fastest")         return TargetingMode::Fastest;
-    if (s == "Slowest")         return TargetingMode::Slowest;
-    if (s == "MostArmor")       return TargetingMode::MostArmor;
-    if (s == "MostResistance")  return TargetingMode::MostResistance;
-    if (s == "MostShield")      return TargetingMode::MostShield;
+    if (s == "Last") return TargetingMode::Last;
+    if (s == "MostHealth") return TargetingMode::MostHealth;
+    if (s == "LowestHealth") return TargetingMode::LowestHealth;
+    if (s == "Fastest") return TargetingMode::Fastest;
+    if (s == "Slowest") return TargetingMode::Slowest;
+    if (s == "MostArmor") return TargetingMode::MostArmor;
+    if (s == "MostResistance") return TargetingMode::MostResistance;
+    if (s == "MostShield") return TargetingMode::MostShield;
     return TargetingMode::First;
 }
 
+static Color ParseColor(const json& j) {
+    return {
+        (unsigned char)j[0].get<int>(), (unsigned char)j[1].get<int>(),
+        (unsigned char)j[2].get<int>(), (unsigned char)j[3].get<int>()
+    };
+}
+
+static EmitterDesc ParseEmitterDesc(const json& j) {
+    EmitterDesc d;
+    if (j.contains("color"))    d.color    = ParseColor(j["color"]);
+    if (j.contains("endColor")) d.endColor = ParseColor(j["endColor"]);
+    d.count            = j.value("count", 0);
+    d.speed            = j.value("speed", 50.0f);
+    d.speedVariance    = j.value("speedVariance", 20.0f);
+    d.spread           = j.value("spread", 3.14159f);
+    d.angle            = j.value("angle", 0.0f);
+    d.lifetime         = j.value("lifetime", 0.2f);
+    d.lifetimeVariance = j.value("lifetimeVariance", 0.05f);
+    d.size             = j.value("size", 3.0f);
+    d.endSize          = j.value("endSize", 0.0f);
+    d.gravity          = j.value("gravity", 0.0f);
+    d.damping          = j.value("damping", 0.08f);
+    d.streakLength     = j.value("streakLength", 6.0f);
+    std::string dm     = j.value("drawMode", "Circle");
+    if (dm == "Streak") d.drawMode = ParticleDrawMode::Streak;
+    std::string sh     = j.value("shape", "Point");
+    if (sh == "Ring")      d.shape = EmitterShape::Ring;
+    else if (sh == "Disc") d.shape = EmitterShape::Disc;
+    d.shapeRadius      = j.value("shapeRadius", 0.0f);
+    return d;
+}
+
+static VfxStyle ParseVfxStyle(const std::string& s) {
+    if (s == "Burst") return VfxStyle::Burst;
+    if (s == "Ring")  return VfxStyle::Ring;
+    if (s == "Zap")   return VfxStyle::Zap;
+    return VfxStyle::Beam;
+}
+
+void TowerFactory::LoadVfxPresets(JsonIO& jsonio) {
+    auto data = jsonio.Load("data/tower_vfx.json");
+    if (data.is_null() || !data.contains("presets")) {
+        std::cerr << "TowerFactory: failed to load tower_vfx.json\n";
+        return;
+    }
+    for (auto& [name, desc] : data["presets"].items())
+        m_emitterPresets[name] = ParseEmitterDesc(desc);
+}
+
 void TowerFactory::Load(JsonIO& jsonio) {
+    LoadVfxPresets(jsonio);
+
     m_builders["FlatDamage"]    = [](const json& j){ return std::make_unique<FlatDamageModule>(j.value("damage", 0.0f)); };
     m_builders["Slow"]          = [](const json& j){ return std::make_unique<SlowModule>(j.value("factor", 1.0f), j.value("duration", 0.0f)); };
     m_builders["Burn"]          = [](const json& j){ return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f)); };
@@ -35,22 +81,46 @@ void TowerFactory::Load(JsonIO& jsonio) {
         return;
     }
 
+    // Resolve a preset name string to its EmitterDesc
+    auto resolvePreset = [&](const json& j) -> EmitterDesc {
+        if (j.is_string()) {
+            auto it = m_emitterPresets.find(j.get<std::string>());
+            if (it != m_emitterPresets.end()) return it->second;
+            std::cerr << "TowerFactory: unknown emitter preset '" << j.get<std::string>() << "'\n";
+        }
+        return {};
+    };
+
     for (auto& entry : data["towers"]) {
         TowerTemplate tmpl;
-        tmpl.name            = entry["name"];
-        tmpl.description     = entry.value("description", "");
-        tmpl.texture         = entry.value("texture", "");
-        tmpl.cost            = entry.value("cost", 100);
-        tmpl.fireRate        = entry.value("fireRate", 1.0f);
-        tmpl.attackDuration  = entry.value("attackDuration", 0.15f);
-        tmpl.radius          = entry.value("radius", 64.0f);
-        tmpl.targetCount     = entry.value("targetCount", 1);
-        tmpl.attackType      = ParseAttackType(entry.value("attackType", "Line"));
-        tmpl.targetingMode   = ParseTargetingMode(entry.value("targetingMode", "First"));
+        tmpl.name           = entry["name"];
+        tmpl.description    = entry.value("description", "");
+        tmpl.texture        = entry.value("texture", "");
+        tmpl.cost           = entry.value("cost", 100);
+        tmpl.fireRate       = entry.value("fireRate", 1.0f);
+        tmpl.attackDuration = entry.value("attackDuration", 0.15f);
+        tmpl.radius         = entry.value("radius", 64.0f);
+        tmpl.targetCount    = entry.value("targetCount", 1);
+        tmpl.targetingMode  = ParseTargetingMode(entry.value("targetingMode", "First"));
 
         if (entry.contains("modules")) {
             for (auto& mod : entry["modules"])
                 tmpl.modules.push_back(mod);
+        }
+
+        if (entry.contains("vfx")) {
+            const auto& vj = entry["vfx"];
+            tmpl.vfx.style = ParseVfxStyle(vj.value("style", "Beam"));
+            if (vj.contains("color"))      tmpl.vfx.color = ParseColor(vj["color"]);
+            if (vj.contains("muzzle"))     tmpl.vfx.muzzleDesc = resolvePreset(vj["muzzle"]);
+            if (vj.contains("impact"))     tmpl.vfx.impactDesc = resolvePreset(vj["impact"]);
+            if (vj.contains("critImpact")) tmpl.vfx.critImpactDesc = resolvePreset(vj["critImpact"]);
+            if (vj.contains("trail")) {
+                const auto& tj = vj["trail"];
+                tmpl.vfx.trailRate = tj.value("rate", 0.0f);
+                if (tj.contains("preset"))
+                    tmpl.vfx.trailDesc = resolvePreset(tj["preset"]);
+            }
         }
 
         std::string name = tmpl.name;
@@ -67,17 +137,17 @@ Tower TowerFactory::Create(const std::string& name) const {
 
     const TowerTemplate& tmpl = it->second;
     Tower tower;
-    tower.m_name             = tmpl.name;
-    tower.m_description      = tmpl.description;
-    tower.m_texture          = tmpl.texture;
-    tower.m_cost             = tmpl.cost;
+    tower.m_name        = tmpl.name;
+    tower.m_description = tmpl.description;
+    tower.m_texture     = tmpl.texture;
+    tower.m_cost        = tmpl.cost;
     tower.m_base.radius         = tmpl.radius;
     tower.m_base.fireRate       = tmpl.fireRate;
     tower.m_base.attackDuration = tmpl.attackDuration;
-    tower.m_base.targetCount    = tmpl.targetCount;
-    tower.m_base.attackType     = tmpl.attackType;
-    tower.m_base.targetingMode  = tmpl.targetingMode;
+    tower.m_base.targetCount   = tmpl.targetCount;
+    tower.m_base.targetingMode = tmpl.targetingMode;
     tower.m_stats = tower.m_base;
+    tower.m_vfx   = tmpl.vfx;
 
     for (auto& mod : tmpl.modules) {
         std::string type = mod.value("type", "");

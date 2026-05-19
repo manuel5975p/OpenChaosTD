@@ -40,6 +40,15 @@ void EnemySystem::TickEnemies(float dt, GameData& gameData){
             mod->Tick(dt, enemy);
 
         for (auto& effect : enemy.m_effects) {
+            // Emit visual particles for active effects (burn flicker, slow drift)
+            if (effect.m_emitRate > 0.0f) {
+                effect.m_emitAccumulator += effect.m_emitRate * dt;
+                while (effect.m_emitAccumulator >= 1.0f) {
+                    gameData.particles.Emit(enemy.m_position, effect.m_particleDesc);
+                    effect.m_emitAccumulator -= 1.0f;
+                }
+            }
+
             switch (effect.m_type) {
                 case EffectType::Burn:
                     enemy.m_currentHealth -= effect.m_value * (1.0f - enemy.m_stats.resistance) * dt;
