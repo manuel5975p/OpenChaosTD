@@ -16,18 +16,8 @@ void FlatDamageModule::Describe(std::string& text, Color& color) const {
 
 // --- SlowModule ---
 
-SlowModule::SlowModule(float factor, float duration) : m_factor(factor), m_duration(duration) {
-    m_emitRate = 8.0f;
-    m_particleDesc.color = {160, 220, 255, 180};
-    m_particleDesc.endColor = {80, 160, 220, 0};
-    m_particleDesc.count = 1;
-    m_particleDesc.spread = 3.14159f;
-    m_particleDesc.speed = 10.0f;
-    m_particleDesc.speedVariance = 4.0f;
-    m_particleDesc.lifetime = 0.38f;
-    m_particleDesc.size = 2.0f;
-    m_particleDesc.endSize = 0.0f;
-}
+SlowModule::SlowModule(float factor, float duration, EmitterDesc particleDesc)
+    : m_factor(factor), m_duration(duration), m_particleDesc(std::move(particleDesc)) {}
 
 void SlowModule::Contribute(AttackPayload& attack) const {
     Effect e(EffectType::Slow, m_duration, m_factor);
@@ -45,19 +35,8 @@ void SlowModule::Describe(std::string& text, Color& color) const {
 
 // --- BurnModule ---
 
-BurnModule::BurnModule(float value, float duration) : m_value(value), m_duration(duration) {
-    m_emitRate = 18.0f;
-    m_particleDesc.color = {255, 110, 30, 255};
-    m_particleDesc.endColor = {180, 40, 0, 0};
-    m_particleDesc.count = 1;
-    m_particleDesc.angle = 3.14159f * 1.5f;    // upward
-    m_particleDesc.spread = 0.5f;
-    m_particleDesc.speed = 22.0f;
-    m_particleDesc.speedVariance = 8.0f;
-    m_particleDesc.lifetime = 0.28f;
-    m_particleDesc.size = 2.5f;
-    m_particleDesc.endSize = 0.0f;
-}
+BurnModule::BurnModule(float value, float duration, EmitterDesc particleDesc)
+    : m_value(value), m_duration(duration), m_particleDesc(std::move(particleDesc)) {}
 
 void BurnModule::Contribute(AttackPayload& attack) const {
     Effect e(EffectType::Burn, m_duration, m_value);

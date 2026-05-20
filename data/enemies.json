@@ -6,7 +6,8 @@
             "texture": "enemy_voidno",
             "health": 10,
             "speed": 50,
-            "reward": 5
+            "reward": 5,
+            "deathEmitter": "death_standard"
         },
         {
             "name": "voidno_fast",
@@ -14,7 +15,8 @@
             "texture": "enemy_voidno",
             "health": 5,
             "speed": 100,
-            "reward": 8
+            "reward": 8,
+            "deathEmitter": "death_small"
         },
         {
             "name": "voidno_tank",
@@ -23,6 +25,7 @@
             "health": 50,
             "speed": 25,
             "reward": 20,
+            "deathEmitter": "death_tank",
             "modules": [
                 { "type": "Regeneration", "rate": 2.0 },
                 { "type": "Armor",        "amount": 1.0 },
@@ -36,6 +39,7 @@
             "health": 80,
             "speed": 30,
             "reward": 30,
+            "deathEmitter": "death_brute",
             "modules": [
                 { "type": "Armor", "amount": 3.0 }
             ]
@@ -47,6 +51,7 @@
             "health": 200,
             "speed": 25,
             "reward": 75,
+            "deathEmitter": "death_boss",
             "modules": [
                 { "type": "Regeneration", "rate": 5.0 },
                 { "type": "Armor",        "amount": 2.0 },
@@ -61,6 +66,7 @@
             "health": 20,
             "speed": 45,
             "reward": 12,
+            "deathEmitter": "death_frost",
             "modules": [
                 { "type": "Immune", "effect": "Slow" }
             ]
@@ -72,6 +78,7 @@
             "health": 25,
             "speed": 40,
             "reward": 18,
+            "deathEmitter": "death_shielded",
             "modules": [
                 { "type": "Shield", "amount": 15.0 }
             ]
@@ -83,6 +90,7 @@
             "health": 30,
             "speed": 40,
             "reward": 15,
+            "deathEmitter": "death_swarm",
             "modules": [
                 { "type": "Split", "child": "voidno_fast", "count": 3 }
             ]

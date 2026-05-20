@@ -8,10 +8,11 @@
 #include <nlohmann/json.hpp>
 #include <world/tower.hpp>
 #include <core/jsonio.hpp>
+#include <factory/emitter_presets.hpp>
 
 class TowerFactory {
 public:
-    void Load(JsonIO& jsonio);
+    void Load(JsonIO& jsonio, const EmitterPresets& presets);
     Tower Create(const std::string& name) const;
     bool Has(const std::string& name) const;
 
@@ -37,10 +38,7 @@ private:
         TowerVfxDesc vfx;
     };
 
-    void LoadVfxPresets(JsonIO& jsonio);
-
     std::unordered_map<std::string, ModuleBuilder> m_builders;
     std::unordered_map<std::string, TowerTemplate> m_templates;
-    std::unordered_map<std::string, EmitterDesc> m_emitterPresets;
     std::vector<std::string> m_order;
 };

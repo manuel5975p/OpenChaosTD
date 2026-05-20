@@ -135,18 +135,8 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory)
                 requests.push_back(*req);
         }
 
-        // Death burst
-        EmitterDesc deathDesc;
-        deathDesc.count = 14;
-        deathDesc.color = {220, 55, 55, 255};
-        deathDesc.endColor = {180, 30, 30, 0};
-        deathDesc.speed = 90.0f;
-        deathDesc.speedVariance = 30.0f;
-        deathDesc.spread = 3.14159f;
-        deathDesc.lifetime = 0.4f;
-        deathDesc.size = 4.5f;
-        deathDesc.endSize = 0.0f;
-        gameData.particles.Emit(pos, deathDesc);
+        // Death burst — preset loaded from particle_effects.json per enemy type
+        gameData.particles.Emit(pos, enemy->m_deathDesc);
 
         RemoveEnemy(key, gameData);
 

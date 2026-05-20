@@ -1,0 +1,60 @@
+#include <factory/emitter_presets.hpp>
+#include <nlohmann/json.hpp>
+#include <iostream>
+
+using json = nlohmann::json;
+
+static Color ParseColor(const json& j) {
+    return {
+        (unsigned char)j[0].get<int>(), (unsigned char)j[1].get<int>(),
+        (unsigned char)j[2].get<int>(), (unsigned char)j[3].get<int>()
+    };
+}
+
+static EmitterDesc ParseEmitterDesc(const json& j) {
+    EmitterDesc d;
+    if (j.contains("color"))    d.color    = ParseColor(j["color"]);
+    if (j.contains("endColor")) d.endColor = ParseColor(j["endColor"]);
+    d.count            = j.value("count", 0);
+    d.speed            = j.value("speed", 50.0f);
+    d.speedVariance    = j.value("speedVariance", 20.0f);
+    d.spread           = j.value("spread", 3.14159f);
+    d.angle            = j.value("angle", 0.0f);
+    d.lifetime         = j.value("lifetime", 0.2f);
+    d.lifetimeVariance = j.value("lifetimeVariance", 0.05f);
+    d.size             = j.value("size", 3.0f);
+    d.endSize          = j.value("endSize", 0.0f);
+    d.gravity          = j.value("gravity", 0.0f);
+    d.damping          = j.value("damping", 0.08f);
+    d.streakLength     = j.value("streakLength", 6.0f);
+    std::string dm     = j.value("drawMode", "Circle");
+    if (dm == "Streak") d.drawMode = ParticleDrawMode::Streak;
+    std::string sh     = j.value("shape", "Point");
+    if (sh == "Ring")      d.shape = EmitterShape::Ring;
+    else if (sh == "Disc") d.shape = EmitterShape::Disc;
+    d.shapeRadius      = j.value("shapeRadius", 0.0f);
+    return d;
+}
+
+void EmitterPresets::Load(JsonIO& jsonio) {
+    auto data = jsonio.Load("data/particle_effects.json");
+    if (data.is_null() || !data.contains("presets")) {
+        std::cerr << "EmitterPresets: failed to load particle_effects.json\n";
+        return;
+    }
+    for (auto& [name, desc] : data["presets"].items()) {
+        m_presets[name] = ParseEmitterDesc(desc);
+        std::cout << "EmitterPresets: loaded '" << name << "'\n";
+    }
+}
+
+EmitterDesc EmitterPresets::Get(const std::string& name) const {
+    auto it = m_presets.find(name);
+    if (it != m_presets.end()) return it->second;
+    std::cerr << "EmitterPresets: unknown preset '" << name << "'\n";
+    return {};
+}
+
+bool EmitterPresets::Has(const std::string& name) const {
+    return m_presets.count(name) > 0;
+}

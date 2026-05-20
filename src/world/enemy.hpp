@@ -7,6 +7,7 @@
 #include <world/effect.hpp>
 #include <world/enemy_modules.hpp>
 #include <world/enemy_stats.hpp>
+#include <world/particle.hpp>
 
 class Enemy {
 public:
@@ -19,6 +20,7 @@ public:
     float m_currentHealth = 0.0f;
     int   m_reward        = 0;
     int   m_livesOnReach  = 1;
+    EmitterDesc m_deathDesc; // burst emitted when this enemy dies
 
     EnemyStats m_base;   // set from JSON, never modified at runtime
     EnemyStats m_stats;  // recomputed each tick from base + ContributeStats modules

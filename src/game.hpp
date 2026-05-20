@@ -9,6 +9,7 @@
 #include <core/jsonio.hpp>
 #include <core/game_config.hpp>
 #include <core/performance_monitor.hpp>
+#include <factory/emitter_presets.hpp>
 #include <factory/tower_factory.hpp>
 #include <factory/enemy_factory.hpp>
 #include <world/game_data.hpp>
@@ -54,6 +55,7 @@ private:
     InputManager m_input;
     JsonIO m_jsonio;
     PerformanceMonitor m_monitor;
+    EmitterPresets m_emitterPresets;
     TowerFactory m_towerFactory;
     EnemyFactory m_enemyFactory;
 

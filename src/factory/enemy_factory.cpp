@@ -10,7 +10,7 @@ static EffectType ParseEffectType(const std::string& name) {
     return EffectType::Burn;
 }
 
-void EnemyFactory::Load(JsonIO& jsonio) {
+void EnemyFactory::Load(JsonIO& jsonio, const EmitterPresets& presets) {
     m_builders["Regeneration"] = [](const json& j){ return std::make_unique<RegenerationModule>(j.value("rate", 0.0f)); };
     m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("amount", 0.0f)); };
     m_builders["Resistance"]   = [](const json& j){ return std::make_unique<ResistanceModule>(j.value("factor", 0.0f)); };
@@ -33,6 +33,8 @@ void EnemyFactory::Load(JsonIO& jsonio) {
         tmpl.speed       = entry.value("speed", 50.0f);
         tmpl.reward      = entry.value("reward", 5);
         tmpl.livesOnReach = entry.value("livesOnReach", 1);
+        if (entry.contains("deathEmitter"))
+            tmpl.deathDesc = presets.Get(entry["deathEmitter"]);
 
         if (entry.contains("modules")) {
             for (auto& mod : entry["modules"])
@@ -61,6 +63,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     enemy.m_stats         = enemy.m_base;
     enemy.m_reward       = tmpl.reward;
     enemy.m_livesOnReach = tmpl.livesOnReach;
+    enemy.m_deathDesc    = tmpl.deathDesc;
 
     for (auto& mod : tmpl.modules) {
         std::string type = mod.value("type", "");

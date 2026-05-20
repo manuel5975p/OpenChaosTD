@@ -20,8 +20,9 @@ Game::Game() {
     m_renderer.Init(m_gameConfig.gameWidth, m_gameConfig.gameHeight);
 
     m_gameData.Load(m_jsonio);
-    m_towerFactory.Load(m_jsonio);
-    m_enemyFactory.Load(m_jsonio);
+    m_emitterPresets.Load(m_jsonio);
+    m_towerFactory.Load(m_jsonio, m_emitterPresets);
+    m_enemyFactory.Load(m_jsonio, m_emitterPresets);
 
     LoadAssets();
     m_input.Load(m_jsonio);

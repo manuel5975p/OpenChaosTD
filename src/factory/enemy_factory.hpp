@@ -8,10 +8,11 @@
 #include <nlohmann/json.hpp>
 #include <world/enemy.hpp>
 #include <core/jsonio.hpp>
+#include <factory/emitter_presets.hpp>
 
 class EnemyFactory {
 public:
-    void Load(JsonIO& jsonio);
+    void Load(JsonIO& jsonio, const EmitterPresets& presets);
     Enemy Create(const std::string& name) const;
     bool Has(const std::string& name) const;
 
@@ -26,6 +27,7 @@ private:
         float speed = 50.0f;
         int reward = 5;
         int livesOnReach = 1;
+        EmitterDesc deathDesc;
         std::vector<nlohmann::json> modules;
     };
 

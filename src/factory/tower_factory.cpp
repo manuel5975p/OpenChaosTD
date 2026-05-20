@@ -24,31 +24,6 @@ static Color ParseColor(const json& j) {
     };
 }
 
-static EmitterDesc ParseEmitterDesc(const json& j) {
-    EmitterDesc d;
-    if (j.contains("color"))    d.color    = ParseColor(j["color"]);
-    if (j.contains("endColor")) d.endColor = ParseColor(j["endColor"]);
-    d.count            = j.value("count", 0);
-    d.speed            = j.value("speed", 50.0f);
-    d.speedVariance    = j.value("speedVariance", 20.0f);
-    d.spread           = j.value("spread", 3.14159f);
-    d.angle            = j.value("angle", 0.0f);
-    d.lifetime         = j.value("lifetime", 0.2f);
-    d.lifetimeVariance = j.value("lifetimeVariance", 0.05f);
-    d.size             = j.value("size", 3.0f);
-    d.endSize          = j.value("endSize", 0.0f);
-    d.gravity          = j.value("gravity", 0.0f);
-    d.damping          = j.value("damping", 0.08f);
-    d.streakLength     = j.value("streakLength", 6.0f);
-    std::string dm     = j.value("drawMode", "Circle");
-    if (dm == "Streak") d.drawMode = ParticleDrawMode::Streak;
-    std::string sh     = j.value("shape", "Point");
-    if (sh == "Ring")      d.shape = EmitterShape::Ring;
-    else if (sh == "Disc") d.shape = EmitterShape::Disc;
-    d.shapeRadius      = j.value("shapeRadius", 0.0f);
-    return d;
-}
-
 static VfxStyle ParseVfxStyle(const std::string& s) {
     if (s == "Burst") return VfxStyle::Burst;
     if (s == "Ring")  return VfxStyle::Ring;
@@ -56,22 +31,14 @@ static VfxStyle ParseVfxStyle(const std::string& s) {
     return VfxStyle::Beam;
 }
 
-void TowerFactory::LoadVfxPresets(JsonIO& jsonio) {
-    auto data = jsonio.Load("data/tower_vfx.json");
-    if (data.is_null() || !data.contains("presets")) {
-        std::cerr << "TowerFactory: failed to load tower_vfx.json\n";
-        return;
-    }
-    for (auto& [name, desc] : data["presets"].items())
-        m_emitterPresets[name] = ParseEmitterDesc(desc);
-}
-
-void TowerFactory::Load(JsonIO& jsonio) {
-    LoadVfxPresets(jsonio);
+void TowerFactory::Load(JsonIO& jsonio, const EmitterPresets& presets) {
+    // Resolve fixed effect visuals once; capture by value into the builder lambdas
+    EmitterDesc slowDesc = presets.Get("slow_effect");
+    EmitterDesc burnDesc = presets.Get("burn_effect");
 
     m_builders["FlatDamage"]    = [](const json& j){ return std::make_unique<FlatDamageModule>(j.value("damage", 0.0f)); };
-    m_builders["Slow"]          = [](const json& j){ return std::make_unique<SlowModule>(j.value("factor", 1.0f), j.value("duration", 0.0f)); };
-    m_builders["Burn"]          = [](const json& j){ return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f)); };
+    m_builders["Slow"]          = [slowDesc](const json& j){ return std::make_unique<SlowModule>(j.value("factor", 1.0f), j.value("duration", 0.0f), slowDesc); };
+    m_builders["Burn"]          = [burnDesc](const json& j){ return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), burnDesc); };
     m_builders["ArmorPiercing"] = [](const json& j){ return std::make_unique<ArmorPiercingModule>(j.value("pierce", 0.0f)); };
     m_builders["Crit"]          = [](const json& j){ return std::make_unique<CritModule>(j.value("critChance", 0.0f), j.value("critMultiplier", 2.0f)); };
 
@@ -80,16 +47,6 @@ void TowerFactory::Load(JsonIO& jsonio) {
         std::cerr << "TowerFactory: failed to load towers data\n";
         return;
     }
-
-    // Resolve a preset name string to its EmitterDesc
-    auto resolvePreset = [&](const json& j) -> EmitterDesc {
-        if (j.is_string()) {
-            auto it = m_emitterPresets.find(j.get<std::string>());
-            if (it != m_emitterPresets.end()) return it->second;
-            std::cerr << "TowerFactory: unknown emitter preset '" << j.get<std::string>() << "'\n";
-        }
-        return {};
-    };
 
     for (auto& entry : data["towers"]) {
         TowerTemplate tmpl;
@@ -112,14 +69,14 @@ void TowerFactory::Load(JsonIO& jsonio) {
             const auto& vj = entry["vfx"];
             tmpl.vfx.style = ParseVfxStyle(vj.value("style", "Beam"));
             if (vj.contains("color"))      tmpl.vfx.color = ParseColor(vj["color"]);
-            if (vj.contains("muzzle"))     tmpl.vfx.muzzleDesc = resolvePreset(vj["muzzle"]);
-            if (vj.contains("impact"))     tmpl.vfx.impactDesc = resolvePreset(vj["impact"]);
-            if (vj.contains("critImpact")) tmpl.vfx.critImpactDesc = resolvePreset(vj["critImpact"]);
+            if (vj.contains("muzzle"))     tmpl.vfx.muzzleDesc = presets.Get(vj["muzzle"]);
+            if (vj.contains("impact"))     tmpl.vfx.impactDesc = presets.Get(vj["impact"]);
+            if (vj.contains("critImpact")) tmpl.vfx.critImpactDesc = presets.Get(vj["critImpact"]);
             if (vj.contains("trail")) {
                 const auto& tj = vj["trail"];
                 tmpl.vfx.trailRate = tj.value("rate", 0.0f);
                 if (tj.contains("preset"))
-                    tmpl.vfx.trailDesc = resolvePreset(tj["preset"]);
+                    tmpl.vfx.trailDesc = presets.Get(tj["preset"]);
             }
         }
 
