@@ -20,7 +20,7 @@ public:
     float m_currentHealth = 0.0f;
     int   m_reward        = 0;
     int   m_livesOnReach  = 1;
-    EmitterDesc m_deathDesc; // burst emitted when this enemy dies
+    const EmitterDesc* m_deathDescPtr = nullptr; // stable pointer into EmitterPresets; burst emitted on death
 
     EnemyStats m_base;   // set from JSON, never modified at runtime
     EnemyStats m_stats;  // recomputed each tick from base + ContributeStats modules

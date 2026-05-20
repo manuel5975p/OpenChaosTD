@@ -135,8 +135,9 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory)
                 requests.push_back(*req);
         }
 
-        // Death burst — preset loaded from particle_effects.json per enemy type
-        gameData.particles.Emit(pos, enemy->m_deathDesc);
+        // Death burst — pointer into EmitterPresets, set at enemy creation time
+        if (enemy->m_deathDescPtr)
+            gameData.particles.Emit(pos, *enemy->m_deathDescPtr);
 
         RemoveEnemy(key, gameData);
 

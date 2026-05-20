@@ -55,6 +55,13 @@ EmitterDesc EmitterPresets::Get(const std::string& name) const {
     return {};
 }
 
+const EmitterDesc* EmitterPresets::GetPtr(const std::string& name) const {
+    auto it = m_presets.find(name);
+    if (it != m_presets.end()) return &it->second;
+    std::cerr << "EmitterPresets: unknown preset '" << name << "'\n";
+    return nullptr;
+}
+
 bool EmitterPresets::Has(const std::string& name) const {
     return m_presets.count(name) > 0;
 }

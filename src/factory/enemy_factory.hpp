@@ -27,7 +27,7 @@ private:
         float speed = 50.0f;
         int reward = 5;
         int livesOnReach = 1;
-        EmitterDesc deathDesc;
+        const EmitterDesc* deathDescPtr = nullptr; // stable pointer into EmitterPresets
         std::vector<nlohmann::json> modules;
     };
 

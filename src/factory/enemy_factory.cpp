@@ -34,7 +34,7 @@ void EnemyFactory::Load(JsonIO& jsonio, const EmitterPresets& presets) {
         tmpl.reward      = entry.value("reward", 5);
         tmpl.livesOnReach = entry.value("livesOnReach", 1);
         if (entry.contains("deathEmitter"))
-            tmpl.deathDesc = presets.Get(entry["deathEmitter"]);
+            tmpl.deathDescPtr = presets.GetPtr(entry["deathEmitter"]);
 
         if (entry.contains("modules")) {
             for (auto& mod : entry["modules"])
@@ -63,7 +63,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     enemy.m_stats         = enemy.m_base;
     enemy.m_reward       = tmpl.reward;
     enemy.m_livesOnReach = tmpl.livesOnReach;
-    enemy.m_deathDesc    = tmpl.deathDesc;
+    enemy.m_deathDescPtr = tmpl.deathDescPtr;
 
     for (auto& mod : tmpl.modules) {
         std::string type = mod.value("type", "");

@@ -39,12 +39,24 @@ void EnemySystem::TickEnemies(float dt, GameData& gameData){
         for (auto& mod : enemy.m_modules)
             mod->Tick(dt, enemy);
 
+        // Compute enemy velocity so status-effect particles inherit it and don't lag behind
+        Vector2 baseVel = {0, 0};
+        if (enemy.m_waypointIndex >= 0) {
+            Vector2 toWaypoint = Vector2Subtract(
+                gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex],
+                enemy.m_position
+            );
+            float dist = Vector2Length(toWaypoint);
+            if (dist > 0.001f)
+                baseVel = Vector2Scale(Vector2Normalize(toWaypoint), enemy.m_stats.speed);
+        }
+
         for (auto& effect : enemy.m_effects) {
             // Emit visual particles for active effects (burn flicker, slow drift)
             if (effect.m_emitRate > 0.0f) {
                 effect.m_emitAccumulator += effect.m_emitRate * dt;
                 while (effect.m_emitAccumulator >= 1.0f) {
-                    gameData.particles.Emit(enemy.m_position, effect.m_particleDesc);
+                    gameData.particles.Emit(enemy.m_position, effect.m_particleDesc, baseVel);
                     effect.m_emitAccumulator -= 1.0f;
                 }
             }
