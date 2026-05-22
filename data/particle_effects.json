@@ -240,6 +240,44 @@
             "spread": 3.14159,
             "lifetime": 0.35,
             "size": 4.0
+        },
+        "death_cinder": {
+            "count": 14,
+            "color": [255, 155, 40, 255],
+            "endColor": [200, 70, 0, 0],
+            "speed": 85, "speedVariance": 30,
+            "spread": 3.14159,
+            "lifetime": 0.45,
+            "size": 4.5
+        },
+
+        "hexer_muzzle": {
+            "count": 8,
+            "color": [190, 80, 255, 255],
+            "endColor": [120, 30, 200, 0],
+            "angle": 4.71239,
+            "spread": 0.8,
+            "speed": 25, "speedVariance": 10,
+            "lifetime": 0.25,
+            "size": 2.5
+        },
+        "hexer_trail": {
+            "count": 1,
+            "color": [160, 60, 240, 180],
+            "endColor": [90, 15, 170, 0],
+            "speed": 12, "speedVariance": 5,
+            "spread": 3.14159,
+            "lifetime": 0.3,
+            "size": 2.0
+        },
+        "hexer_impact": {
+            "count": 5,
+            "color": [150, 55, 230, 255],
+            "endColor": [80, 10, 160, 0],
+            "speed": 40, "speedVariance": 15,
+            "spread": 3.14159,
+            "lifetime": 0.18,
+            "size": 2.5
         }
     }
 }

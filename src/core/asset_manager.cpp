@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <filesystem>
+#include <unordered_set>
 
 
 // Set Asset Path
@@ -28,6 +29,32 @@ void AssetManager::LoadTexture(const std::string& key, const std::string& relati
         throw std::runtime_error("AssetManager: failed to load texture '" + fullPath + "'");
 
     m_textures[key] = tex;
+}
+
+void AssetManager::LoadTexturesFromDir(const std::string& relativeDir) {
+    static const std::unordered_set<std::string> imageExts = { ".png", ".jpg", ".jpeg", ".bmp", ".tga" };
+
+    std::filesystem::path dir = std::filesystem::path(m_assetPath) / relativeDir;
+    if (!std::filesystem::is_directory(dir)) {
+        std::cerr << "AssetManager: texture directory not found: " << dir << "\n";
+        return;
+    }
+
+    for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+        if (!entry.is_regular_file()) continue;
+        if (!imageExts.count(entry.path().extension().string())) continue;
+
+        std::string key = entry.path().stem().string();
+        if (m_textures.count(key)) continue; // already loaded
+
+        Texture2D tex = ::LoadTexture(entry.path().string().c_str());
+        if (tex.id == 0) {
+            std::cerr << "AssetManager: failed to load texture '" << entry.path() << "'\n";
+            continue;
+        }
+        m_textures[key] = tex;
+        std::cout << "AssetManager: loaded texture '" << key << "'\n";
+    }
 }
 
 void AssetManager::LoadSound(const std::string& key, const std::string& relativePath) {

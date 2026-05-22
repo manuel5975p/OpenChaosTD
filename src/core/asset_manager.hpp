@@ -19,6 +19,7 @@ public:
 
     // Load
     void LoadTexture(const std::string& key, const std::string& relativePath);
+    void LoadTexturesFromDir(const std::string& relativeDir); // loads all images in a directory; key = filename stem
     void LoadSound(const std::string& key, const std::string& relativePath);
     void LoadFont(const std::string& key, const std::string& relativePath, int fontSize = 20);
     void LoadMusic(const std::string& key, const std::string& relativePath);

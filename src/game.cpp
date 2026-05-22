@@ -91,22 +91,8 @@ void Game::LoadAssets() {
     // Walk up the directory tree to find the "assets" folder
     m_assets.SetAssetPath(SearchFolderParentPath("assets", 5));
 
-    // Tower textures
-    m_assets.LoadTexture("tower_zapper", "textures/tower_zapper.png");
-    m_assets.LoadTexture("tower_freezer", "textures/tower_freezer.png");
-    m_assets.LoadTexture("tower_sniper", "textures/tower_sniper.png");
-    m_assets.LoadTexture("tower_flamer", "textures/tower_flamer.png");
-    m_assets.LoadTexture("tower_piercer", "textures/tower_piercer.png");
-    m_assets.LoadTexture("tower_gambler", "textures/tower_gambler.png");
-
-    // Tile textures
-    m_assets.LoadTexture("tile_grass", "textures/tile_grass.png");
-    m_assets.LoadTexture("tile_nest", "textures/tile_nest.png");
-    m_assets.LoadTexture("tile_core", "textures/tile_core.png");
-    m_assets.LoadTexture("tile_rock", "textures/tile_rock.png");
-
-    // Enemy textures
-    m_assets.LoadTexture("enemy_voidno", "textures/enemy_voidno.png");
+    // Load all images from the textures folder; key = filename stem
+    m_assets.LoadTexturesFromDir("textures");
 }
 
 // State machine

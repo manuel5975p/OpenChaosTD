@@ -1,27 +1,27 @@
 {
     "enemies": [
         {
-            "name": "voidno",
+            "name": "shade",
             "description": "Standard void creature. Balanced speed and health.",
-            "texture": "enemy_voidno",
+            "texture": "enemy_shade",
             "health": 10,
             "speed": 50,
             "reward": 5,
             "deathEmitter": "death_standard"
         },
         {
-            "name": "voidno_fast",
+            "name": "flicker",
             "description": "Fragile but very quick. Difficult to target.",
-            "texture": "enemy_voidno",
+            "texture": "enemy_flicker",
             "health": 5,
             "speed": 100,
             "reward": 8,
             "deathEmitter": "death_small"
         },
         {
-            "name": "voidno_tank",
-            "description": "Armored, regenerating brute. Resists most attacks.",
-            "texture": "enemy_voidno",
+            "name": "golem",
+            "description": "Armored, regenerating construct. Resists most attacks.",
+            "texture": "enemy_golem",
             "health": 50,
             "speed": 25,
             "reward": 20,
@@ -33,9 +33,9 @@
             ]
         },
         {
-            "name": "voidno_brute",
+            "name": "titan",
             "description": "Heavily armored. Shrugs off most direct damage.",
-            "texture": "enemy_voidno",
+            "texture": "enemy_titan",
             "health": 80,
             "speed": 30,
             "reward": 30,
@@ -45,9 +45,9 @@
             ]
         },
         {
-            "name": "voidno_boss",
-            "description": "Apex predator. Splits into tanks on death.",
-            "texture": "enemy_voidno",
+            "name": "sovereign",
+            "description": "Apex predator. Splits into golems on death.",
+            "texture": "enemy_sovereign",
             "health": 200,
             "speed": 25,
             "reward": 75,
@@ -56,13 +56,13 @@
                 { "type": "Regeneration", "rate": 5.0 },
                 { "type": "Armor",        "amount": 2.0 },
                 { "type": "Resistance",   "factor": 0.3 },
-                { "type": "Split", "child": "voidno_tank", "count": 2 }
+                { "type": "Split", "child": "golem", "count": 2 }
             ]
         },
         {
-            "name": "voidno_frost",
+            "name": "glacius",
             "description": "Frozen core. Cannot be slowed.",
-            "texture": "enemy_voidno",
+            "texture": "enemy_glacius",
             "health": 20,
             "speed": 45,
             "reward": 12,
@@ -72,9 +72,9 @@
             ]
         },
         {
-            "name": "voidno_shielded",
+            "name": "sentinel",
             "description": "Protected by an energy shield that absorbs damage before health is lost.",
-            "texture": "enemy_voidno",
+            "texture": "enemy_sentinel",
             "health": 25,
             "speed": 40,
             "reward": 18,
@@ -84,15 +84,27 @@
             ]
         },
         {
-            "name": "voidno_swarm",
-            "description": "Bursts into a swarm of fast creatures on death.",
-            "texture": "enemy_voidno",
+            "name": "brood",
+            "description": "Bursts into a swarm of flickers on death.",
+            "texture": "enemy_brood",
             "health": 30,
             "speed": 40,
             "reward": 15,
             "deathEmitter": "death_swarm",
             "modules": [
-                { "type": "Split", "child": "voidno_fast", "count": 3 }
+                { "type": "Split", "child": "flicker", "count": 3 }
+            ]
+        },
+        {
+            "name": "cinder",
+            "description": "Flame-hardened core. Cannot be ignited.",
+            "texture": "enemy_cinder",
+            "health": 18,
+            "speed": 58,
+            "reward": 15,
+            "deathEmitter": "death_cinder",
+            "modules": [
+                { "type": "Immune", "effect": "Burn" }
             ]
         }
     ]

@@ -39,7 +39,7 @@ if [ ! -f "$INPUT_FILE" ]; then
 fi
 
 # Run the Aseprite command
-sudo "$ASEPRITE_PATH" -b "$INPUT_FILE" --split-slices --save-as ""$OUTPUT_DIR/$OUTPUT_FILENAME""
+"$ASEPRITE_PATH" -b "$INPUT_FILE" --split-slices --save-as ""$OUTPUT_DIR/$OUTPUT_FILENAME""
 
 # Check if the command succeeded
 if [ $? -eq 0 ]; then
