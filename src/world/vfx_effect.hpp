@@ -2,7 +2,7 @@
 
 #include <raylib.h>
 #include <vector>
-#include <world/particle.hpp>
+#include <core/particle_system.hpp>
 
 enum class VfxStyle { Beam, Burst, Ring, Zap };
 

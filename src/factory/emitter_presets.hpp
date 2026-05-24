@@ -2,7 +2,7 @@
 
 #include <string>
 #include <unordered_map>
-#include <world/particle.hpp>
+#include <core/particle_system.hpp>
 #include <core/jsonio.hpp>
 
 // Loads all EmitterDesc presets from data/particle_effects.json.

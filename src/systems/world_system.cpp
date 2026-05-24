@@ -112,7 +112,7 @@ void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
     }
 }
 
-void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory){
+void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory, ParticleSystem& particles){
     std::vector<DenseSlotMap<Enemy>::Key> toRemove;
     for (auto& enemy : gameData.enemies) {
         if (enemy.m_currentHealth <= 0.0f)
@@ -137,7 +137,7 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory)
 
         // Death burst — pointer into EmitterPresets, set at enemy creation time
         if (enemy->m_deathDescPtr)
-            gameData.particles.Emit(pos, *enemy->m_deathDescPtr);
+            particles.Emit(pos, *enemy->m_deathDescPtr);
 
         RemoveEnemy(key, gameData);
 

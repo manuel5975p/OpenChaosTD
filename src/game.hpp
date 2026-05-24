@@ -4,6 +4,7 @@
 #include <memory>
 #include <states/game_state.hpp>
 #include <core/asset_manager.hpp>
+#include <core/particle_system.hpp>
 #include <core/renderer.hpp>
 #include <core/input_manager.hpp>
 #include <core/jsonio.hpp>
@@ -37,6 +38,7 @@ public:
     InputManager& GetInput() {return m_input;}
     JsonIO& GetJsonIO(){return m_jsonio;}
     PerformanceMonitor& GetMonitor() {return m_monitor;}
+    ParticleSystem& GetParticles() {return m_particles;}
     TowerFactory& GetTowerFactory() {return m_towerFactory;}
     EnemyFactory& GetEnemyFactory() {return m_enemyFactory;}
 
@@ -51,6 +53,7 @@ private:
 
     // Core managers
     AssetManager m_assets;
+    ParticleSystem m_particles;
     Renderer m_renderer;
     InputManager m_input;
     JsonIO m_jsonio;

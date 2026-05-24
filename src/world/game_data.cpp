@@ -29,5 +29,4 @@ void GameData::Reset() {
     enemies = DenseSlotMap<Enemy>();
     m_payloads.clear();
     m_vfx.clear();
-    particles.Clear();
 }

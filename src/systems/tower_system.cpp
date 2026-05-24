@@ -8,7 +8,7 @@
 #include <world/enemy_modules.hpp>
 
 
-void TowerSystem::update(float dt, GameData& gameData){
+void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles){
     for (Tower& tower : gameData.towers) {
         // Recompute live stats from base, then let modules override/augment
         tower.m_stats = tower.m_base;
@@ -60,7 +60,7 @@ void TowerSystem::update(float dt, GameData& gameData){
 
         // Muzzle burst
         if (tower.m_vfx.muzzleDesc.count > 0)
-            gameData.particles.Emit(tower.m_position, tower.m_vfx.muzzleDesc);
+            particles.Emit(tower.m_position, tower.m_vfx.muzzleDesc);
 
         gameData.m_payloads.push_back(std::move(payload));
         gameData.m_vfx.push_back(std::move(vfx));
@@ -103,7 +103,7 @@ void TowerSystem::BuildPayload(const Tower& tower, AttackPayload& payload) {
         mod->Contribute(payload);
 }
 
-void TowerSystem::TickPayloads(float dt, GameData& gameData) {
+void TowerSystem::TickPayloads(float dt, GameData& gameData, ParticleSystem& particles) {
     for (auto& payload : gameData.m_payloads) {
         payload.m_ttl -= dt;
 
@@ -132,7 +132,7 @@ void TowerSystem::TickPayloads(float dt, GameData& gameData) {
 
             // Impact particles — use crit desc if this hit critted
             bool useCrit = crit && payload.m_critImpactDesc.count > 0;
-            gameData.particles.Emit(enemy->m_position,
+            particles.Emit(enemy->m_position,
                 useCrit ? payload.m_critImpactDesc : payload.m_impactDesc);
         }
         payload.m_resolved = true;
@@ -156,14 +156,14 @@ static Vector2 SampleVfxPoint(const VfxEffect& vfx) {
     return vfx.m_origin;
 }
 
-void TowerSystem::TickVfx(float dt, GameData& gameData) {
+void TowerSystem::TickVfx(float dt, GameData& gameData, ParticleSystem& particles) {
     for (auto& vfx : gameData.m_vfx) {
         vfx.m_duration -= dt;
 
         if (vfx.m_trailRate > 0.0f) {
             vfx.m_trailAccumulator += vfx.m_trailRate * dt;
             while (vfx.m_trailAccumulator >= 1.0f) {
-                gameData.particles.Emit(SampleVfxPoint(vfx), vfx.m_trailDesc);
+                particles.Emit(SampleVfxPoint(vfx), vfx.m_trailDesc);
                 vfx.m_trailAccumulator -= 1.0f;
             }
         }

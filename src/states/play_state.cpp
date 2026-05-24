@@ -9,6 +9,7 @@
 
 void PlayingState::OnEnter(Game& game) {
     game.GetGameData().Reset();
+    game.GetParticles().Clear();
 
     m_worldSystem.GenerateMap(game.GetGameData().map, 15, 19);
     game.GetGameData().map.BuildPathMesh();
@@ -55,16 +56,16 @@ void PlayingState::Update(Game& game, float dt) {
 
     m_waveManager.Update(dt, game.GetGameData(), m_worldSystem, game.GetEnemyFactory());
 
-    m_enemySystem.TickEnemies(dt, game.GetGameData());
+    m_enemySystem.TickEnemies(dt, game.GetGameData(), game.GetParticles());
     m_enemySystem.FollowPath(dt, game.GetGameData());
 
-    m_towerSystem.update(dt, game.GetGameData());
-    m_towerSystem.TickPayloads(dt, game.GetGameData());
-    m_towerSystem.TickVfx(dt, game.GetGameData());
-    game.GetGameData().particles.Tick(dt);
+    m_towerSystem.update(dt, game.GetGameData(), game.GetParticles());
+    m_towerSystem.TickPayloads(dt, game.GetGameData(), game.GetParticles());
+    m_towerSystem.TickVfx(dt, game.GetGameData(), game.GetParticles());
+    game.GetParticles().Tick(dt);
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
-    m_worldSystem.CheckEnemyDead(game.GetGameData(), game.GetEnemyFactory());
+    m_worldSystem.CheckEnemyDead(game.GetGameData(), game.GetEnemyFactory(), game.GetParticles());
     m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
 }
 
@@ -95,7 +96,7 @@ void PlayingState::Draw(Game& game) {
     }
     m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
     m_renderSystem.DrawVfx(game.GetGameData().m_vfx);
-    game.GetGameData().particles.Draw();
+    game.GetParticles().Draw();
     EndMode2D();
 
     // Draw order: info panel last so it sits on top. Hidden HUDs skip themselves.

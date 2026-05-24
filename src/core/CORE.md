@@ -102,3 +102,38 @@ double avg = m_monitor.GetAvgMs("Update");
 ```
 
 The window size defaults to 120 frames (2 s at 60 fps).
+
+---
+
+## ParticleSystem
+
+CPU particle system backed by a fixed-capacity `ObjectPool<Particle>` (2048 slots). Owned by `Game` alongside the other core managers — not part of game state.
+
+`EmitterDesc` is the public API for configuring a burst. `Particle` is an internal runtime type.
+
+```cpp
+// Spawn a burst at a world position
+game.GetParticles().Emit(position, desc);
+
+// With base velocity so particles follow a moving emitter (e.g. status effects on enemies)
+game.GetParticles().Emit(position, desc, enemyVelocity);
+
+// Drive from the game loop
+game.GetParticles().Tick(dt);
+game.GetParticles().Draw();
+
+// Clear all live particles (call alongside GameData::Reset)
+game.GetParticles().Clear();
+```
+
+`EmitterDesc` fields — all angles in degrees:
+
+| Field | Default | Meaning |
+|---|---|---|
+| `color` / `endColor` | WHITE / transparent | Start and end tint, lerped over lifetime |
+| `count` | 0 | Particles per burst; 0 = disabled |
+| `speed` / `speedVariance` | 50 / 20 | Ejection speed ± random |
+| `angle` | 0 | Centre direction (0=right, 90=down, 180=left, 270=up) |
+| `spread` | 360 | Total arc of the spawn cone in degrees |
+| `lifetime` | 0.2 | Seconds each particle lives |
+| `size` / `endSize` | 3 / 0 | Radius at birth and death, lerped over lifetime |

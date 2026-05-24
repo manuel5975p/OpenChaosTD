@@ -21,18 +21,9 @@ static EmitterDesc ParseEmitterDesc(const json& j) {
     d.spread           = j.value("spread", 3.14159f);
     d.angle            = j.value("angle", 0.0f);
     d.lifetime         = j.value("lifetime", 0.2f);
-    d.lifetimeVariance = j.value("lifetimeVariance", 0.05f);
     d.size             = j.value("size", 3.0f);
     d.endSize          = j.value("endSize", 0.0f);
-    d.gravity          = j.value("gravity", 0.0f);
-    d.damping          = j.value("damping", 0.08f);
-    d.streakLength     = j.value("streakLength", 6.0f);
-    std::string dm     = j.value("drawMode", "Circle");
-    if (dm == "Streak") d.drawMode = ParticleDrawMode::Streak;
-    std::string sh     = j.value("shape", "Point");
-    if (sh == "Ring")      d.shape = EmitterShape::Ring;
-    else if (sh == "Disc") d.shape = EmitterShape::Disc;
-    d.shapeRadius      = j.value("shapeRadius", 0.0f);
+
     return d;
 }
 

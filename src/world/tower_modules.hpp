@@ -2,7 +2,7 @@
 
 #include <string>
 #include <raylib.h>
-#include <world/particle.hpp>
+#include <core/particle_system.hpp>
 #include <world/tower_stats.hpp>
 
 struct AttackPayload;

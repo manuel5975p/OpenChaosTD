@@ -1,6 +1,6 @@
 #pragma once
 
-#include <world/particle.hpp>
+#include <core/particle_system.hpp>
 
 enum class EffectType {
     Burn,

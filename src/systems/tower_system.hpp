@@ -4,9 +4,9 @@
 
 class TowerSystem{
 public:
-    void update(float dt, GameData& gameData);
-    void TickPayloads(float dt, GameData& gameData);
-    void TickVfx(float dt, GameData& gameData);
+    void update(float dt, GameData& gameData, ParticleSystem& particles);
+    void TickPayloads(float dt, GameData& gameData, ParticleSystem& particles);
+    void TickVfx(float dt, GameData& gameData, ParticleSystem& particles);
     std::vector<DenseSlotMap<Enemy>::Key> FindTargets(Tower& tower, DenseSlotMap<Enemy>& enemies, int max_targets);
 
 private:

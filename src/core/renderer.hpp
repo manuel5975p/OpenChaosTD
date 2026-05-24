@@ -24,11 +24,11 @@ public:
     // Converts real screen mouse coords to virtual game coords
     Vector2 GetVirtualMouse() const;
 
-    int GetGameWidth()  const { return m_virtualWidth;  }
+    int GetGameWidth() const { return m_virtualWidth;  }
     int GetGameHeight() const { return m_virtualHeight; }
 
-    float GetScale()          const { return m_scale; }
-    Rectangle GetDestRect()   const { return m_destRect; }
+    float GetScale() const { return m_scale; }
+    Rectangle GetDestRect() const { return m_destRect; }
 
     void Shutdown();
 
@@ -36,7 +36,7 @@ private:
     // Recalculates the destination rectangle and black bar fills
     void UpdateScale();
 
-    int m_virtualWidth  = 1280;
+    int m_virtualWidth = 1280;
     int m_virtualHeight = 720;
 
     RenderTexture2D m_target = {};  // Game renders into this

@@ -5,7 +5,6 @@
 #include <world/enemy.hpp>
 #include <world/attack.hpp>
 #include <lib/dense_slotmap.hpp>
-#include <systems/particle_system.hpp>
 #include <world/vfx_effect.hpp>
 #include <vector>
 
@@ -33,7 +32,6 @@ struct GameData {
     DenseSlotMap<Enemy> enemies;
     std::vector<AttackPayload> m_payloads;
     std::vector<VfxEffect> m_vfx;
-    ParticleSystem particles;
 
     void Load(JsonIO& jsonio);
     void Reset();

@@ -29,7 +29,7 @@ void EnemySystem::FollowPath(float dt, GameData& gameData){
     }
 }
 
-void EnemySystem::TickEnemies(float dt, GameData& gameData){
+void EnemySystem::TickEnemies(float dt, GameData& gameData, ParticleSystem& particles){
     for (auto& enemy : gameData.enemies) {
         // Recompute live stats from base, then let modules contribute
         enemy.m_stats = enemy.m_base;
@@ -56,7 +56,7 @@ void EnemySystem::TickEnemies(float dt, GameData& gameData){
             if (effect.m_emitRate > 0.0f) {
                 effect.m_emitAccumulator += effect.m_emitRate * dt;
                 while (effect.m_emitAccumulator >= 1.0f) {
-                    gameData.particles.Emit(enemy.m_position, effect.m_particleDesc, baseVel);
+                    particles.Emit(enemy.m_position, effect.m_particleDesc, baseVel);
                     effect.m_emitAccumulator -= 1.0f;
                 }
             }

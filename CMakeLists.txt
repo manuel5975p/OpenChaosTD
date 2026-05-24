@@ -14,8 +14,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # toggle libs to be used with ON and OFF
 option(USE_RAYLIB "Use raylib" ON)
-option(USE_RAYGUI "Use raygui" OFF)
-option(USE_BOX2D "Use Box2D" OFF)
 option(USE_NLOHMANN_JSON "Use nlohmann json" ON)
 
 

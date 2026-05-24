@@ -3,7 +3,7 @@
 #include <vector>
 #include <world/effect.hpp>
 #include <world/enemy.hpp>
-#include <world/particle.hpp>
+#include <core/particle_system.hpp>
 #include <lib/dense_slotmap.hpp>
 
 struct AttackPayload {

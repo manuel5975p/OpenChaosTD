@@ -7,7 +7,7 @@
 #include <world/effect.hpp>
 #include <world/enemy_modules.hpp>
 #include <world/enemy_stats.hpp>
-#include <world/particle.hpp>
+#include <core/particle_system.hpp>
 
 class Enemy {
 public:

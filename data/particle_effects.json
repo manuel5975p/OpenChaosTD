@@ -6,7 +6,7 @@
             "color": [180, 230, 255, 255],
             "endColor": [100, 180, 255, 0],
             "speed": 70, "speedVariance": 25,
-            "spread": 1.0,
+            "spread": 115,
             "lifetime": 0.07,
             "size": 2.5
         },
@@ -15,7 +15,7 @@
             "color": [100, 190, 255, 255],
             "endColor": [60, 140, 220, 0],
             "speed": 55, "speedVariance": 20,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.12,
             "size": 2.0
         },
@@ -23,8 +23,8 @@
             "count": 6,
             "color": [200, 235, 255, 255],
             "endColor": [120, 200, 255, 0],
-            "angle": 4.71239,
-            "spread": 0.7,
+            "angle": 270,
+            "spread": 80,
             "speed": 20, "speedVariance": 8,
             "lifetime": 0.3,
             "size": 2.5
@@ -34,7 +34,7 @@
             "color": [80, 190, 255, 255],
             "endColor": [40, 140, 210, 0],
             "speed": 35, "speedVariance": 12,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.28,
             "size": 3.0
         },
@@ -42,7 +42,7 @@
             "count": 4,
             "color": [255, 255, 255, 255],
             "endColor": [220, 220, 255, 0],
-            "spread": 0.3,
+            "spread": 34,
             "speed": 120, "speedVariance": 40,
             "lifetime": 0.05,
             "size": 3.0
@@ -52,7 +52,7 @@
             "color": [220, 220, 255, 255],
             "endColor": [180, 180, 200, 0],
             "speed": 100, "speedVariance": 35,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.35,
             "size": 4.0
         },
@@ -61,7 +61,7 @@
             "color": [255, 255, 200, 255],
             "endColor": [220, 200, 100, 0],
             "speed": 130, "speedVariance": 45,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.5,
             "size": 5.5
         },
@@ -69,8 +69,8 @@
             "count": 10,
             "color": [255, 160, 40, 255],
             "endColor": [200, 80, 0, 0],
-            "angle": 4.71239,
-            "spread": 1.2,
+            "angle": 270,
+            "spread": 138,
             "speed": 30, "speedVariance": 12,
             "lifetime": 0.2,
             "size": 3.0
@@ -80,7 +80,7 @@
             "color": [255, 120, 30, 200],
             "endColor": [200, 50, 0, 0],
             "speed": 18, "speedVariance": 8,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.2,
             "size": 2.5
         },
@@ -89,7 +89,7 @@
             "color": [255, 100, 20, 255],
             "endColor": [180, 50, 0, 0],
             "speed": 50, "speedVariance": 18,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.22,
             "size": 3.5
         },
@@ -97,7 +97,7 @@
             "count": 6,
             "color": [230, 235, 240, 255],
             "endColor": [180, 190, 200, 0],
-            "spread": 0.25,
+            "spread": 29,
             "speed": 110, "speedVariance": 40,
             "lifetime": 0.06,
             "size": 3.0
@@ -107,7 +107,7 @@
             "color": [200, 210, 220, 255],
             "endColor": [160, 170, 180, 0],
             "speed": 80, "speedVariance": 30,
-            "spread": 0.9,
+            "spread": 103,
             "lifetime": 0.15,
             "size": 2.5
         },
@@ -116,7 +116,7 @@
             "color": [255, 230, 80, 255],
             "endColor": [220, 180, 30, 0],
             "speed": 60, "speedVariance": 25,
-            "spread": 0.9,
+            "spread": 103,
             "lifetime": 0.1,
             "size": 2.5
         },
@@ -125,7 +125,7 @@
             "color": [255, 210, 40, 255],
             "endColor": [200, 150, 0, 0],
             "speed": 60, "speedVariance": 20,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.15,
             "size": 3.0
         },
@@ -134,7 +134,7 @@
             "color": [255, 200, 0, 255],
             "endColor": [220, 150, 0, 0],
             "speed": 85, "speedVariance": 30,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.45,
             "size": 5.0
         },
@@ -144,7 +144,7 @@
             "color": [160, 220, 255, 180],
             "endColor": [80, 160, 220, 0],
             "speed": 10, "speedVariance": 5,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.35,
             "size": 2.0
         },
@@ -154,7 +154,7 @@
             "color": [160, 220, 255, 180],
             "endColor": [80, 160, 220, 0],
             "speed": 10, "speedVariance": 4,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.38,
             "size": 2.0
         },
@@ -162,8 +162,8 @@
             "count": 1,
             "color": [255, 110, 30, 255],
             "endColor": [180, 40, 0, 0],
-            "angle": 4.71239,
-            "spread": 0.5,
+            "angle": 270,
+            "spread": 57,
             "speed": 22, "speedVariance": 8,
             "lifetime": 0.28,
             "size": 2.5
@@ -174,7 +174,7 @@
             "color": [220, 55, 55, 255],
             "endColor": [180, 30, 30, 0],
             "speed": 90, "speedVariance": 30,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.4,
             "size": 4.5
         },
@@ -183,7 +183,7 @@
             "color": [200, 50, 50, 255],
             "endColor": [150, 20, 20, 0],
             "speed": 70, "speedVariance": 25,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.25,
             "size": 3.0
         },
@@ -192,7 +192,7 @@
             "color": [200, 45, 45, 255],
             "endColor": [140, 20, 20, 0],
             "speed": 80, "speedVariance": 30,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.5,
             "size": 5.5
         },
@@ -201,7 +201,7 @@
             "color": [170, 170, 170, 255],
             "endColor": [80, 80, 80, 0],
             "speed": 70, "speedVariance": 25,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.55,
             "size": 6.0
         },
@@ -210,7 +210,7 @@
             "color": [220, 55, 55, 255],
             "endColor": [180, 20, 20, 0],
             "speed": 110, "speedVariance": 40,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.65,
             "size": 7.0
         },
@@ -219,7 +219,7 @@
             "color": [160, 230, 255, 255],
             "endColor": [80, 160, 220, 0],
             "speed": 60, "speedVariance": 20,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.45,
             "size": 4.0
         },
@@ -228,7 +228,7 @@
             "color": [80, 150, 255, 255],
             "endColor": [40, 80, 200, 0],
             "speed": 90, "speedVariance": 30,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.4,
             "size": 4.5
         },
@@ -237,7 +237,7 @@
             "color": [220, 55, 55, 255],
             "endColor": [180, 30, 30, 0],
             "speed": 75, "speedVariance": 25,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.35,
             "size": 4.0
         },
@@ -246,7 +246,7 @@
             "color": [255, 155, 40, 255],
             "endColor": [200, 70, 0, 0],
             "speed": 85, "speedVariance": 30,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.45,
             "size": 4.5
         },
@@ -255,8 +255,8 @@
             "count": 8,
             "color": [190, 80, 255, 255],
             "endColor": [120, 30, 200, 0],
-            "angle": 4.71239,
-            "spread": 0.8,
+            "angle": 270,
+            "spread": 92,
             "speed": 25, "speedVariance": 10,
             "lifetime": 0.25,
             "size": 2.5
@@ -266,7 +266,7 @@
             "color": [160, 60, 240, 180],
             "endColor": [90, 15, 170, 0],
             "speed": 12, "speedVariance": 5,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.3,
             "size": 2.0
         },
@@ -275,7 +275,7 @@
             "color": [150, 55, 230, 255],
             "endColor": [80, 10, 160, 0],
             "speed": 40, "speedVariance": 15,
-            "spread": 3.14159,
+            "spread": 360,
             "lifetime": 0.18,
             "size": 2.5
         }
