@@ -3,12 +3,12 @@
 #include <iostream>
 
 void WaveManager::Load(JsonIO& jsonio) {
-    if (!jsonio.Exists("data/waves.json")) {
+    if (!jsonio.Exists("config/waves.json")) {
         std::cerr << "WaveManager: data/waves.json not found\n";
         return;
     }
 
-    auto json = jsonio.Load("data/waves.json");
+    auto json = jsonio.Load("config/waves.json");
     if (!json.contains("waves")) return;
 
     for (const auto& wave : json["waves"]) {

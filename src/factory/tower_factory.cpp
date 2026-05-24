@@ -42,7 +42,7 @@ void TowerFactory::Load(JsonIO& jsonio, const EmitterPresets& presets) {
     m_builders["ArmorPiercing"] = [](const json& j){ return std::make_unique<ArmorPiercingModule>(j.value("pierce", 0.0f)); };
     m_builders["Crit"]          = [](const json& j){ return std::make_unique<CritModule>(j.value("critChance", 0.0f), j.value("critMultiplier", 2.0f)); };
 
-    auto data = jsonio.Load("data/towers.json");
+    auto data = jsonio.Load("config/towers.json");
     if (data.is_null() || !data.contains("towers")) {
         std::cerr << "TowerFactory: failed to load towers data\n";
         return;

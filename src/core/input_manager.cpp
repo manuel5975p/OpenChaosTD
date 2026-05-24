@@ -92,9 +92,9 @@ static KeyboardKey ParseKey(const std::string& name) {
 }
 
 void InputManager::Load(JsonIO& jsonio) {
-    if (!jsonio.Exists("data/keybindings.json"))
+    if (!jsonio.Exists("config/keybindings.json"))
         return;
-    auto j = jsonio.Load("data/keybindings.json");
+    auto j = jsonio.Load("config/keybindings.json");
     for (auto& [action, value] : j.items()) {
         std::string name = value.get<std::string>();
         if (auto mb = ParseMouseButton(name))

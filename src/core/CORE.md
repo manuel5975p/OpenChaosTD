@@ -38,7 +38,7 @@ m_renderer.EndFrame();
 
 Action-based input that maps named actions to keyboard keys or mouse buttons via `std::variant<KeyboardKey, MouseButton>`. Unknown action names return `false` silently.
 
-Bindings are set from code defaults first, then overridden by `data/keybindings.json` if present — allowing user rebinding without recompiling.
+Bindings are set from code defaults first, then overridden by `config/keybindings.json` if present — allowing user rebinding without recompiling.
 
 ```cpp
 // registering (code defaults)
@@ -68,9 +68,9 @@ Cross-platform JSON read/write backed by nlohmann/json. The root path is set onc
 
 ```cpp
 m_jsonio.SetRootPath(projectRoot);
-auto j = m_jsonio.Load("data/towers.json");
-m_jsonio.Save("data/save.json", j);
-bool exists = m_jsonio.Exists("data/config.json");
+auto j = m_jsonio.Load("config/towers.json");
+m_jsonio.Save("config/save.json", j);
+bool exists = m_jsonio.Exists("config/config.json");
 ```
 
 Used by all factories and config types. On web builds the path resolution accounts for the Emscripten virtual filesystem.
@@ -79,7 +79,7 @@ Used by all factories and config types. On web builds the path resolution accoun
 
 ## GameConfig
 
-Window and display settings loaded from `data/config.json` at startup, before `InitWindow` is called. Falls back to compiled-in defaults if the file is absent.
+Window and display settings loaded from `config/config.json` at startup, before `InitWindow` is called. Falls back to compiled-in defaults if the file is absent.
 
 ```json
 { "gameWidth": 1200, "gameHeight": 1200, "fps": 120, "hudScale": 1.0, "title": "OpenChaos TD" }
