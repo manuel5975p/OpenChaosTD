@@ -4,7 +4,7 @@
 #include <sstream>
 
 void TowerInfoHUD::Build(Game& game) {
-    HUD::Build(game);
+    HUD::Build(game.GetGameConfig().hudScale);
     m_panelW      = Scaled(160.0f);
     m_margin      = Scaled(8.0f);
     m_lineH       = Scaled(15.0f);
@@ -67,8 +67,8 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
 }
 
 void TowerInfoHUD::OnProcessInput(Game& game) {
-    if (!game.GetInput().IsPressed("Select")) return;
-    ConsumePanelClick(game, "Select");
+    if (!game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON)) return;
+    ConsumePanelClick(game.GetInput());
     if (!m_showSell) return; // hover preview has no sell button
     Vector2 mousePos = game.GetInput().GetMousePosition();
     if (m_sellBtn.IsClicked(mousePos, true))

@@ -1,14 +1,12 @@
 #pragma once
 
-#include <hud/hud.hpp>
-#include <hud/button.hpp>
+#include <engine/ui/hud.hpp>
+#include <engine/ui/button.hpp>
 #include <raylib.h>
 
-class Game;
-
-class ScoreHUD : public HUD {
+class StatusHUD : public HUD {
 public:
-    void Build(Game& game) override;
+    void Build(Game& game);
 
     void SetAutoSpawn(bool autoSpawn) { m_autoSpawn = autoSpawn; }
 

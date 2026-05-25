@@ -1,12 +1,12 @@
 #pragma once
 
-#include <hud/hud.hpp>
+#include <engine/ui/hud.hpp>
 #include <string>
 #include <vector>
 
 class Game;
 
-class EventLog : public HUD {
+class EventHUD : public HUD {
 public:
     // Add a message; adding the same message as the newest entry resets its timer
     void Add(const std::string& message, float duration = 3.0f);

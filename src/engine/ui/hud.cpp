@@ -1,15 +1,6 @@
-#include <hud/hud.hpp>
-#include <game.hpp>
+#include <engine/ui/hud.hpp>
+#include <engine/core/input.hpp>
 #include <algorithm>
-
-void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color) {
-    int width = MeasureText(text, fontSize);
-    DrawText(text, centerX - width / 2, y, fontSize, color);
-}
-
-void HUD::Build(Game& game) {
-    m_scale = game.GetGameConfig().hudScale;
-}
 
 void HUD::DrawPanelBackground(unsigned char alpha, bool border) const {
     DrawRectangleRec(m_panelRect, {20, 20, 20, alpha});
@@ -17,10 +8,10 @@ void HUD::DrawPanelBackground(unsigned char alpha, bool border) const {
         DrawRectangleLinesEx(m_panelRect, 1.0f, {80, 80, 80, 255});
 }
 
-void HUD::ConsumePanelClick(Game& game, const char* action) const {
-    if (game.GetInput().IsPressed(action) &&
-        CheckCollisionPointRec(game.GetInput().GetMousePosition(), m_panelRect))
-        game.GetInput().ConsumeMouseInput();
+void HUD::ConsumePanelClick(Input& input) const {
+    if (input.IsMousePressed(MOUSE_LEFT_BUTTON) &&
+        CheckCollisionPointRec(input.GetMousePosition(), m_panelRect))
+        input.ConsumeMouseInput();
 }
 
 void HUD::ClampPanelToScreen(int screenW, int screenH) {

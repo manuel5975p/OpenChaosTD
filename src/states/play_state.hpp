@@ -6,10 +6,10 @@
 #include <systems/world_system.hpp>
 #include <systems/enemy_system.hpp>
 #include <systems/tower_system.hpp>
-#include <hud/tower_hud.hpp>
-#include <hud/score_hud.hpp>
+#include <hud/tower_build_hud.hpp>
+#include <hud/status_hud.hpp>
 #include <hud/tower_info_hud.hpp>
-#include <hud/event_log.hpp>
+#include <hud/event_hud.hpp>
 #include <systems/wave_manager.hpp>
 class PlayingState : public GameState {
 public:
@@ -36,10 +36,10 @@ private:
 
     Tower m_hoveredTowerCache; // rebuilt only when hoveredTowerName changes
 
-    ScoreHUD m_scoreHUD;
-    TowerHUD m_towerHUD;
+    StatusHUD m_scoreHUD;
+    TowerBuildHUD m_towerHUD;
     TowerInfoHUD m_towerInfoHUD;
-    EventLog m_eventLog;
+    EventHUD m_eventLog;
 
     SelectionContext m_selection;
 

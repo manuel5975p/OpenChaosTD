@@ -21,7 +21,7 @@ void EndState::OnExit(Game& /*game*/) {}
 
 void EndState::ProcessInput(Game& game, float /*dt*/) {
     Vector2 mouse = game.GetInput().GetMousePosition();
-    bool clicked = game.GetInput().IsPressed("Select");
+    bool clicked = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
 
     if (m_playAgainButton.IsClicked(mouse, clicked))
         game.ChangeState(std::make_unique<PlayingState>());

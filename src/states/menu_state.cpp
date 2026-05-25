@@ -19,7 +19,7 @@ void MenuState::OnExit(Game& /*game*/) {
 
 void MenuState::ProcessInput(Game& game, float /*dt*/) {
     Vector2 mousePos = game.GetInput().GetMousePosition();
-    bool clicked = game.GetInput().IsPressed("Select");
+    bool clicked = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
 
     if (m_playButton.IsClicked(mousePos, clicked) || game.GetInput().IsPressed("Confirm"))
         game.ChangeState(std::make_unique<PlayingState>());

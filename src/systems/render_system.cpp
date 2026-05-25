@@ -175,7 +175,7 @@ void RenderSystem::ControlCamera(float& dt, Input& input){
     direction *= 300 * dt;
 
     // Move camera by draging
-    if(input.IsDown("DragCamera")){
+    if(input.IsMouseDown(MOUSE_RIGHT_BUTTON)){
         direction = (input.GetMousePosition() -mousePositionLast) / camera.zoom;
     }
 

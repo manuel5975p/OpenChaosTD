@@ -26,6 +26,11 @@ public:
     Vector2 GetMousePosition() const { return m_virtualMouse; }
     Vector2 GetWorldMousePosition(const Camera2D& camera) const { return GetScreenToWorld2D(m_virtualMouse, camera); }
 
+    // Raw mouse button queries — bypass the action binding system.
+    bool IsMousePressed(MouseButton btn) const;
+    bool IsMouseDown(MouseButton btn) const;
+    bool IsMouseReleased(MouseButton btn) const;
+
     void ConsumeMouseInput();
     bool IsMouseInputConsumed() const { return m_mouseConsumed; }
 

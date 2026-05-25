@@ -1,7 +1,7 @@
 #pragma once
 
-#include <hud/hud.hpp>
-#include <hud/button.hpp>
+#include <engine/ui/hud.hpp>
+#include <engine/ui/button.hpp>
 #include <world/tower.hpp>
 #include <raylib.h>
 #include <string>
@@ -11,7 +11,7 @@ class Game;
 
 class TowerInfoHUD : public HUD {
 public:
-    void Build(Game& game) override;
+    void Build(Game& game);
 
     // Point the panel at a tower, position it near a screen anchor, and show it
     void SetTarget(Game& game, const Tower& tower, Vector2 screenPos, bool showSell);

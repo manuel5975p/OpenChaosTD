@@ -1,7 +1,6 @@
 #include <engine/core/input.hpp>
 #include <engine/core/screen.hpp>
 #include <engine/util/json_store.hpp>
-#include <optional>
 
 void Input::Update(const Screen& renderer) {
     m_mouseConsumed = false;
@@ -56,15 +55,12 @@ float Input::GetMouseWheelDelta() const {
     return GetMouseWheelMove();
 }
 
+bool Input::IsMousePressed(MouseButton btn) const  { return IsMouseButtonPressed(btn); }
+bool Input::IsMouseDown(MouseButton btn) const     { return IsMouseButtonDown(btn); }
+bool Input::IsMouseReleased(MouseButton btn) const { return IsMouseButtonReleased(btn); }
+
 void Input::ConsumeMouseInput() {
     m_mouseConsumed = true;
-}
-
-static std::optional<MouseButton> ParseMouseButton(const std::string& name) {
-    if (name == "MOUSE_LEFT") return MOUSE_LEFT_BUTTON;
-    if (name == "MOUSE_RIGHT") return MOUSE_RIGHT_BUTTON;
-    if (name == "MOUSE_MIDDLE") return MOUSE_MIDDLE_BUTTON;
-    return std::nullopt;
 }
 
 static KeyboardKey ParseKey(const std::string& name) {
@@ -97,9 +93,6 @@ void Input::Load(JsonStore& jsonio) {
     auto j = jsonio.Load("config/keybindings.json");
     for (auto& [action, value] : j.items()) {
         std::string name = value.get<std::string>();
-        if (auto mb = ParseMouseButton(name))
-            AddAction(action, *mb);
-        else
-            AddAction(action, ParseKey(name));
+        AddAction(action, ParseKey(name));
     }
 }

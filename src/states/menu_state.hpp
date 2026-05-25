@@ -1,7 +1,7 @@
 #pragma once
 
 #include <states/game_state.hpp>
-#include <hud/button.hpp>
+#include <engine/ui/button.hpp>
 
 class MenuState : public GameState {
 public:

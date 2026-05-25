@@ -46,18 +46,18 @@ m_screen.EndFrame();
 
 ### Input
 
-Action-based input that maps named actions to keyboard keys or mouse buttons via `std::variant<KeyboardKey, MouseButton>`. Unknown action names return `false` silently.
+Action-based input that maps named actions to keyboard keys via `keybindings.json`. Unknown action names return `false` silently.
 
-Bindings are set from code defaults first, then overridden by `data/keybindings.json` if present — allowing user rebinding without recompiling.
+Mouse buttons are queried directly via raw accessors — they are not part of the binding system and are not user-remappable.
 
 ```cpp
-// registering (code defaults)
-m_input.AddAction("PlaceTower", MOUSE_LEFT_BUTTON);
-m_input.AddAction("Cancel", KEY_ESCAPE);
+// keyboard action querying
+if (input.IsPressed("Cancel")) { ... }
 
-// querying
-if (input.IsPressed("PlaceTower")) { ... }
-if (input.IsDown("DragCamera"))    { ... }
+// raw mouse button querying
+if (input.IsMousePressed(MOUSE_LEFT_BUTTON))  { ... }
+if (input.IsMouseDown(MOUSE_RIGHT_BUTTON))    { ... }
+if (input.IsMouseReleased(MOUSE_LEFT_BUTTON)) { ... }
 float wheel = input.GetMouseWheelDelta();
 ```
 

@@ -1,16 +1,14 @@
 #pragma once
 
-#include <hud/hud.hpp>
-#include <hud/button.hpp>
+#include <engine/ui/hud.hpp>
+#include <engine/ui/button.hpp>
 #include <raylib.h>
 #include <vector>
 #include <string>
 
-class Game;
-
-class TowerHUD : public HUD {
+class TowerBuildHUD : public HUD {
 public:
-    void Build(Game& game) override;
+    void Build(Game& game);
 
     const std::string& GetSelectedTower() const { return m_selectedTower; }
     void ClearSelection() { m_selectedTower = ""; }

@@ -1,11 +1,11 @@
-#include <hud/tower_hud.hpp>
+#include <hud/tower_build_hud.hpp>
 #include <game.hpp>
 #include <raylib.h>
 
-void TowerHUD::Build(Game& game) {
+void TowerBuildHUD::Build(Game& game) {
     const auto& names = game.GetTowerFactory().GetNames();
 
-    HUD::Build(game);
+    HUD::Build(game.GetGameConfig().hudScale);
     const float btnSize = Scaled(64.0f);
     const float panelH  = Scaled(80.0f);
     const float margin  = Scaled(8.0f);
@@ -26,12 +26,12 @@ void TowerHUD::Build(Game& game) {
     m_selectedTower = "";
 }
 
-void TowerHUD::OnProcessInput(Game& game) {
+void TowerBuildHUD::OnProcessInput(Game& game) {
     Vector2 mousePos = game.GetInput().GetMousePosition();
 
-    ConsumePanelClick(game, "PlaceTower");
+    ConsumePanelClick(game.GetInput());
 
-    if (game.GetInput().IsPressed("PlaceTower")) {
+    if (game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON)) {
         for (const Button& btn : m_buttons) {
             if (btn.IsClicked(mousePos, true)) {
                 // Toggle: clicking the active type again clears the selection
@@ -42,7 +42,7 @@ void TowerHUD::OnProcessInput(Game& game) {
     }
 }
 
-const std::string& TowerHUD::GetHoveredTower(Vector2 mousePos) const {
+const std::string& TowerBuildHUD::GetHoveredTower(Vector2 mousePos) const {
     static const std::string empty;
     for (const auto& btn : m_buttons)
         if (CheckCollisionPointRec(mousePos, btn.m_rect))
@@ -50,14 +50,14 @@ const std::string& TowerHUD::GetHoveredTower(Vector2 mousePos) const {
     return empty;
 }
 
-Vector2 TowerHUD::GetHoveredButtonTopCenter(Vector2 mousePos) const {
+Vector2 TowerBuildHUD::GetHoveredButtonTopCenter(Vector2 mousePos) const {
     for (const auto& btn : m_buttons)
         if (CheckCollisionPointRec(mousePos, btn.m_rect))
             return { btn.m_rect.x + btn.m_rect.width / 2.0f, btn.m_rect.y };
     return {};
 }
 
-void TowerHUD::OnDraw(Game& game) {
+void TowerBuildHUD::OnDraw(Game& game) {
     Vector2 mousePos = game.GetInput().GetMousePosition();
 
     DrawPanelBackground(200);

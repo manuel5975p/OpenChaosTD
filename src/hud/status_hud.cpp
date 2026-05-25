@@ -1,9 +1,9 @@
-#include <hud/score_hud.hpp>
+#include <hud/status_hud.hpp>
 #include <game.hpp>
 #include <raylib.h>
 
-void ScoreHUD::Build(Game& game) {
-    HUD::Build(game);
+void StatusHUD::Build(Game& game) {
+    HUD::Build(game.GetGameConfig().hudScale);
     float panelH   = Scaled(36.0f);
     float btnH     = Scaled(24.0f);
     float btnWaveW = Scaled(90.0f);
@@ -21,13 +21,13 @@ void ScoreHUD::Build(Game& game) {
     m_autoBtn.m_rect = { w - btnWaveW - margin - btnAutoW - margin, btnY, btnAutoW, btnH };
 }
 
-void ScoreHUD::OnProcessInput(Game& game) {
+void StatusHUD::OnProcessInput(Game& game) {
     const auto& data = game.GetGameData();
     Vector2 mousePos = game.GetInput().GetMousePosition();
 
-    ConsumePanelClick(game, "Select");
+    ConsumePanelClick(game.GetInput());
 
-    if (game.GetInput().IsPressed("Select")) {
+    if (game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON)) {
         // Auto toggle is always clickable, even mid-wave
         if (m_autoBtn.IsClicked(mousePos, true))
             m_autoSignal.Raise();
@@ -38,7 +38,7 @@ void ScoreHUD::OnProcessInput(Game& game) {
     }
 }
 
-void ScoreHUD::OnDraw(Game& game) {
+void StatusHUD::OnDraw(Game& game) {
     const auto& data     = game.GetGameData();
     Vector2     mousePos = game.GetInput().GetMousePosition();
 

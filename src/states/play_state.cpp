@@ -19,7 +19,7 @@ void PlayingState::OnEnter(Game& game) {
     m_towerHUD.Build(game);
     m_scoreHUD.Build(game);
     m_towerInfoHUD.Build(game);
-    m_eventLog.Build(game);
+    m_eventLog.Build(game.GetGameConfig().hudScale);
 
     m_waveManager.Load(game.GetJsonStore());
 }
@@ -128,7 +128,7 @@ void PlayingState::HandleHudSignals(Game& game) {
 }
 
 void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
-    if (!game.GetInput().IsPressed("PlaceTower")) return;
+    if (!game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON)) return;
     if (game.GetInput().IsMouseInputConsumed()) return;
 
     int x, y;
