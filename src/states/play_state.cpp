@@ -74,13 +74,13 @@ void PlayingState::Draw(Game& game) {
     Vector2 mouseWorld = game.GetInput().GetWorldMousePosition(m_renderSystem.GetCamera());
 
     BeginMode2D(m_renderSystem.GetCamera());
-    m_renderSystem.DrawMap(game.GetGameData().map, game.GetAssets());
+    m_renderSystem.DrawMap(game.GetGameData().map, game.GetResources());
     m_renderSystem.DrawPaths(game.GetGameData().map);
     if (m_debug) {
         m_renderSystem.DebugDrawMap(game.GetGameData().map);
         m_renderSystem.DebugDrawEnemies(game.GetGameData().enemies);
     }
-    m_renderSystem.DrawTowers(game.GetGameData().towers, game.GetAssets());
+    m_renderSystem.DrawTowers(game.GetGameData().towers, game.GetResources());
     m_renderSystem.DrawRangeIndicator(m_selection.towerKey, game.GetGameData().map, game.GetGameData().towers, mouseWorld);
     if (!game.GetGameData().waveActive &&
         m_selection.towerKey == DenseSlotMap<Tower>::INVALID_KEY &&
@@ -90,11 +90,11 @@ void PlayingState::Draw(Game& game) {
             const std::string& name = m_towerHUD.GetSelectedTower();
             float half = game.GetGameData().map.GetTileSize() / 2.0f;
             Vector2 tileCenter = Vector2Add(game.GetGameData().map.TileToWorld(x, y), {half, half});
-            Texture2D& tex = game.GetAssets().GetTexture(game.GetTowerFactory().GetTexture(name));
+            Texture2D& tex = game.GetResources().GetTexture(game.GetTowerFactory().GetTexture(name));
             m_renderSystem.DrawGhostTower(tileCenter, game.GetTowerFactory().GetRadius(name), tex);
         }
     }
-    m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetAssets());
+    m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetResources());
     m_renderSystem.DrawVfx(game.GetGameData().m_vfx);
     game.GetParticles().Draw();
     EndMode2D();

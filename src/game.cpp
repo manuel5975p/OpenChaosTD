@@ -24,7 +24,7 @@ Game::Game() {
     m_towerFactory.Load(m_jsonStore, m_emitterPresets);
     m_enemyFactory.Load(m_jsonStore, m_emitterPresets);
 
-    LoadAssets();
+    LoadResources();
     m_input.Load(m_jsonStore);
 
     // Init initial state
@@ -82,17 +82,17 @@ std::filesystem::path Game::SearchFolderParentPath(const std::string& folderName
         currentDir = currentDir.parent_path();
     }
 
-    throw std::runtime_error("Assets: could not find directory '" + folderName + "' within " + std::to_string(searchDepth) + " levels up");
+    throw std::runtime_error("Resources: could not find directory '" + folderName + "' within " + std::to_string(searchDepth) + " levels up");
     return "NotFound";
 }
 
 // Asset loading
-void Game::LoadAssets() {
+void Game::LoadResources() {
     // Walk up the directory tree to find the "assets" folder
-    m_assets.SetAssetPath(SearchFolderParentPath("assets", 5));
+    m_resources.SetAssetPath(SearchFolderParentPath("assets", 5));
 
     // Load all images from the textures folder; key = filename stem
-    m_assets.LoadTexturesFromDir("textures");
+    m_resources.LoadTexturesFromDir("textures");
 }
 
 // State machine

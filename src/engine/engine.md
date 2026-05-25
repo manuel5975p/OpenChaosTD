@@ -4,7 +4,7 @@ Reusable infrastructure shared across all game states and systems. Located under
 
 ```
 engine/
-├── core/       Windowing, rendering, input, asset loading
+├── core/       Windowing, rendering, input, resource loading
 ├── features/   Optional gameplay-adjacent systems (particles, sound)
 ├── util/       File I/O and profiling helpers
 └── lib/        Generic data structures with no engine dependencies
@@ -14,14 +14,14 @@ engine/
 
 ## core/
 
-### Assets
+### Resources
 
 Loads and caches raylib assets by string key. Supports textures, sounds, fonts, and music. Assets are freed in `Shutdown()`, called automatically by the destructor.
 
 ```cpp
-m_assets.SetAssetPath(path);
-m_assets.LoadTexture("tower_zapper", "textures/tower_zapper.png");
-Texture2D& tex = m_assets.GetTexture("tower_zapper");
+m_resources.SetAssetPath(path);
+m_resources.LoadTexture("tower_zapper", "textures/tower_zapper.png");
+Texture2D& tex = m_resources.GetTexture("tower_zapper");
 ```
 
 Retrieval throws if the key is not found. Use `HasTexture` / `HasSound` / etc. to guard optional lookups.

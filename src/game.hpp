@@ -3,7 +3,7 @@
 #include <raylib.h>
 #include <memory>
 #include <states/game_state.hpp>
-#include <engine/core/assets.hpp>
+#include <engine/core/resources.hpp>
 #include <engine/features/particle_system.hpp>
 #include <engine/core/screen.hpp>
 #include <engine/core/input.hpp>
@@ -33,7 +33,7 @@ public:
     GameData& GetGameData() {return m_gameData;}
 
     // Accessors for managers
-    Assets& GetAssets() {return m_assets;}
+    Resources& GetResources() {return m_resources;}
     Screen& GetScreen() {return m_screen;}
     Input& GetInput() {return m_input;}
     JsonStore& GetJsonStore(){return m_jsonStore;}
@@ -44,14 +44,14 @@ public:
 private:
     bool m_running = true;
 
-    void LoadAssets();
+    void LoadResources();
 
     // Data and config
     GameConfig m_gameConfig;
     GameData m_gameData;
 
     // Core managers
-    Assets m_assets;
+    Resources m_resources;
     ParticleSystem m_particles;
     Screen m_screen;
     Input m_input;

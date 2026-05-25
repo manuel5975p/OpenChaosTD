@@ -56,10 +56,6 @@ OpenChaosTD/
     ├── game_config.hpp/.cpp    - Window/display settings loaded from JSON
     │
     ├── engine/                 Reusable engine infrastructure — see engine/engine.md
-    │   ├── core/               - Assets, Screen, Input
-    │   ├── features/           - ParticleSystem
-    │   ├── util/               - JsonStore, Profiler
-    │   └── lib/                - DenseSlotMap, ObjectPool, Grid2D
     │
     ├── factory/                Data-driven entity construction from JSON
     │   ├── tower_factory       - Builds Tower instances from towers.json

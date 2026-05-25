@@ -50,16 +50,8 @@ void EndState::Draw(Game& game) {
     }
 
     m_playAgainButton.Draw(mouse);
-    int paW = MeasureText(m_playAgainButton.m_label.c_str(), 20);
-    DrawText(m_playAgainButton.m_label.c_str(),
-        static_cast<int>(m_playAgainButton.m_rect.x + (m_playAgainButton.m_rect.width - paW) / 2.0f),
-        static_cast<int>(m_playAgainButton.m_rect.y + (m_playAgainButton.m_rect.height - 20) / 2.0f),
-        20, RAYWHITE);
+    m_playAgainButton.DrawLabel(20, RAYWHITE);
 
     m_menuButton.Draw(mouse);
-    int mW = MeasureText(m_menuButton.m_label.c_str(), 20);
-    DrawText(m_menuButton.m_label.c_str(),
-        static_cast<int>(m_menuButton.m_rect.x + (m_menuButton.m_rect.width - mW) / 2.0f),
-        static_cast<int>(m_menuButton.m_rect.y + (m_menuButton.m_rect.height - 20) / 2.0f),
-        20, RAYWHITE);
+    m_menuButton.DrawLabel(20, RAYWHITE);
 }

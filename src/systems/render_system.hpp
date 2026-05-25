@@ -1,7 +1,7 @@
 #pragma once
 
 #include <world/map.hpp>
-#include <engine/core/assets.hpp>
+#include <engine/core/resources.hpp>
 #include <engine/core/input.hpp>
 #include <engine/core/screen.hpp>
 #include <world/tower.hpp>
@@ -12,15 +12,15 @@
 class RenderSystem{
 public:
     // Draw calls
-    void DrawMap(const Map& map, Assets& assets);
+    void DrawMap(const Map& map, Resources& assets);
     void DrawPaths(const Map& map);
     void DebugDrawMap(const Map& Map);
     void DebugDrawEnemies(const DenseSlotMap<Enemy>& enemies);
-    void DrawTowers(const DenseSlotMap<Tower>& towers, Assets& assets);
+    void DrawTowers(const DenseSlotMap<Tower>& towers, Resources& assets);
     void DrawTowerRange(Vector2 position, float radius, Color color);
     void DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, const Map& map, const DenseSlotMap<Tower>& towers, Vector2 mouseWorld);
     void DrawGhostTower(Vector2 position, float radius, Texture2D& texture);
-    void DrawEnemies(const DenseSlotMap<Enemy>& enemies, Assets& assets);
+    void DrawEnemies(const DenseSlotMap<Enemy>& enemies, Resources& assets);
     void DrawVfx(const std::vector<VfxEffect>& vfx);
 
     void CenterCamera(Map& map, Screen& renderer);

@@ -2,7 +2,7 @@
 
 #include <raymath.h>
 
-void RenderSystem::DrawMap(const Map& map, Assets& assets){
+void RenderSystem::DrawMap(const Map& map, Resources& assets){
     for (int y = 0; y < map.GetRows(); y++) {
         for (int x = 0; x < map.GetCols(); x++) {
             switch (map.Get(x,y).m_type) {
@@ -51,7 +51,7 @@ void RenderSystem::DebugDrawMap(const Map& map){
     }
 }
 
-void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, Assets& assets){
+void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, Resources& assets){
     for (auto& tower : towers) {
         Texture2D& texture = assets.GetTexture(tower.m_texture);
         float hw = static_cast<float>(texture.width)  / 2.0f;
@@ -97,7 +97,7 @@ void RenderSystem::DrawGhostTower(Vector2 position, float radius, Texture2D& tex
     DrawCircleLinesV(position, radius, {255, 255, 255, 140});
 }
 
-void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, Assets& assets) {
+void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, Resources& assets) {
     for (auto& enemy : enemies) {
         Texture2D& texture = assets.GetTexture(enemy.m_texture);
         float hw = static_cast<float>(texture.width)  / 2.0f;

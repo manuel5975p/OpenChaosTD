@@ -38,16 +38,10 @@ void MenuState::Draw(Game& game){
     DrawText("OPEN CHAOS TD", cx - 180, cy - 80, 40, RAYWHITE);
 
     Vector2 mousePos = game.GetInput().GetMousePosition();
-    auto drawButton = [&](const Button& btn) {
-        btn.Draw(mousePos);
-        const char* label = btn.m_label.c_str();
-        int lw = MeasureText(label, 24);
-        DrawText(label,
-            static_cast<int>(btn.m_rect.x + (btn.m_rect.width - lw) / 2.0f),
-            static_cast<int>(btn.m_rect.y + (btn.m_rect.height - 24) / 2.0f),
-            24, RAYWHITE);
-    };
 
-    drawButton(m_playButton);
-    drawButton(m_exitButton);
+    m_playButton.Draw(mousePos);
+    m_playButton.DrawLabel(24, RAYWHITE);
+
+    m_exitButton.Draw(mousePos);
+    m_exitButton.DrawLabel(24, RAYWHITE);
 }

@@ -4,14 +4,14 @@
 #include <string>
 #include <unordered_map>
 
-class Assets {
+class Resources {
 public:
-    Assets()  = default;
-    ~Assets() { Shutdown(); }
+    Resources()  = default;
+    ~Resources() { Shutdown(); }
 
     // Non-copyable
-    Assets(const Assets&) = delete;
-    Assets& operator=(const Assets&) = delete;
+    Resources(const Resources&) = delete;
+    Resources& operator=(const Resources&) = delete;
 
     // Asset path
     void SetAssetPath(const std::string& folderName);

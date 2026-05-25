@@ -69,7 +69,7 @@ void TowerHUD::OnDraw(Game& game) {
         btn.Draw(mousePos, selected);
 
         int fontSize = ScaledInt(8.0f);
-        Texture2D& tex = game.GetAssets().GetTexture(game.GetTowerFactory().GetTexture(name));
+        Texture2D& tex = game.GetResources().GetTexture(game.GetTowerFactory().GetTexture(name));
         float tw = static_cast<float>(tex.width);
         float th = static_cast<float>(tex.height);
         DrawTextureV(tex, { btn.m_rect.x + (btn.m_rect.width  - tw) / 2.0f,
