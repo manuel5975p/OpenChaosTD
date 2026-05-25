@@ -2,14 +2,14 @@
 
 #include <string>
 #include <unordered_map>
-#include <core/particle_system.hpp>
-#include <core/jsonio.hpp>
+#include <engine/features/particle_system.hpp>
+#include <engine/util/json_store.hpp>
 
 // Loads all EmitterDesc presets from data/particle_effects.json.
 // Passed by const-ref to any factory that needs to resolve preset names.
 class EmitterPresets {
 public:
-    void Load(JsonIO& jsonio);
+    void Load(JsonStore& jsonio);
 
     // Returns the named preset by value. Logs and returns a count=0 default if not found.
     EmitterDesc Get(const std::string& name) const;

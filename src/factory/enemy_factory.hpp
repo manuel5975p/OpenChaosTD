@@ -7,12 +7,12 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <world/enemy.hpp>
-#include <core/jsonio.hpp>
+#include <engine/util/json_store.hpp>
 #include <factory/emitter_presets.hpp>
 
 class EnemyFactory {
 public:
-    void Load(JsonIO& jsonio, const EmitterPresets& presets);
+    void Load(JsonStore& jsonio, const EmitterPresets& presets);
     Enemy Create(const std::string& name) const;
     bool Has(const std::string& name) const;
 

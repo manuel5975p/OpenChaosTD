@@ -5,18 +5,18 @@
 #include <string>
 #include <variant>
 
-class Renderer;
-class JsonIO;
+class Screen;
+class JsonStore;
 
-class InputManager {
+class Input {
 public:
-    InputManager() = default;
+    Input() = default;
 
-    InputManager(const InputManager&) = delete;
-    InputManager& operator=(const InputManager&) = delete;
+    Input(const Input&) = delete;
+    Input& operator=(const Input&) = delete;
 
-    void Update(const Renderer& renderer);
-    void Load(JsonIO& jsonio);
+    void Update(const Screen& renderer);
+    void Load(JsonStore& jsonio);
 
     bool IsPressed(const std::string& action) const;
     bool IsDown(const std::string& action) const;

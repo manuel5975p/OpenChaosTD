@@ -1,21 +1,21 @@
-#include <core/performance_monitor.hpp>
+#include <engine/util/profiler.hpp>
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
 
-PerformanceMonitor::PerformanceMonitor(size_t windowSize)
+Profiler::Profiler(size_t windowSize)
     : m_windowSize(windowSize)
 {}
 
 // Begin / End
-void PerformanceMonitor::Begin(const std::string& name) {
+void Profiler::Begin(const std::string& name) {
     m_entries[name].startTime = Clock::now();
 }
 
-void PerformanceMonitor::End(const std::string& name) {
+void Profiler::End(const std::string& name) {
     auto it = m_entries.find(name);
     if (it == m_entries.end())
-        throw std::runtime_error("PerformanceMonitor: End() called without Begin() for '" + name + "'");
+        throw std::runtime_error("Profiler: End() called without Begin() for '" + name + "'");
 
     Entry& entry = it->second;
 
@@ -32,7 +32,7 @@ void PerformanceMonitor::End(const std::string& name) {
 }
 
 // Results
-double PerformanceMonitor::GetAvgMs(const std::string& name) const {
+double Profiler::GetAvgMs(const std::string& name) const {
     auto it = m_entries.find(name);
     if (it == m_entries.end() || it->second.samples.empty()) return 0.0;
 
@@ -42,21 +42,21 @@ double PerformanceMonitor::GetAvgMs(const std::string& name) const {
     return sum / static_cast<double>(samples.size());
 }
 
-double PerformanceMonitor::GetLastMs(const std::string& name) const {
+double Profiler::GetLastMs(const std::string& name) const {
     auto it = m_entries.find(name);
     if (it == m_entries.end() || it->second.samples.empty()) return 0.0;
     return it->second.samples.back();
 }
 
-double PerformanceMonitor::GetPeakMs(const std::string& name) const {
+double Profiler::GetPeakMs(const std::string& name) const {
     auto it = m_entries.find(name);
     if (it == m_entries.end()) return 0.0;
     return it->second.peak;
 }
 
 // Print
-void PerformanceMonitor::Print() const {
-    std::cout << "\n=== PerformanceMonitor ===\n";
+void Profiler::Print() const {
+    std::cout << "\n=== Profiler ===\n";
     std::cout << std::fixed << std::setprecision(3);
     std::cout << std::left
               << std::setw(16) << "Scope"

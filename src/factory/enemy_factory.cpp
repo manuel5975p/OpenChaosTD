@@ -10,7 +10,7 @@ static EffectType ParseEffectType(const std::string& name) {
     return EffectType::Burn;
 }
 
-void EnemyFactory::Load(JsonIO& jsonio, const EmitterPresets& presets) {
+void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     m_builders["Regeneration"] = [](const json& j){ return std::make_unique<RegenerationModule>(j.value("rate", 0.0f)); };
     m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("amount", 0.0f)); };
     m_builders["Resistance"]   = [](const json& j){ return std::make_unique<ResistanceModule>(j.value("factor", 0.0f)); };

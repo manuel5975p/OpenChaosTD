@@ -2,7 +2,7 @@
 
 #include <string>
 
-class JsonIO;
+class JsonStore;
 
 struct GameConfig {
     int gameWidth = 1200;
@@ -11,6 +11,6 @@ struct GameConfig {
     float hudScale = 1.0f;
     std::string title = "OpenChaos TD";
 
-    void Load(JsonIO& jsonio);
+    void Load(JsonStore& jsonio);
     void ApplyIcon();
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <world/tower.hpp>
-#include <lib/dense_slotmap.hpp>
+#include <engine/lib/dense_slotmap.hpp>
 
 enum class TileType {
     Grass,

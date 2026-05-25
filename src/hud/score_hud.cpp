@@ -9,7 +9,7 @@ void ScoreHUD::Build(Game& game) {
     float btnWaveW = Scaled(90.0f);
     float btnAutoW = Scaled(48.0f);
     float margin   = Scaled(6.0f);
-    float w = static_cast<float>(game.GetRenderer().GetGameWidth());
+    float w = static_cast<float>(game.GetScreen().GetGameWidth());
 
     m_panelRect = { 0.0f, 0.0f, w, panelH };
     m_textY = static_cast<int>((panelH - Scaled(16.0f)) / 2.0f);

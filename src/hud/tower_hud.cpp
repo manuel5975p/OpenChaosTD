@@ -11,9 +11,9 @@ void TowerHUD::Build(Game& game) {
     const float margin  = Scaled(8.0f);
     const float gap     = Scaled(4.0f);
 
-    float y = game.GetRenderer().GetGameHeight() - btnSize - margin;
-    m_panelRect = { 0.0f, game.GetRenderer().GetGameHeight() - panelH,
-                    static_cast<float>(game.GetRenderer().GetGameWidth()), panelH };
+    float y = game.GetScreen().GetGameHeight() - btnSize - margin;
+    m_panelRect = { 0.0f, game.GetScreen().GetGameHeight() - panelH,
+                    static_cast<float>(game.GetScreen().GetGameWidth()), panelH };
 
     m_buttons.clear();
     for (size_t i = 0; i < names.size(); i++) {

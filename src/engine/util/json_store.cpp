@@ -1,4 +1,4 @@
-#include <core/jsonio.hpp>
+#include <engine/util/json_store.hpp>
 #include <iostream>
 
 #if defined(PLATFORM_WEB)
@@ -10,7 +10,7 @@
 #endif
 
 // RootPath
-void JsonIO::SetRootPath(const std::string& rootPath) {
+void JsonStore::SetRootPath(const std::string& rootPath) {
 #if defined(PLATFORM_WEB)
     m_rootPath = rootPath;
     std::cout << "jsonio: root set to '" << m_rootPath << "' (web)\n";
@@ -22,7 +22,7 @@ void JsonIO::SetRootPath(const std::string& rootPath) {
 }
 
 // Private: path resolution
-std::string JsonIO::ResolvePath(const std::string& path) const {
+std::string JsonStore::ResolvePath(const std::string& path) const {
     if (m_rootPath.empty())
         throw std::runtime_error("jsonio: SetRootPath() must be called before any file operations");
 
@@ -34,7 +34,7 @@ std::string JsonIO::ResolvePath(const std::string& path) const {
 }
 
 // Save
-void JsonIO::Save(const std::string& path, const nlohmann::json& data) {
+void JsonStore::Save(const std::string& path, const nlohmann::json& data) {
 #if defined(PLATFORM_WEB)
 
     std::string jsonStr = data.dump();
@@ -62,7 +62,7 @@ void JsonIO::Save(const std::string& path, const nlohmann::json& data) {
 }
 
 // Load
-nlohmann::json JsonIO::Load(const std::string& path) {
+nlohmann::json JsonStore::Load(const std::string& path) {
 #if defined(PLATFORM_WEB)
 
     // Try VFS first (preloaded read-only game data)
@@ -127,7 +127,7 @@ nlohmann::json JsonIO::Load(const std::string& path) {
 }
 
 // Exists
-bool JsonIO::Exists(const std::string& path) {
+bool JsonStore::Exists(const std::string& path) {
 #if defined(PLATFORM_WEB)
 
     // Check VFS first
@@ -150,7 +150,7 @@ bool JsonIO::Exists(const std::string& path) {
 }
 
 // Delete
-void JsonIO::Delete(const std::string& path) {
+void JsonStore::Delete(const std::string& path) {
 #if defined(PLATFORM_WEB)
 
     EM_ASM({

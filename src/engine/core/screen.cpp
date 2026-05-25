@@ -1,21 +1,21 @@
-#include <core/renderer.hpp>
+#include <engine/core/screen.hpp>
 #include <stdexcept>
 
 // Init / Shutdown
-void Renderer::Init(int virtualWidth, int virtualHeight) {
+void Screen::Init(int virtualWidth, int virtualHeight) {
     m_virtualWidth  = virtualWidth;
     m_virtualHeight = virtualHeight;
 
     m_target = LoadRenderTexture(m_virtualWidth, m_virtualHeight);
     if (m_target.id == 0)
-        throw std::runtime_error("Renderer: failed to create RenderTexture");
+        throw std::runtime_error("Screen: failed to create RenderTexture");
 
     SetTextureFilter(m_target.texture, TEXTURE_FILTER_POINT);
 
     UpdateScale();
 }
 
-void Renderer::Shutdown() {
+void Screen::Shutdown() {
     if (m_target.id != 0) {
         UnloadRenderTexture(m_target);
         m_target = {};
@@ -23,13 +23,13 @@ void Renderer::Shutdown() {
 }
 
 // Resize
-void Renderer::OnResize() {
+void Screen::OnResize() {
     UpdateScale();
 }
 
 // UpdateScale
 // Calculates the largest rectangle that fits the virtual resolution inside the current screen
-void Renderer::UpdateScale() {
+void Screen::UpdateScale() {
     const float screenW = static_cast<float>(GetScreenWidth());
     const float screenH = static_cast<float>(GetScreenHeight());
 
@@ -48,11 +48,11 @@ void Renderer::UpdateScale() {
 }
 
 // Frame
-void Renderer::BeginFrame() {
+void Screen::BeginFrame() {
     BeginTextureMode(m_target);
 }
 
-void Renderer::EndFrame() {
+void Screen::EndFrame() {
     EndTextureMode();
 
     BeginDrawing();
@@ -71,7 +71,7 @@ void Renderer::EndFrame() {
 }
 
 // Virtual mouse
-Vector2 Renderer::GetVirtualMouse() const {
+Vector2 Screen::GetVirtualMouse() const {
     Vector2 mouse = GetMousePosition();
 
     // Subtract letterbox offset, then divide by scale

@@ -4,8 +4,8 @@
 #include <states/play_state.hpp>
 
 void MenuState::OnEnter(Game& game) {
-    int cx = game.GetRenderer().GetGameWidth()  / 2;
-    int cy = game.GetRenderer().GetGameHeight() / 2;
+    int cx = game.GetScreen().GetGameWidth()  / 2;
+    int cy = game.GetScreen().GetGameHeight() / 2;
     m_playButton.m_label = "PLAY";
     m_playButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 20), 160.0f, 44.0f };
 
@@ -31,8 +31,8 @@ void MenuState::ProcessInput(Game& game, float /*dt*/) {
 void MenuState::Update(Game& /*game*/, float /*dt*/) {}
 
 void MenuState::Draw(Game& game){
-    const int cx = game.GetRenderer().GetGameWidth()  / 2;
-    const int cy = game.GetRenderer().GetGameHeight() / 2;
+    const int cx = game.GetScreen().GetGameWidth()  / 2;
+    const int cy = game.GetScreen().GetGameHeight() / 2;
 
     ClearBackground(DARKGRAY);
     DrawText("OPEN CHAOS TD", cx - 180, cy - 80, 40, RAYWHITE);

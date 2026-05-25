@@ -57,7 +57,7 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
     // Anchor above the screen point, then clamp so the panel stays on-screen
     m_panelRect = { screenPos.x - m_panelW / 2.0f, screenPos.y - panelH - m_anchorGap,
                     m_panelW, panelH };
-    ClampPanelToScreen(game.GetRenderer().GetGameWidth(), game.GetRenderer().GetGameHeight());
+    ClampPanelToScreen(game.GetScreen().GetGameWidth(), game.GetScreen().GetGameHeight());
 
     m_sellBtn.m_label = TextFormat("Sell: $%d", tower.m_cost / 2);
     m_sellBtn.m_rect = { m_panelRect.x + m_margin, m_panelRect.y + panelH - m_margin - m_sellH,

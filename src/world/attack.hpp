@@ -3,8 +3,8 @@
 #include <vector>
 #include <world/effect.hpp>
 #include <world/enemy.hpp>
-#include <core/particle_system.hpp>
-#include <lib/dense_slotmap.hpp>
+#include <engine/features/particle_system.hpp>
+#include <engine/lib/dense_slotmap.hpp>
 
 struct AttackPayload {
     std::vector<DenseSlotMap<Enemy>::Key> m_targetKeys;

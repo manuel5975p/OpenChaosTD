@@ -5,7 +5,7 @@
 #include <raylib.h>
 #include <string>
 
-#include <lib/dense_slotmap.hpp>
+#include <engine/lib/dense_slotmap.hpp>
 #include <world/enemy.hpp>
 #include <world/tower_modules.hpp>
 #include <world/tower_stats.hpp>

@@ -1,30 +1,30 @@
 #pragma once
 
 #include <world/map.hpp>
-#include <core/asset_manager.hpp>
-#include <core/input_manager.hpp>
-#include <core/renderer.hpp>
+#include <engine/core/assets.hpp>
+#include <engine/core/input.hpp>
+#include <engine/core/screen.hpp>
 #include <world/tower.hpp>
 #include <world/enemy.hpp>
 #include <world/vfx_effect.hpp>
-#include <lib/dense_slotmap.hpp>
+#include <engine/lib/dense_slotmap.hpp>
 
 class RenderSystem{
 public:
     // Draw calls
-    void DrawMap(const Map& map, AssetManager& assets);
+    void DrawMap(const Map& map, Assets& assets);
     void DrawPaths(const Map& map);
     void DebugDrawMap(const Map& Map);
     void DebugDrawEnemies(const DenseSlotMap<Enemy>& enemies);
-    void DrawTowers(const DenseSlotMap<Tower>& towers, AssetManager& assets);
+    void DrawTowers(const DenseSlotMap<Tower>& towers, Assets& assets);
     void DrawTowerRange(Vector2 position, float radius, Color color);
     void DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, const Map& map, const DenseSlotMap<Tower>& towers, Vector2 mouseWorld);
     void DrawGhostTower(Vector2 position, float radius, Texture2D& texture);
-    void DrawEnemies(const DenseSlotMap<Enemy>& enemies, AssetManager& assets);
+    void DrawEnemies(const DenseSlotMap<Enemy>& enemies, Assets& assets);
     void DrawVfx(const std::vector<VfxEffect>& vfx);
 
-    void CenterCamera(Map& map, Renderer& renderer);
-    void ControlCamera(float& dt, InputManager& input);
+    void CenterCamera(Map& map, Screen& renderer);
+    void ControlCamera(float& dt, Input& input);
 
     // Access
     const Camera2D& GetCamera(){return camera;}

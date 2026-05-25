@@ -1,7 +1,7 @@
 #include <world/game_data.hpp>
-#include <core/jsonio.hpp>
+#include <engine/util/json_store.hpp>
 
-void GameData::Load(JsonIO& jsonio) {
+void GameData::Load(JsonStore& jsonio) {
     if (!jsonio.Exists("config/gameplay.json"))
         return;
 

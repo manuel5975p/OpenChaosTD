@@ -14,14 +14,14 @@ void PlayingState::OnEnter(Game& game) {
     m_worldSystem.GenerateMap(game.GetGameData().map, 15, 19);
     game.GetGameData().map.BuildPathMesh();
 
-    m_renderSystem.CenterCamera(game.GetGameData().map, game.GetRenderer());
+    m_renderSystem.CenterCamera(game.GetGameData().map, game.GetScreen());
 
     m_towerHUD.Build(game);
     m_scoreHUD.Build(game);
     m_towerInfoHUD.Build(game);
     m_eventLog.Build(game);
 
-    m_waveManager.Load(game.GetJsonIO());
+    m_waveManager.Load(game.GetJsonStore());
 }
 
 void PlayingState::OnExit(Game& /*game*/) {}

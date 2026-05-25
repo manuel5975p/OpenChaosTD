@@ -53,14 +53,13 @@ OpenChaosTD/
 └── src/
     ├── main.cpp                - Entry point
     ├── game.hpp/.cpp           - Game loop, state machine, manager accessors
+    ├── game_config.hpp/.cpp    - Window/display settings loaded from JSON
     │
-    ├── core/                   Engine infrastructure — see core/CORE.md
-    │   ├── asset_manager       - Load/cache textures, sounds, fonts, music
-    │   ├── renderer            - Virtual resolution + letterbox scaling
-    │   ├── input_manager       - Action-based input with JSON keybindings
-    │   ├── game_config         - Window/display settings loaded from JSON
-    │   ├── jsonio              - Cross-platform JSON read/write (desktop + web)
-    │   └── performance_monitor - Frame-time profiling (avg, last, peak)
+    ├── engine/                 Reusable engine infrastructure — see engine/engine.md
+    │   ├── core/               - Assets, Screen, Input
+    │   ├── features/           - ParticleSystem
+    │   ├── util/               - JsonStore, Profiler
+    │   └── lib/                - DenseSlotMap, ObjectPool, Grid2D
     │
     ├── factory/                Data-driven entity construction from JSON
     │   ├── tower_factory       - Builds Tower instances from towers.json
@@ -74,11 +73,6 @@ OpenChaosTD/
     │   ├── tower_info_hud      - Floating panel: stats and sell button for selected/hovered tower
     │   └── event_log           - Top-left message log with timed fade-out
     │
-    ├── lib/                    Reusable data structures
-    │   ├── dense_slotmap.hpp   - Stable-ID container optimised for iteration
-    │   ├── slotmap.hpp         - Stable-ID container optimised for lookup
-    │   └── grid2d.hpp          - Resizable 2D array template
-    │
     ├── states/                 Game screen state machine
     │   ├── game_state.hpp      - Abstract base (ProcessInput, Update, Draw)
     │   ├── menu_state          - Main menu
@@ -90,14 +84,14 @@ OpenChaosTD/
     │   ├── tower               - Tower entity (position, stats, description, modules)
     │   ├── tower_modules.hpp   - FlatDamageModule, SlowModule
     │   ├── enemy               - Enemy entity (position, health, description, effects, modules)
-    │   ├── enemy_module.hpp    - RegenerationModule, ArmorModule, ResistanceModule
+    │   ├── enemy_modules.hpp   - RegenerationModule, ArmorModule, ResistanceModule
     │   ├── attack.hpp          - Attack object (origin, targets, payload, visual)
     │   ├── effect.hpp          - Status effect (Burn, Slow) with duration
     │   ├── map                 - Grid, nest/core placement, path construction
     │   └── tile.hpp            - Tile type, walkable/buildable flags
     │
     └── systems/                Per-frame game logic
-        ├── pathfinder.hpp      - BFS pathfinding from core to all nests
+        ├── pathfinder.hpp      - BFS Node type (distance, predecessor)
         ├── wave_manager        - Wave lifecycle, auto-spawn, victory detection
         ├── world_system        - Placement, spawning, game-over checks
         ├── tower_system        - Cooldowns, targeting, attack creation and resolution

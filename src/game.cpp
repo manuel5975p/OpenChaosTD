@@ -7,8 +7,8 @@
 
 // Constructor / Destructor
 Game::Game() {
-    m_jsonio.SetRootPath(SearchFolderParentPath("assets", 5).parent_path());
-    m_gameConfig.Load(m_jsonio);
+    m_jsonStore.SetRootPath(SearchFolderParentPath("assets", 5).parent_path());
+    m_gameConfig.Load(m_jsonStore);
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
     InitWindow(m_gameConfig.gameWidth, m_gameConfig.gameHeight, m_gameConfig.title.c_str());
@@ -17,15 +17,15 @@ Game::Game() {
     SetExitKey(KEY_NULL);
     InitAudioDevice();
 
-    m_renderer.Init(m_gameConfig.gameWidth, m_gameConfig.gameHeight);
+    m_screen.Init(m_gameConfig.gameWidth, m_gameConfig.gameHeight);
 
-    m_gameData.Load(m_jsonio);
-    m_emitterPresets.Load(m_jsonio);
-    m_towerFactory.Load(m_jsonio, m_emitterPresets);
-    m_enemyFactory.Load(m_jsonio, m_emitterPresets);
+    m_gameData.Load(m_jsonStore);
+    m_emitterPresets.Load(m_jsonStore);
+    m_towerFactory.Load(m_jsonStore, m_emitterPresets);
+    m_enemyFactory.Load(m_jsonStore, m_emitterPresets);
 
     LoadAssets();
-    m_input.Load(m_jsonio);
+    m_input.Load(m_jsonStore);
 
     // Init initial state
     m_currentState = std::make_unique<MenuState>();
@@ -38,7 +38,7 @@ Game::~Game() {
 
     CloseAudioDevice();
     CloseWindow();
-    m_monitor.Print();
+    m_profiler.Print();
 }
 
 // Run
@@ -46,21 +46,21 @@ void Game::Run() {
     while (!WindowShouldClose() && m_running) {
         const float dt = GetFrameTime();
 
-        m_renderer.OnResize();
+        m_screen.OnResize();
 
         // Update
-        m_monitor.Begin("Update");
-            m_input.Update(m_renderer);
+        m_profiler.Begin("Update");
+            m_input.Update(m_screen);
             m_currentState->ProcessInput(*this, dt);
             m_currentState->Update(*this, dt);
-        m_monitor.End("Update");
+        m_profiler.End("Update");
 
         // Draw
-        m_monitor.Begin("Draw");
-            m_renderer.BeginFrame();
+        m_profiler.Begin("Draw");
+            m_screen.BeginFrame();
                 m_currentState->Draw(*this);
-            m_renderer.EndFrame();
-        m_monitor.End("Draw");
+            m_screen.EndFrame();
+        m_profiler.End("Draw");
 
         // Swap State
         ApplyPendingState();
@@ -82,7 +82,7 @@ std::filesystem::path Game::SearchFolderParentPath(const std::string& folderName
         currentDir = currentDir.parent_path();
     }
 
-    throw std::runtime_error("AssetManager: could not find directory '" + folderName + "' within " + std::to_string(searchDepth) + " levels up");
+    throw std::runtime_error("Assets: could not find directory '" + folderName + "' within " + std::to_string(searchDepth) + " levels up");
     return "NotFound";
 }
 

@@ -2,14 +2,14 @@
 
 #include <raylib.h>
 
-class Renderer {
+class Screen {
 public:
-    Renderer() = default;
-    ~Renderer() { Shutdown(); }
+    Screen() = default;
+    ~Screen() { Shutdown(); }
 
     // Non-copyable — owns a RenderTexture2D handle
-    Renderer(const Renderer&)            = delete;
-    Renderer& operator=(const Renderer&) = delete;
+    Screen(const Screen&)            = delete;
+    Screen& operator=(const Screen&) = delete;
 
     // Call after InitWindow()
     void Init(int virtualWidth, int virtualHeight);

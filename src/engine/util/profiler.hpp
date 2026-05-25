@@ -5,9 +5,9 @@
 #include <deque>
 #include <unordered_map>
 
-class PerformanceMonitor {
+class Profiler {
 public:
-    explicit PerformanceMonitor(size_t windowSize = 120); // 120 = 2s at 60fps
+    explicit Profiler(size_t windowSize = 120); // 120 = 2s at 60fps
 
     // Manual begin/end
     void Begin(const std::string& name);

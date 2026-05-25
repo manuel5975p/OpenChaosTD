@@ -3,13 +3,13 @@
 #include <raylib.h>
 #include <memory>
 #include <states/game_state.hpp>
-#include <core/asset_manager.hpp>
-#include <core/particle_system.hpp>
-#include <core/renderer.hpp>
-#include <core/input_manager.hpp>
-#include <core/jsonio.hpp>
-#include <core/game_config.hpp>
-#include <core/performance_monitor.hpp>
+#include <engine/core/assets.hpp>
+#include <engine/features/particle_system.hpp>
+#include <engine/core/screen.hpp>
+#include <engine/core/input.hpp>
+#include <engine/util/json_store.hpp>
+#include <game_config.hpp>
+#include <engine/util/profiler.hpp>
 #include <factory/emitter_presets.hpp>
 #include <factory/tower_factory.hpp>
 #include <factory/enemy_factory.hpp>
@@ -33,10 +33,10 @@ public:
     GameData& GetGameData() {return m_gameData;}
 
     // Accessors for managers
-    AssetManager& GetAssets() {return m_assets;}
-    Renderer& GetRenderer() {return m_renderer;}
-    InputManager& GetInput() {return m_input;}
-    JsonIO& GetJsonIO(){return m_jsonio;}
+    Assets& GetAssets() {return m_assets;}
+    Screen& GetScreen() {return m_screen;}
+    Input& GetInput() {return m_input;}
+    JsonStore& GetJsonStore(){return m_jsonStore;}
     ParticleSystem& GetParticles() {return m_particles;}
     TowerFactory& GetTowerFactory() {return m_towerFactory;}
     EnemyFactory& GetEnemyFactory() {return m_enemyFactory;}
@@ -51,12 +51,12 @@ private:
     GameData m_gameData;
 
     // Core managers
-    AssetManager m_assets;
+    Assets m_assets;
     ParticleSystem m_particles;
-    Renderer m_renderer;
-    InputManager m_input;
-    JsonIO m_jsonio;
-    PerformanceMonitor m_monitor;
+    Screen m_screen;
+    Input m_input;
+    JsonStore m_jsonStore;
+    Profiler m_profiler;
     EmitterPresets m_emitterPresets;
     TowerFactory m_towerFactory;
     EnemyFactory m_enemyFactory;

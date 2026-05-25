@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <iostream>
 
-void WaveManager::Load(JsonIO& jsonio) {
+void WaveManager::Load(JsonStore& jsonio) {
     if (!jsonio.Exists("config/waves.json")) {
         std::cerr << "WaveManager: data/waves.json not found\n";
         return;

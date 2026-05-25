@@ -7,8 +7,8 @@
 EndState::EndState(bool won) : m_won(won) {}
 
 void EndState::OnEnter(Game& game) {
-    float cx = game.GetRenderer().GetGameWidth()  / 2.0f;
-    float cy = game.GetRenderer().GetGameHeight() / 2.0f;
+    float cx = game.GetScreen().GetGameWidth()  / 2.0f;
+    float cy = game.GetScreen().GetGameHeight() / 2.0f;
 
     m_playAgainButton.m_label = "PLAY AGAIN";
     m_playAgainButton.m_rect = { cx - 90.0f, cy + 20.0f, 180.0f, 44.0f };
@@ -33,8 +33,8 @@ void EndState::ProcessInput(Game& game, float /*dt*/) {
 void EndState::Update(Game& /*game*/, float /*dt*/) {}
 
 void EndState::Draw(Game& game) {
-    float cx = game.GetRenderer().GetGameWidth()  / 2.0f;
-    float cy = game.GetRenderer().GetGameHeight() / 2.0f;
+    float cx = game.GetScreen().GetGameWidth()  / 2.0f;
+    float cy = game.GetScreen().GetGameHeight() / 2.0f;
     Vector2 mouse = game.GetInput().GetMousePosition();
 
     ClearBackground(DARKGRAY);

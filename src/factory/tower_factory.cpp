@@ -31,7 +31,7 @@ static VfxStyle ParseVfxStyle(const std::string& s) {
     return VfxStyle::Beam;
 }
 
-void TowerFactory::Load(JsonIO& jsonio, const EmitterPresets& presets) {
+void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     // Resolve fixed effect visuals once; capture by value into the builder lambdas
     EmitterDesc slowDesc = presets.Get("slow_effect");
     EmitterDesc burnDesc = presets.Get("burn_effect");

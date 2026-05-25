@@ -3,13 +3,13 @@
 #include <world/game_data.hpp>
 #include <systems/world_system.hpp>
 #include <factory/enemy_factory.hpp>
-#include <core/jsonio.hpp>
+#include <engine/util/json_store.hpp>
 #include <string>
 #include <vector>
 
 class WaveManager {
 public:
-    void Load(JsonIO& jsonio);
+    void Load(JsonStore& jsonio);
 
     // Advance wave state: tick timer, process spawn queue, detect wave end, trigger auto-spawn
     void Update(float dt, GameData& data, WorldSystem& worldSystem, EnemyFactory& enemyFactory);

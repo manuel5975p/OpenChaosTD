@@ -1,8 +1,8 @@
-#include <core/game_config.hpp>
-#include <core/jsonio.hpp>
+#include <game_config.hpp>
+#include <engine/util/json_store.hpp>
 #include <raylib.h>
 
-void GameConfig::Load(JsonIO& jsonio) {
+void GameConfig::Load(JsonStore& jsonio) {
     if (!jsonio.Exists("config/config.json"))
         return;
 

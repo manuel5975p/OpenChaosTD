@@ -3,14 +3,14 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-class JsonIO {
+class JsonStore {
 public:
-    JsonIO()  = default;
-    ~JsonIO() = default;
+    JsonStore()  = default;
+    ~JsonStore() = default;
 
     // Non-copyable — owns internal root path state
-    JsonIO(const JsonIO&)            = delete;
-    JsonIO& operator=(const JsonIO&) = delete;
+    JsonStore(const JsonStore&)            = delete;
+    JsonStore& operator=(const JsonStore&) = delete;
 
     // Call once, project root as its parent for files stored.
     void SetRootPath(const std::string& assetPath);

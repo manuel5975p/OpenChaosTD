@@ -1,22 +1,22 @@
-#include <core/input_manager.hpp>
-#include <core/renderer.hpp>
-#include <core/jsonio.hpp>
+#include <engine/core/input.hpp>
+#include <engine/core/screen.hpp>
+#include <engine/util/json_store.hpp>
 #include <optional>
 
-void InputManager::Update(const Renderer& renderer) {
+void Input::Update(const Screen& renderer) {
     m_mouseConsumed = false;
     m_virtualMouse = renderer.GetVirtualMouse();
 }
 
-void InputManager::AddAction(const std::string& action, KeyboardKey key) {
+void Input::AddAction(const std::string& action, KeyboardKey key) {
     m_bindings[action] = key;
 }
 
-void InputManager::AddAction(const std::string& action, MouseButton button) {
+void Input::AddAction(const std::string& action, MouseButton button) {
     m_bindings[action] = button;
 }
 
-bool InputManager::IsPressed(const std::string& action) const {
+bool Input::IsPressed(const std::string& action) const {
     auto it = m_bindings.find(action);
     if (it == m_bindings.end()) return false;
     return std::visit([](auto&& b) -> bool {
@@ -28,7 +28,7 @@ bool InputManager::IsPressed(const std::string& action) const {
     }, it->second);
 }
 
-bool InputManager::IsDown(const std::string& action) const {
+bool Input::IsDown(const std::string& action) const {
     auto it = m_bindings.find(action);
     if (it == m_bindings.end()) return false;
     return std::visit([](auto&& b) -> bool {
@@ -40,7 +40,7 @@ bool InputManager::IsDown(const std::string& action) const {
     }, it->second);
 }
 
-bool InputManager::IsReleased(const std::string& action) const {
+bool Input::IsReleased(const std::string& action) const {
     auto it = m_bindings.find(action);
     if (it == m_bindings.end()) return false;
     return std::visit([](auto&& b) -> bool {
@@ -52,11 +52,11 @@ bool InputManager::IsReleased(const std::string& action) const {
     }, it->second);
 }
 
-float InputManager::GetMouseWheelDelta() const {
+float Input::GetMouseWheelDelta() const {
     return GetMouseWheelMove();
 }
 
-void InputManager::ConsumeMouseInput() {
+void Input::ConsumeMouseInput() {
     m_mouseConsumed = true;
 }
 
@@ -91,7 +91,7 @@ static KeyboardKey ParseKey(const std::string& name) {
     return it != kMap.end() ? it->second : KEY_NULL;
 }
 
-void InputManager::Load(JsonIO& jsonio) {
+void Input::Load(JsonStore& jsonio) {
     if (!jsonio.Exists("config/keybindings.json"))
         return;
     auto j = jsonio.Load("config/keybindings.json");

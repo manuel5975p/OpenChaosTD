@@ -4,11 +4,11 @@
 #include <world/tower.hpp>
 #include <world/enemy.hpp>
 #include <world/attack.hpp>
-#include <lib/dense_slotmap.hpp>
+#include <engine/lib/dense_slotmap.hpp>
 #include <world/vfx_effect.hpp>
 #include <vector>
 
-class JsonIO;
+class JsonStore;
 
 struct GameData {
     // Gameplay config — loaded from gameplay.json, not reset between games
@@ -32,6 +32,6 @@ struct GameData {
     std::vector<AttackPayload> m_payloads;
     std::vector<VfxEffect> m_vfx;
 
-    void Load(JsonIO& jsonio);
+    void Load(JsonStore& jsonio);
     void Reset();
 };
