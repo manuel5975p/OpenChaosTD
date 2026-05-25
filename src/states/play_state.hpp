@@ -11,8 +11,6 @@
 #include <hud/tower_info_hud.hpp>
 #include <hud/event_log.hpp>
 #include <systems/wave_manager.hpp>
-#include <optional>
-
 class PlayingState : public GameState {
 public:
     void OnEnter(Game& game) override;
@@ -30,11 +28,13 @@ private:
 
     struct SelectionContext {
         DenseSlotMap<Tower>::Key towerKey = DenseSlotMap<Tower>::INVALID_KEY;
-        std::optional<Tower> hoveredTower;
+        std::string hoveredTowerName; // name of the tower-bar button being previewed
     };
 
     bool m_debug = false;
     bool m_gameOver = false;
+
+    Tower m_hoveredTowerCache; // rebuilt only when hoveredTowerName changes
 
     ScoreHUD m_scoreHUD;
     TowerHUD m_towerHUD;

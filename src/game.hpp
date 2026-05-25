@@ -37,7 +37,6 @@ public:
     Renderer& GetRenderer() {return m_renderer;}
     InputManager& GetInput() {return m_input;}
     JsonIO& GetJsonIO(){return m_jsonio;}
-    PerformanceMonitor& GetMonitor() {return m_monitor;}
     ParticleSystem& GetParticles() {return m_particles;}
     TowerFactory& GetTowerFactory() {return m_towerFactory;}
     EnemyFactory& GetEnemyFactory() {return m_enemyFactory;}

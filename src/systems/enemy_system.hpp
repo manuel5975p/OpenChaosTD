@@ -1,6 +1,7 @@
 #pragma once
 
-#include <game.hpp>
+#include <world/game_data.hpp>
+#include <core/particle_system.hpp>
 
 class EnemySystem{
 public:

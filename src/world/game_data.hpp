@@ -20,7 +20,6 @@ struct GameData {
 
     int lives = 20;
     int gold = 150;
-    int score = 0;
     bool victory = false;
 
     // Wave state

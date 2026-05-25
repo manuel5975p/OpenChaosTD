@@ -19,7 +19,7 @@ public:
     const std::pair<int, int> GetCore() const { return m_core; }
     const std::vector<std::pair<int, int>> GetNests() const { return m_nests; }
     const std::vector<std::vector<Vector2>> GetPaths() const { return m_paths; }
-    const Grid2D<Node>& GetPathMesh() const {return m_pathfinder.mesh;}
+    const Grid2D<Node>& GetPathMesh() const {return m_pathMesh;}
 
     // Coordinate conversion
     Vector2 TileToWorld(int x, int y) const;
@@ -35,7 +35,7 @@ public:
     void ConstructPaths();
 
 private:
-    Bfs m_pathfinder;
+    Grid2D<Node> m_pathMesh;
 
     Grid2D<Tile> m_grid;
     int m_tileSize = 32;
@@ -44,5 +44,4 @@ private:
     std::pair<int, int> m_core; // Where enemys are going
     std::vector<std::vector<Vector2>> m_paths; // Paths from nests to core
 
-    int GridToIndex(int x, int y){  return y * m_grid.GetWidth() + x;}
 };

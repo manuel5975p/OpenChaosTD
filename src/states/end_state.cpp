@@ -49,10 +49,6 @@ void EndState::Draw(Game& game) {
         DrawText(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, RED);
     }
 
-    const char* score = TextFormat("Score: %d", game.GetGameData().score);
-    int sw = MeasureText(score, 24);
-    DrawText(score, static_cast<int>(cx - sw / 2.0f), static_cast<int>(cy - 20), 24, RAYWHITE);
-
     m_playAgainButton.Draw(mouse);
     int paW = MeasureText(m_playAgainButton.m_label.c_str(), 20);
     DrawText(m_playAgainButton.m_label.c_str(),

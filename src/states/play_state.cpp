@@ -174,7 +174,7 @@ void PlayingState::SyncHUDState(Game& game) {
         } else {
             m_towerInfoHUD.Hide();
         }
-        m_selection.hoveredTower.reset();
+        m_selection.hoveredTowerName.clear();
         return;
     }
 
@@ -182,14 +182,16 @@ void PlayingState::SyncHUDState(Game& game) {
     Vector2 mousePos = game.GetInput().GetMousePosition();
     const std::string& hovered = m_towerHUD.GetHoveredTower(mousePos);
     if (hovered.empty()) {
-        m_selection.hoveredTower.reset();
+        m_selection.hoveredTowerName.clear();
         m_towerInfoHUD.Hide();
         return;
     }
 
-    // Only re-create the preview tower when the hovered type changes
-    if (!m_selection.hoveredTower.has_value() || m_selection.hoveredTower->m_name != hovered)
-        m_selection.hoveredTower = game.GetTowerFactory().Create(hovered);
+    // Only rebuild the preview tower when the hovered type changes
+    if (m_selection.hoveredTowerName != hovered) {
+        m_selection.hoveredTowerName = hovered;
+        m_hoveredTowerCache = game.GetTowerFactory().Create(hovered);
+    }
     Vector2 topCenter = m_towerHUD.GetHoveredButtonTopCenter(mousePos);
-    m_towerInfoHUD.SetTarget(game, *m_selection.hoveredTower, topCenter, false);
+    m_towerInfoHUD.SetTarget(game, m_hoveredTowerCache, topCenter, false);
 }

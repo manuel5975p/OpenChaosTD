@@ -19,7 +19,6 @@ void GameData::Load(JsonIO& jsonio) {
 void GameData::Reset() {
     lives = startingLives;
     gold = startingGold;
-    score = 0;
     victory = false;
     waveNumber = 0;
     waveActive = false;

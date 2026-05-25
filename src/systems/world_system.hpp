@@ -1,8 +1,7 @@
 #pragma once
 
-#include <game.hpp>
-#include <world/tower.hpp>
-#include <world/enemy.hpp>
+#include <world/game_data.hpp>
+#include <core/particle_system.hpp>
 
 class EnemyFactory;
 
