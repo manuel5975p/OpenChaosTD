@@ -28,16 +28,16 @@ void TowerBuildHUD::Build(Game& game) {
 
 void TowerBuildHUD::OnProcessInput(Game& game) {
     Vector2 mousePos = game.GetInput().GetMousePosition();
+    bool pressed = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
 
     ConsumePanelClick(game.GetInput());
 
-    if (game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON)) {
-        for (const Button& btn : m_buttons) {
-            if (btn.IsClicked(mousePos, true)) {
-                // Toggle: clicking the active type again clears the selection
-                m_selectedTower = (m_selectedTower == btn.m_label) ? "" : btn.m_label;
-                break;
-            }
+    for (Button& btn : m_buttons) {
+        btn.Update(mousePos, pressed);
+        if (btn.IsClicked()) {
+            // Toggle: clicking the active type again clears the selection
+            m_selectedTower = (m_selectedTower == btn.m_label) ? "" : btn.m_label;
+            break;
         }
     }
 }
@@ -58,15 +58,13 @@ Vector2 TowerBuildHUD::GetHoveredButtonTopCenter(Vector2 mousePos) const {
 }
 
 void TowerBuildHUD::OnDraw(Game& game) {
-    Vector2 mousePos = game.GetInput().GetMousePosition();
-
     DrawPanelBackground(200);
 
     for (const Button& btn : m_buttons) {
         const std::string& name = btn.m_label;
         bool selected = (name == m_selectedTower);
 
-        btn.Draw(mousePos, selected);
+        btn.Draw(selected);
 
         int fontSize = ScaledInt(8.0f);
         Texture2D& tex = game.GetResources().GetTexture(game.GetTowerFactory().GetTexture(name));

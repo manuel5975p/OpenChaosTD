@@ -21,10 +21,13 @@ void MenuState::ProcessInput(Game& game, float /*dt*/) {
     Vector2 mousePos = game.GetInput().GetMousePosition();
     bool clicked = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
 
-    if (m_playButton.IsClicked(mousePos, clicked) || game.GetInput().IsPressed("Confirm"))
+    m_playButton.Update(mousePos, clicked);
+    m_exitButton.Update(mousePos, clicked);
+
+    if (m_playButton.IsClicked() || game.GetInput().IsPressed("Confirm"))
         game.ChangeState(std::make_unique<PlayingState>());
 
-    if (m_exitButton.IsClicked(mousePos, clicked) || game.GetInput().IsPressed("Cancel"))
+    if (m_exitButton.IsClicked() || game.GetInput().IsPressed("Cancel"))
         game.Quit();
 }
 
@@ -37,11 +40,9 @@ void MenuState::Draw(Game& game){
     ClearBackground(DARKGRAY);
     DrawText("OPEN CHAOS TD", cx - 180, cy - 80, 40, RAYWHITE);
 
-    Vector2 mousePos = game.GetInput().GetMousePosition();
-
-    m_playButton.Draw(mousePos);
+    m_playButton.Draw();
     m_playButton.DrawLabel(24, RAYWHITE);
 
-    m_exitButton.Draw(mousePos);
+    m_exitButton.Draw();
     m_exitButton.DrawLabel(24, RAYWHITE);
 }

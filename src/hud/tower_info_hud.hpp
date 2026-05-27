@@ -1,7 +1,7 @@
 #pragma once
 
-#include <engine/ui/hud.hpp>
-#include <engine/ui/button.hpp>
+#include <hud/hud.hpp>
+#include <engine/features/ui_widgets.hpp>
 #include <world/tower.hpp>
 #include <raylib.h>
 #include <string>

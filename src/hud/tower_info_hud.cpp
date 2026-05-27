@@ -67,18 +67,18 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
 }
 
 void TowerInfoHUD::OnProcessInput(Game& game) {
-    if (!game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON)) return;
+    bool pressed = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
     ConsumePanelClick(game.GetInput());
     if (!m_showSell) return; // hover preview has no sell button
     Vector2 mousePos = game.GetInput().GetMousePosition();
-    if (m_sellBtn.IsClicked(mousePos, true))
+    m_sellBtn.Update(mousePos, pressed);
+    if (m_sellBtn.IsClicked())
         m_sellSignal.Raise();
 }
 
-void TowerInfoHUD::OnDraw(Game& game) {
+void TowerInfoHUD::OnDraw(Game& /*game*/) {
     if (!m_target) return;
     const Tower& tower = *m_target;
-    Vector2 mousePos = game.GetInput().GetMousePosition();
 
     DrawPanelBackground(220, true);
 
@@ -110,7 +110,7 @@ void TowerInfoHUD::OnDraw(Game& game) {
     }
 
     if (m_showSell) {
-        m_sellBtn.Draw(mousePos);
+        m_sellBtn.Draw();
         m_sellBtn.DrawLabel(m_fontSm, GREEN);
     }
 }

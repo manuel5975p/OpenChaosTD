@@ -23,10 +23,13 @@ void EndState::ProcessInput(Game& game, float /*dt*/) {
     Vector2 mouse = game.GetInput().GetMousePosition();
     bool clicked = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
 
-    if (m_playAgainButton.IsClicked(mouse, clicked))
+    m_playAgainButton.Update(mouse, clicked);
+    m_menuButton.Update(mouse, clicked);
+
+    if (m_playAgainButton.IsClicked())
         game.ChangeState(std::make_unique<PlayingState>());
 
-    if (m_menuButton.IsClicked(mouse, clicked) || game.GetInput().IsPressed("Cancel"))
+    if (m_menuButton.IsClicked() || game.GetInput().IsPressed("Cancel"))
         game.ChangeState(std::make_unique<MenuState>());
 }
 
@@ -35,7 +38,6 @@ void EndState::Update(Game& /*game*/, float /*dt*/) {}
 void EndState::Draw(Game& game) {
     float cx = game.GetScreen().GetGameWidth()  / 2.0f;
     float cy = game.GetScreen().GetGameHeight() / 2.0f;
-    Vector2 mouse = game.GetInput().GetMousePosition();
 
     ClearBackground(DARKGRAY);
 
@@ -49,9 +51,9 @@ void EndState::Draw(Game& game) {
         DrawText(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, RED);
     }
 
-    m_playAgainButton.Draw(mouse);
+    m_playAgainButton.Draw();
     m_playAgainButton.DrawLabel(20, RAYWHITE);
 
-    m_menuButton.Draw(mouse);
+    m_menuButton.Draw();
     m_menuButton.DrawLabel(20, RAYWHITE);
 }

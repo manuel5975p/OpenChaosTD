@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/ui/hud.hpp>
+#include <hud/hud.hpp>
 #include <string>
 #include <vector>
 

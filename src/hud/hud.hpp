@@ -1,9 +1,18 @@
 #pragma once
-#include <engine/ui/ui_util.hpp>
 #include <raylib.h>
 
 class Game;
 class Input;
+
+// One-shot flag: raised on an event, consumed exactly once.
+struct HudSignal {
+    void Raise() { m_pending = true; }
+    bool Consume() { bool p = m_pending; m_pending = false; return p; }
+private:
+    bool m_pending = false;
+};
+
+void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color);
 
 // Base for every HUD component: uniform lifecycle, shared scaling and panel helpers.
 // Input and draw are skipped automatically while hidden.

@@ -1,6 +1,11 @@
-#include <engine/ui/hud.hpp>
+#include <hud/hud.hpp>
 #include <engine/core/input.hpp>
 #include <algorithm>
+
+void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color) {
+    int width = MeasureText(text, fontSize);
+    DrawText(text, centerX - width / 2, y, fontSize, color);
+}
 
 void HUD::DrawPanelBackground(unsigned char alpha, bool border) const {
     DrawRectangleRec(m_panelRect, {20, 20, 20, alpha});

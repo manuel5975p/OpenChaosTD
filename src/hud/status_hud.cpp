@@ -24,23 +24,24 @@ void StatusHUD::Build(Game& game) {
 void StatusHUD::OnProcessInput(Game& game) {
     const auto& data = game.GetGameData();
     Vector2 mousePos = game.GetInput().GetMousePosition();
+    bool pressed = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
 
     ConsumePanelClick(game.GetInput());
 
-    if (game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON)) {
-        // Auto toggle is always clickable, even mid-wave
-        if (m_autoBtn.IsClicked(mousePos, true))
-            m_autoSignal.Raise();
+    m_autoBtn.Update(mousePos, pressed);
+    m_startWaveBtn.Update(mousePos, pressed);
 
-        // Start wave only when no wave is running
-        if (!data.waveActive && m_startWaveBtn.IsClicked(mousePos, true))
-            m_waveSignal.Raise();
-    }
+    // Auto toggle is always clickable, even mid-wave
+    if (m_autoBtn.IsClicked())
+        m_autoSignal.Raise();
+
+    // Start wave only when no wave is running
+    if (!data.waveActive && m_startWaveBtn.IsClicked())
+        m_waveSignal.Raise();
 }
 
 void StatusHUD::OnDraw(Game& game) {
-    const auto& data     = game.GetGameData();
-    Vector2     mousePos = game.GetInput().GetMousePosition();
+    const auto& data = game.GetGameData();
 
     DrawPanelBackground(200);
 
@@ -65,7 +66,7 @@ void StatusHUD::OnDraw(Game& game) {
     DrawTextCenteredX(waveStr, static_cast<int>(m_panelRect.width / 2.0f), m_textY, fontMain, RAYWHITE);
 
     // Auto toggle — highlighted when active
-    m_autoBtn.Draw(mousePos, m_autoSpawn);
+    m_autoBtn.Draw(m_autoSpawn);
     m_autoBtn.DrawLabel(fontBtn, m_autoSpawn ? GOLD : RAYWHITE);
 
     // Start wave button — greyed out while a wave is running
@@ -74,7 +75,7 @@ void StatusHUD::OnDraw(Game& game) {
         DrawRectangleLinesEx(m_startWaveBtn.m_rect, 1.0f, {60, 60, 60, 255});
         m_startWaveBtn.DrawLabel(fontBtn, DARKGRAY);
     } else {
-        m_startWaveBtn.Draw(mousePos);
+        m_startWaveBtn.Draw();
         m_startWaveBtn.DrawLabel(fontBtn, RAYWHITE);
     }
 }
