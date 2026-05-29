@@ -20,11 +20,19 @@ Loads and caches raylib assets by string key. Supports textures, sounds, fonts, 
 
 ```cpp
 m_resources.SetAssetPath(path);
+
+// Single file
 m_resources.LoadTexture("tower_zapper", "textures/tower_zapper.png");
 Texture2D& tex = m_resources.GetTexture("tower_zapper");
+
+// Bulk load — key = filename stem for each file in the directory
+m_resources.LoadTexturesFromDir("textures");
+m_resources.LoadMusicFromDir("music");
 ```
 
 Retrieval throws if the key is not found. Use `HasTexture` / `HasSound` / etc. to guard optional lookups.
+
+OGG Vorbis is the recommended format for music streaming; WAV is best used with `LoadSound` for short one-shot effects.
 
 ---
 
@@ -106,6 +114,33 @@ game.GetParticles().Clear();
 | `spread` | 360 | Total arc of the spawn cone in degrees |
 | `lifetime` | 0.2 | Seconds each particle lives |
 | `size` / `endSize` | 3 / 0 | Radius at birth and death, lerped over lifetime |
+
+---
+
+### SoundSystem
+
+One-track music streamer plus fire-and-forget sound effects. Owned by `Game`, initialised after resources are loaded. `Tick` must be called every frame to feed the active music stream.
+
+```cpp
+// Startup (called once in Game::LoadResources after LoadMusicFromDir)
+game.GetSoundSystem().Init(m_resources);
+
+// Music — one track at a time; starting a new track stops the previous one
+game.GetSoundSystem().PlayMusic("openchaostd_main");
+game.GetSoundSystem().PauseMusic();
+game.GetSoundSystem().ResumeMusic();
+game.GetSoundSystem().StopMusic();
+
+// Sound effects — fire-and-forget, played at the current sfx volume
+game.GetSoundSystem().PlaySfx("explosion");
+
+// Volume — [0.0, 1.0]; music volume applies immediately to the active track
+game.GetSoundSystem().SetMusicVolume(0.8f);
+game.GetSoundSystem().SetSfxVolume(0.5f);
+
+// Game loop — must run every frame
+game.GetSoundSystem().Tick(dt);
+```
 
 ---
 

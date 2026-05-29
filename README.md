@@ -40,8 +40,10 @@ All fetched automatically via CMake FetchContent — no manual installation need
 ## Project Structure
 ```
 OpenChaosTD/
-├── assets/
-│   └── textures/               - Sprites for towers, enemies and tiles
+├── resources/
+│   ├── textures/               - Sprites for towers, enemies and tiles
+│   ├── music/                  - Streaming background music (OGG recommended)
+│   └── sounds/                 - One-shot sound effects
 │
 ├── data/
 │   ├── config.json             - Window resolution, FPS, HUD scale, title
@@ -59,7 +61,8 @@ OpenChaosTD/
     │
     ├── factory/                Data-driven entity construction from JSON
     │   ├── tower_factory       - Builds Tower instances from towers.json
-    │   └── enemy_factory       - Builds Enemy instances from enemies.json
+    │   ├── enemy_factory       - Builds Enemy instances from enemies.json
+    │   └── emitter_presets     - Loads named EmitterDesc presets from particle_effects.json
     │
     ├── hud/                    In-game HUD elements
     │   ├── hud                 - HUD base class: lifecycle, visibility, scaling, panel helpers
@@ -79,10 +82,12 @@ OpenChaosTD/
     │   ├── game_data           - Runtime world state + starting values (JSON)
     │   ├── tower               - Tower entity (position, stats, description, modules)
     │   ├── tower_modules.hpp   - FlatDamageModule, SlowModule
+    │   ├── tower_vfx.hpp       - Visual effect descriptors attached to towers
     │   ├── enemy               - Enemy entity (position, health, description, effects, modules)
     │   ├── enemy_modules.hpp   - RegenerationModule, ArmorModule, ResistanceModule
     │   ├── attack.hpp          - Attack object (origin, targets, payload, visual)
     │   ├── effect.hpp          - Status effect (Burn, Slow) with duration
+    │   ├── vfx_effect.hpp      - Active in-flight visual effect (trail, impact)
     │   ├── map                 - Grid, nest/core placement, path construction
     │   └── tile.hpp            - Tile type, walkable/buildable flags
     │
