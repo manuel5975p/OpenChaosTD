@@ -5,6 +5,7 @@
 #include <states/game_state.hpp>
 #include <engine/core/resources.hpp>
 #include <engine/features/particle_system.hpp>
+#include <engine/features/sound_system.hpp>
 #include <engine/core/screen.hpp>
 #include <engine/core/input.hpp>
 #include <engine/util/json_store.hpp>
@@ -38,6 +39,7 @@ public:
     Input& GetInput() {return m_input;}
     JsonStore& GetJsonStore(){return m_jsonStore;}
     ParticleSystem& GetParticles() {return m_particles;}
+    SoundSystem& GetSoundSystem() {return m_soundSystem;}
     TowerFactory& GetTowerFactory() {return m_towerFactory;}
     EnemyFactory& GetEnemyFactory() {return m_enemyFactory;}
 
@@ -52,6 +54,7 @@ private:
 
     // Core managers
     Resources m_resources;
+    SoundSystem m_soundSystem;
     ParticleSystem m_particles;
     Screen m_screen;
     Input m_input;

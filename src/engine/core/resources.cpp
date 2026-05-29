@@ -14,7 +14,7 @@ void Resources::SetAssetPath(const std::string& assetPath){
 // Path resolution
 std::string Resources::ResolvePath(const std::string& relativePath) const {
     if (m_assetPath.empty())
-        throw std::runtime_error("Resources: SearchAssetPath() must be called before loading assets");
+        throw std::runtime_error("Resources: SetAssetPath() must be called before loading resources");
 
     return (std::filesystem::path(m_assetPath) / relativePath).string();
 }
@@ -54,6 +54,32 @@ void Resources::LoadTexturesFromDir(const std::string& relativeDir) {
         }
         m_textures[key] = tex;
         std::cout << "Resources: loaded texture '" << key << "'\n";
+    }
+}
+
+void Resources::LoadMusicFromDir(const std::string& relativeDir) {
+    static const std::unordered_set<std::string> musicExts = { ".wav", ".ogg", ".mp3", ".flac", ".xm", ".mod" };
+
+    std::filesystem::path dir = std::filesystem::path(m_assetPath) / relativeDir;
+    if (!std::filesystem::is_directory(dir)) {
+        std::cerr << "Resources: music directory not found: " << dir << "\n";
+        return;
+    }
+
+    for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+        if (!entry.is_regular_file()) continue;
+        if (!musicExts.count(entry.path().extension().string())) continue;
+
+        std::string key = entry.path().stem().string();
+        if (m_music.count(key)) continue;
+
+        Music music = ::LoadMusicStream(entry.path().string().c_str());
+        if (music.frameCount == 0) {
+            std::cerr << "Resources: failed to load music '" << entry.path() << "'\n";
+            continue;
+        }
+        m_music[key] = music;
+        std::cout << "Resources: loaded music '" << key << "'\n";
     }
 }
 

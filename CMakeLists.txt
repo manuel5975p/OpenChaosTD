@@ -104,12 +104,12 @@ if (${PLATFORM} STREQUAL "Web")
     # Tell our code it's a web build so Game.cpp can use emscripten_set_main_loop
     target_compile_definitions(${PROJECT_NAME} PRIVATE PLATFORM_WEB)
     
-    # --preload-file assets so the assets folder is bundled into the .wasm and accessible at runtime in the browser.
+    # --preload-file resources so the resources folder is bundled into the .wasm and accessible at runtime in the browser.
     set_target_properties(${PROJECT_NAME} PROPERTIES
     SUFFIX ".html"
     LINK_FLAGS "\
         --shell-file ${CMAKE_CURRENT_LIST_DIR}/tools/minshell.html \
-        --preload-file ${CMAKE_CURRENT_LIST_DIR}/assets@assets \
+        --preload-file ${CMAKE_CURRENT_LIST_DIR}/resources@resources \
         --preload-file ${CMAKE_CURRENT_LIST_DIR}/data@data \
         -s USE_GLFW=3 \
         -s ASSERTIONS=1 \

@@ -10,6 +10,7 @@
 void PlayingState::OnEnter(Game& game) {
     game.GetGameData().Reset();
     game.GetParticles().Clear();
+    game.GetSoundSystem().PlayMusic("openchaostd_main");
 
     m_worldSystem.GenerateMap(game.GetGameData().map, 15, 19);
     game.GetGameData().map.BuildPathMesh();
@@ -24,7 +25,9 @@ void PlayingState::OnEnter(Game& game) {
     m_waveManager.Load(game.GetJsonStore());
 }
 
-void PlayingState::OnExit(Game& /*game*/) {}
+void PlayingState::OnExit(Game& game) {
+    game.GetSoundSystem().StopMusic();
+}
 
 void PlayingState::ProcessInput(Game& game, float dt) {
     if (game.GetInput().IsPressed("Debug")) m_debug = !m_debug;

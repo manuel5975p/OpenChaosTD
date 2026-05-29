@@ -7,7 +7,7 @@
 
 // Constructor / Destructor
 Game::Game() {
-    m_jsonStore.SetRootPath(SearchFolderParentPath("assets", 5).parent_path());
+    m_jsonStore.SetRootPath(SearchFolderParentPath("resources", 5).parent_path());
     m_gameConfig.Load(m_jsonStore);
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
@@ -50,6 +50,7 @@ void Game::Run() {
 
         // Update
         m_profiler.Begin("Update");
+            m_soundSystem.Tick(dt);
             m_input.Update(m_screen);
             m_currentState->ProcessInput(*this, dt);
             m_currentState->Update(*this, dt);
@@ -88,11 +89,14 @@ std::filesystem::path Game::SearchFolderParentPath(const std::string& folderName
 
 // Asset loading
 void Game::LoadResources() {
-    // Walk up the directory tree to find the "assets" folder
-    m_resources.SetAssetPath(SearchFolderParentPath("assets", 5));
+    // Walk up the directory tree to find the "resources" folder
+    m_resources.SetAssetPath(SearchFolderParentPath("resources", 5));
 
     // Load all images from the textures folder; key = filename stem
     m_resources.LoadTexturesFromDir("textures");
+    // Load all music from the music folder; key = filename stem
+    m_resources.LoadMusicFromDir("music");
+    m_soundSystem.Init(m_resources);
 }
 
 // State machine

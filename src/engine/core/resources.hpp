@@ -23,6 +23,7 @@ public:
     void LoadSound(const std::string& key, const std::string& relativePath);
     void LoadFont(const std::string& key, const std::string& relativePath, int fontSize = 20);
     void LoadMusic(const std::string& key, const std::string& relativePath);
+    void LoadMusicFromDir(const std::string& relativeDir);
 
     // Retrieve
     Texture2D& GetTexture(const std::string& key);
