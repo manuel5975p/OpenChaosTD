@@ -7,7 +7,7 @@
             "cost": 75,
             "fireRate": 3.0,
             "attackDuration": 0.08,
-            "radius": 100,
+            "radius": 64,
             "targetCount": 2,
             "targetingMode": "First",
             "modules": [
@@ -27,7 +27,7 @@
             "cost": 100,
             "fireRate": 0.8,
             "attackDuration": 0.3,
-            "radius": 128,
+            "radius": 48,
             "targetCount": 0,
             "targetingMode": "First",
             "modules": [
@@ -49,7 +49,7 @@
             "cost": 150,
             "fireRate": 0.5,
             "attackDuration": 0.4,
-            "radius": 300,
+            "radius": 128,
             "targetCount": 1,
             "targetingMode": "MostHealth",
             "modules": [
@@ -71,12 +71,12 @@
             "cost": 110,
             "fireRate": 1.2,
             "attackDuration": 0.25,
-            "radius": 90,
+            "radius": 48,
             "targetCount": 0,
             "targetingMode": "First",
             "modules": [
                 { "type": "FlatDamage", "damage": 0.5 },
-                { "type": "Burn", "damage": 3.0, "duration": 4.0 }
+                { "type": "Burn", "damage": 2.0, "duration": 3.0 }
             ],
             "vfx": {
                 "style": "Ring",
@@ -93,7 +93,7 @@
             "cost": 125,
             "fireRate": 1.0,
             "attackDuration": 0.15,
-            "radius": 150,
+            "radius": 64,
             "targetCount": 1,
             "targetingMode": "MostArmor",
             "modules": [
@@ -114,12 +114,12 @@
             "cost": 130,
             "fireRate": 0.7,
             "attackDuration": 0.3,
-            "radius": 115,
+            "radius": 96,
             "targetCount": 0,
             "targetingMode": "First",
             "modules": [
                 { "type": "FlatDamage",    "damage": 0.3 },
-                { "type": "Slow",          "factor": 0.45, "duration": 2.0 },
+                { "type": "Slow",          "factor": 0.1, "duration": 2.0 },
                 { "type": "ArmorPiercing", "pierce": 1.5 }
             ],
             "vfx": {
@@ -137,7 +137,7 @@
             "cost": 110,
             "fireRate": 1.2,
             "attackDuration": 0.15,
-            "radius": 120,
+            "radius": 96,
             "targetCount": 1,
             "targetingMode": "First",
             "modules": [

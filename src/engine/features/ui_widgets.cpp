@@ -10,11 +10,11 @@ void Button::Update(Vector2 mouse, bool pressed) {
         m_clicked = true;
 }
 
-void Button::Draw(bool selected) const {
-    Color bg = m_hovered ? Color{65, 65, 65, 255} : Color{40, 40, 40, 255};
+void Button::Draw(bool selected, const WidgetStyle& style) const {
+    Color bg = m_hovered ? style.bgHovered : style.bgNormal;
     DrawRectangleRec(m_rect, bg);
-    Color border = selected ? Color{255, 180, 0, 255} : Color{80, 80, 80, 255};
-    DrawRectangleLinesEx(m_rect, selected ? 2.0f : 1.0f, border);
+    Color border = selected ? style.borderSel : style.border;
+    DrawRectangleLinesEx(m_rect, selected ? style.borderWidthActive : style.borderWidth, border);
 }
 
 void Button::DrawLabel(int fontSize, Color color) const {
@@ -38,20 +38,20 @@ void Slider::Update(Vector2 mouse, bool held) {
     }
 }
 
-void Slider::Draw() const {
-    DrawRectangleRec(rect, {40, 40, 40, 255});
-    DrawRectangleLinesEx(rect, 1.0f, {80, 80, 80, 255});
+void Slider::Draw(const WidgetStyle& style) const {
+    DrawRectangleRec(rect, style.bgNormal);
+    DrawRectangleLinesEx(rect, style.borderWidth, style.border);
 
     if (max <= min) return;
 
     float t = (value - min) / (max - min);
     Rectangle filled = { rect.x, rect.y, rect.width * t, rect.height };
-    DrawRectangleRec(filled, {100, 149, 237, 255});
+    DrawRectangleRec(filled, style.accent);
 
     // Knob
     float kx = rect.x + rect.width * t;
     DrawRectangle(static_cast<int>(kx - 3), static_cast<int>(rect.y) - 2,
-        6, static_cast<int>(rect.height) + 4, RAYWHITE);
+        6, static_cast<int>(rect.height) + 4, style.text);
 }
 
 // --- Toggle ---
@@ -64,17 +64,17 @@ void Toggle::Update(Vector2 mouse, bool pressed) {
     }
 }
 
-void Toggle::Draw() const {
-    Color bg = value ? Color{80, 180, 80, 255} : Color{40, 40, 40, 255};
+void Toggle::Draw(const WidgetStyle& style) const {
+    Color bg = value ? style.bgActive : style.bgNormal;
     DrawRectangleRec(rect, bg);
-    DrawRectangleLinesEx(rect, 1.0f, {80, 80, 80, 255});
+    DrawRectangleLinesEx(rect, style.borderWidth, style.border);
 
     if (!label.empty()) {
         int fontSize = static_cast<int>(rect.height * 0.65f);
         DrawText(label.c_str(),
             static_cast<int>(rect.x + rect.width + 6.0f),
             static_cast<int>(rect.y + (rect.height - fontSize) / 2.0f),
-            fontSize, RAYWHITE);
+            fontSize, style.text);
     }
 }
 
@@ -100,10 +100,25 @@ void TextInput::Update(Vector2 mouse, bool pressed) {
         m_focused = false;
 }
 
-void TextInput::Draw() const {
-    DrawRectangleRec(rect, {30, 30, 30, 255});
-    Color border = m_focused ? Color{100, 149, 237, 255} : Color{80, 80, 80, 255};
-    DrawRectangleLinesEx(rect, m_focused ? 2.0f : 1.0f, border);
+// --- ProgressBar ---
+
+void ProgressBar::Draw(const WidgetStyle& style) const {
+    DrawRectangleRec(rect, style.bgNormal);
+    DrawRectangleLinesEx(rect, style.borderWidth, style.border);
+
+    if (max > 0.0f && value > 0.0f) {
+        float t = std::clamp(value / max, 0.0f, 1.0f);
+        Rectangle filled = { rect.x, rect.y, rect.width * t, rect.height };
+        DrawRectangleRec(filled, style.accent);
+    }
+}
+
+// --- TextInput ---
+
+void TextInput::Draw(const WidgetStyle& style) const {
+    DrawRectangleRec(rect, style.bgInput);
+    Color border = m_focused ? style.accent : style.border;
+    DrawRectangleLinesEx(rect, m_focused ? style.borderWidthActive : style.borderWidth, border);
 
     int fontSize = static_cast<int>(rect.height * 0.6f);
     float padding = rect.height * 0.2f;
@@ -111,5 +126,5 @@ void TextInput::Draw() const {
     DrawText(display.c_str(),
         static_cast<int>(rect.x + padding),
         static_cast<int>(rect.y + (rect.height - fontSize) / 2.0f),
-        fontSize, RAYWHITE);
+        fontSize, style.text);
 }

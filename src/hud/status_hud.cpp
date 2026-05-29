@@ -70,12 +70,7 @@ void StatusHUD::OnDraw(Game& game) {
     m_autoBtn.DrawLabel(fontBtn, m_autoSpawn ? GOLD : RAYWHITE);
 
     // Start wave button — greyed out while a wave is running
-    if (data.waveActive) {
-        DrawRectangleRec(m_startWaveBtn.m_rect, {30, 30, 30, 200});
-        DrawRectangleLinesEx(m_startWaveBtn.m_rect, 1.0f, {60, 60, 60, 255});
-        m_startWaveBtn.DrawLabel(fontBtn, DARKGRAY);
-    } else {
-        m_startWaveBtn.Draw();
-        m_startWaveBtn.DrawLabel(fontBtn, RAYWHITE);
-    }
+    const WidgetStyle& waveStyle = data.waveActive ? kDisabledStyle : kDefaultStyle;
+    m_startWaveBtn.Draw(false, waveStyle);
+    m_startWaveBtn.DrawLabel(fontBtn, data.waveActive ? DARKGRAY : RAYWHITE);
 }
