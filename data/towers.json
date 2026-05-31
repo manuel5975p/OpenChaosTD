@@ -38,7 +38,7 @@
             "targetingMode": "First",
             "modules": [
                 { "type": "FlatDamage", "damage": 0.5, "impact": "freezer_impact" },
-                { "type": "Slow", "factor": 0.5, "duration": 2.0, "effect": "slow_effect", "trail": "ice_drift" }
+                { "type": "Slow", "factor": 0.5, "duration": 2.0, "effect": "slow_effect" }
             ],
             "vfx": {
                 "style": "Ring",
@@ -51,7 +51,7 @@
             "description": "Extreme range, high burst damage. Targets the toughest enemy.",
             "texture": "tower_sniper",
             "cost": 175,
-            "fireRate": 0.5,
+            "fireRate": 0.25,
             "attackDuration": 0.4,
             "radius": 128,
             "targetCount": 1,
@@ -78,7 +78,7 @@
             "targetingMode": "First",
             "modules": [
                 { "type": "FlatDamage", "damage": 0.5, "impact": "flamer_impact" },
-                { "type": "Burn", "damage": 2.0, "duration": 3.0, "effect": "burn_effect", "trail": "flamer_ember" }
+                { "type": "Burn", "damage": 2.0, "duration": 3.0, "effect": "burn_effect" }
             ],
             "vfx": {
                 "style": "Ring",

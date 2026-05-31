@@ -2,12 +2,10 @@
 
 #include <raymath.h>
 #include <algorithm>
-#include <cmath>
 
 #include <world/tower.hpp>
 #include <world/enemy_modules.hpp>
 
-static constexpr float TrailEmitRate = 25.0f;
 
 
 void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles){
@@ -56,8 +54,6 @@ void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles
         vfx.m_radius = tower.m_stats.radius;
         vfx.m_color = tower.m_vfx.color;
         vfx.m_style = tower.m_vfx.style;
-        vfx.m_trailDesc = payload.m_trailDesc;
-
         // Muzzle burst
         if (tower.m_vfx.muzzleDesc.count > 0)
             particles.Emit(tower.m_position, tower.m_vfx.muzzleDesc);
@@ -143,34 +139,9 @@ void TowerSystem::TickPayloads(float dt, GameData& gameData, ParticleSystem& par
     std::erase_if(gameData.m_payloads, [](const AttackPayload& p) { return p.m_ttl <= 0.0f; });
 }
 
-// Returns a world-space point suitable for spawning a trail particle from this effect
-static Vector2 SampleVfxPoint(const VfxEffect& vfx) {
-    if (vfx.m_style == VfxStyle::Ring) {
-        float angle = (float)GetRandomValue(0, 62831) / 10000.0f;
-        float r = (1.0f - vfx.Progress()) * vfx.m_radius;
-        return {vfx.m_origin.x + std::cosf(angle) * r,
-                vfx.m_origin.y + std::sinf(angle) * r};
-    }
-    if (!vfx.m_targetPositions.empty()) {
-        int idx = GetRandomValue(0, (int)vfx.m_targetPositions.size() - 1);
-        float t = (float)GetRandomValue(0, 10000) / 10000.0f;
-        return Vector2Lerp(vfx.m_origin, vfx.m_targetPositions[idx], t);
-    }
-    return vfx.m_origin;
-}
-
-void TowerSystem::TickVfx(float dt, GameData& gameData, ParticleSystem& particles) {
-    for (auto& vfx : gameData.m_vfx) {
+void TowerSystem::TickVfx(float dt, GameData& gameData) {
+    for (auto& vfx : gameData.m_vfx)
         vfx.m_duration -= dt;
-
-        if (vfx.m_trailDesc.count > 0) {
-            vfx.m_trailAccumulator += TrailEmitRate * dt;
-            while (vfx.m_trailAccumulator >= 1.0f) {
-                particles.Emit(SampleVfxPoint(vfx), vfx.m_trailDesc);
-                vfx.m_trailAccumulator -= 1.0f;
-            }
-        }
-    }
     std::erase_if(gameData.m_vfx, [](const VfxEffect& v) { return v.m_duration <= 0.0f; });
 }
 

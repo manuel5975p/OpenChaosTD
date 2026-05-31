@@ -30,8 +30,7 @@ public:
     float m_factor, m_duration;
     EmitterDesc m_particleDesc;
     float m_emitRate = 8.0f;
-    EmitterDesc m_trailDesc;
-    SlowModule(float factor, float duration, EmitterDesc particleDesc, EmitterDesc trailDesc = {});
+    SlowModule(float factor, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void Describe(std::string& text, Color& color) const override;
 };
@@ -41,8 +40,7 @@ public:
     float m_value, m_duration;
     EmitterDesc m_particleDesc;
     float m_emitRate = 18.0f;
-    EmitterDesc m_trailDesc;
-    BurnModule(float value, float duration, EmitterDesc particleDesc, EmitterDesc trailDesc = {});
+    BurnModule(float value, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void Describe(std::string& text, Color& color) const override;
 };

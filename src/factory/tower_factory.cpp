@@ -43,16 +43,14 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         return std::make_unique<FlatDamageModule>(j.value("damage", 0.0f), std::move(impact));
     };
     m_builders["Slow"] = [this](const json& j){
-        EmitterDesc effect, trail;
+        EmitterDesc effect;
         if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
-        if (j.contains("trail"))  trail  = m_presets->Get(j["trail"].get<std::string>());
-        return std::make_unique<SlowModule>(j.value("factor", 1.0f), j.value("duration", 0.0f), std::move(effect), std::move(trail));
+        return std::make_unique<SlowModule>(j.value("factor", 1.0f), j.value("duration", 0.0f), std::move(effect));
     };
     m_builders["Burn"] = [this](const json& j){
-        EmitterDesc effect, trail;
+        EmitterDesc effect;
         if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
-        if (j.contains("trail"))  trail  = m_presets->Get(j["trail"].get<std::string>());
-        return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), std::move(effect), std::move(trail));
+        return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), std::move(effect));
     };
     m_builders["ArmorPiercing"] = [](const json& j){ return std::make_unique<ArmorPiercingModule>(j.value("pierce", 0.0f)); };
     m_builders["Crit"]          = [this](const json& j){

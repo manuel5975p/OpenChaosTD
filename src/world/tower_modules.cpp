@@ -18,17 +18,14 @@ void FlatDamageModule::Describe(std::string& text, Color& color) const {
 
 // --- SlowModule ---
 
-SlowModule::SlowModule(float factor, float duration, EmitterDesc particleDesc, EmitterDesc trailDesc)
-    : m_factor(factor), m_duration(duration), m_particleDesc(std::move(particleDesc)),
-      m_trailDesc(std::move(trailDesc)) {}
+SlowModule::SlowModule(float factor, float duration, EmitterDesc particleDesc)
+    : m_factor(factor), m_duration(duration), m_particleDesc(std::move(particleDesc)) {}
 
 void SlowModule::Contribute(AttackPayload& attack) const {
     Effect e(EffectType::Slow, m_duration, m_factor);
     e.m_particleDesc = m_particleDesc;
     e.m_emitRate = m_emitRate;
     attack.m_effects.push_back(std::move(e));
-    if (m_trailDesc.count > 0)
-        attack.m_trailDesc = m_trailDesc;
 }
 
 void SlowModule::Describe(std::string& text, Color& color) const {
@@ -40,17 +37,14 @@ void SlowModule::Describe(std::string& text, Color& color) const {
 
 // --- BurnModule ---
 
-BurnModule::BurnModule(float value, float duration, EmitterDesc particleDesc, EmitterDesc trailDesc)
-    : m_value(value), m_duration(duration), m_particleDesc(std::move(particleDesc)),
-      m_trailDesc(std::move(trailDesc)) {}
+BurnModule::BurnModule(float value, float duration, EmitterDesc particleDesc)
+    : m_value(value), m_duration(duration), m_particleDesc(std::move(particleDesc)) {}
 
 void BurnModule::Contribute(AttackPayload& attack) const {
     Effect e(EffectType::Burn, m_duration, m_value);
     e.m_particleDesc = m_particleDesc;
     e.m_emitRate = m_emitRate;
     attack.m_effects.push_back(std::move(e));
-    if (m_trailDesc.count > 0)
-        attack.m_trailDesc = m_trailDesc;
 }
 
 void BurnModule::Describe(std::string& text, Color& color) const {

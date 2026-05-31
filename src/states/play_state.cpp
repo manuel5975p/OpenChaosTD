@@ -64,7 +64,7 @@ void PlayingState::Update(Game& game, float dt) {
 
     m_towerSystem.update(dt, game.GetGameData(), game.GetParticles());
     m_towerSystem.TickPayloads(dt, game.GetGameData(), game.GetParticles());
-    m_towerSystem.TickVfx(dt, game.GetGameData(), game.GetParticles());
+    m_towerSystem.TickVfx(dt, game.GetGameData());
     game.GetParticles().Tick(dt);
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());

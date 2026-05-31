@@ -1,6 +1,5 @@
 {
     "presets": {
-
         "zapper_muzzle": {
             "count": 8,
             "color": [180, 230, 255, 255],
@@ -20,14 +19,14 @@
             "size": 2.0
         },
         "freezer_muzzle": {
-            "count": 6,
+            "count": 20,
             "color": [200, 235, 255, 255],
             "endColor": [120, 200, 255, 0],
-            "angle": 270,
-            "spread": 80,
-            "speed": 20, "speedVariance": 8,
-            "lifetime": 0.3,
-            "size": 2.5
+            "angle": 0,
+            "spread": 360,
+            "speed": 100, "speedVariance": 50,
+            "lifetime": 0.5,
+            "size": 3
         },
         "freezer_impact": {
             "count": 8,
@@ -60,20 +59,11 @@
             "count": 10,
             "color": [255, 160, 40, 255],
             "endColor": [200, 80, 0, 0],
-            "angle": 270,
-            "spread": 138,
-            "speed": 30, "speedVariance": 12,
-            "lifetime": 0.2,
-            "size": 3.0
-        },
-        "flamer_ember": {
-            "count": 1,
-            "color": [255, 120, 30, 200],
-            "endColor": [200, 50, 0, 0],
-            "speed": 18, "speedVariance": 8,
+            "angle": 0,
             "spread": 360,
-            "lifetime": 0.2,
-            "size": 2.5
+            "speed": 100, "speedVariance": 50,
+            "lifetime": 0.5,
+            "size": 3.0
         },
         "flamer_impact": {
             "count": 8,
@@ -102,24 +92,6 @@
             "lifetime": 0.15,
             "size": 2.5
         },
-        "gambler_muzzle": {
-            "count": 5,
-            "color": [255, 230, 80, 255],
-            "endColor": [220, 180, 30, 0],
-            "speed": 60, "speedVariance": 25,
-            "spread": 103,
-            "lifetime": 0.1,
-            "size": 2.5
-        },
-        "gambler_impact": {
-            "count": 6,
-            "color": [255, 210, 40, 255],
-            "endColor": [200, 150, 0, 0],
-            "speed": 60, "speedVariance": 20,
-            "spread": 360,
-            "lifetime": 0.15,
-            "size": 3.0
-        },
         "crit_impact": {
             "count": 22,
             "color": [255, 200, 0, 255],
@@ -128,15 +100,6 @@
             "spread": 360,
             "lifetime": 0.45,
             "size": 5.0
-        },
-        "ice_drift": {
-            "count": 1,
-            "color": [160, 220, 255, 180],
-            "endColor": [80, 160, 220, 0],
-            "speed": 10, "speedVariance": 5,
-            "spread": 360,
-            "lifetime": 0.35,
-            "size": 2.0
         },
         "slow_effect": {
             "count": 1,
@@ -157,87 +120,32 @@
             "lifetime": 0.28,
             "size": 2.5
         },
-
-        "death_standard": {
-            "count": 14,
-            "color": [220, 55, 55, 255],
-            "endColor": [180, 30, 30, 0],
-            "speed": 90, "speedVariance": 30,
-            "spread": 360,
-            "lifetime": 0.4,
-            "size": 4.5
-        },
         "death_small": {
-            "count": 8,
-            "color": [200, 50, 50, 255],
-            "endColor": [150, 20, 20, 0],
+            "count": 80,
+            "color": [220, 55, 55, 255],
+            "endColor": [160, 20, 20, 0],
             "speed": 70, "speedVariance": 25,
             "spread": 360,
             "lifetime": 0.25,
             "size": 3.0
         },
-        "death_tank": {
-            "count": 18,
-            "color": [200, 45, 45, 255],
-            "endColor": [140, 20, 20, 0],
-            "speed": 80, "speedVariance": 30,
-            "spread": 360,
-            "lifetime": 0.5,
-            "size": 5.5
-        },
-        "death_brute": {
-            "count": 20,
-            "color": [170, 170, 170, 255],
-            "endColor": [80, 80, 80, 0],
-            "speed": 70, "speedVariance": 25,
-            "spread": 360,
-            "lifetime": 0.55,
-            "size": 6.0
-        },
-        "death_boss": {
-            "count": 30,
-            "color": [220, 55, 55, 255],
-            "endColor": [180, 20, 20, 0],
-            "speed": 110, "speedVariance": 40,
-            "spread": 360,
-            "lifetime": 0.65,
-            "size": 7.0
-        },
-        "death_frost": {
-            "count": 12,
-            "color": [160, 230, 255, 255],
-            "endColor": [80, 160, 220, 0],
-            "speed": 60, "speedVariance": 20,
-            "spread": 360,
-            "lifetime": 0.45,
-            "size": 4.0
-        },
-        "death_shielded": {
+        "death_medium": {
             "count": 14,
-            "color": [80, 150, 255, 255],
-            "endColor": [40, 80, 200, 0],
+            "color": [220, 55, 55, 255],
+            "endColor": [160, 20, 20, 0],
             "speed": 90, "speedVariance": 30,
             "spread": 360,
             "lifetime": 0.4,
             "size": 4.5
         },
-        "death_swarm": {
-            "count": 10,
+        "death_large": {
+            "count": 24,
             "color": [220, 55, 55, 255],
-            "endColor": [180, 30, 30, 0],
-            "speed": 75, "speedVariance": 25,
+            "endColor": [160, 20, 20, 0],
+            "speed": 110, "speedVariance": 40,
             "spread": 360,
-            "lifetime": 0.35,
-            "size": 4.0
-        },
-        "death_cinder": {
-            "count": 14,
-            "color": [255, 155, 40, 255],
-            "endColor": [200, 70, 0, 0],
-            "speed": 85, "speedVariance": 30,
-            "spread": 360,
-            "lifetime": 0.45,
-            "size": 4.5
+            "lifetime": 0.6,
+            "size": 6.0
         }
     }
 }

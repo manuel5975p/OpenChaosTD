@@ -15,9 +15,6 @@ struct VfxEffect {
     float m_duration = 0.0f;
     float m_maxDuration = 0.0f;
 
-    EmitterDesc m_trailDesc;
-    float m_trailAccumulator = 0.0f;
-
     float Progress() const {
         return (m_maxDuration > 0.0f) ? m_duration / m_maxDuration : 0.0f;
     }
