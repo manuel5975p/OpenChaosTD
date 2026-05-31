@@ -151,6 +151,13 @@
                 "impact": "gambler_impact",
                 "critImpact": "gambler_crit"
             }
+        },
+        {
+            "name": "wall",
+            "description": "Blocks enemy paths. Cannot attack.",
+            "texture": "tower_wall",
+            "cost": 30,
+            "role": "Wall"
         }
     ]
 }

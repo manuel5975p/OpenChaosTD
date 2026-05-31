@@ -15,24 +15,26 @@ void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles
         for (auto& mod : tower.m_modules)
             mod->ContributeTower(tower.m_stats);
 
+        if (tower.m_role == TowerRole::Wall) continue;
+
         tower.m_cooldown -= dt;
-        tower.m_attackFlash = std::max(0.0f, tower.m_attackFlash - dt);
+        tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_stats.attackDuration);
 
         if (tower.m_cooldown > 0.0f) continue;
 
-        tower.m_currentTargetKeys = FindTargets(tower, gameData.enemies, tower.m_stats.targetCount);
+        std::vector<DenseSlotMap<Enemy>::Key> targetKeys = FindTargets(tower, gameData.enemies, tower.m_stats.targetCount);
 
-        if (tower.m_currentTargetKeys.empty()) {
+        if (targetKeys.empty()) {
             tower.m_cooldown = 0.05f;
             continue;
         }
 
-        tower.m_cooldown    = 1.0f / tower.m_stats.fireRate;
-        tower.m_attackFlash = tower.m_stats.attackDuration;
+        tower.m_cooldown         = 1.0f / tower.m_stats.fireRate;
+        tower.m_attackFlashRatio = 1.0f;
 
         std::vector<Vector2> targetPositions;
-        targetPositions.reserve(tower.m_currentTargetKeys.size());
-        for (auto& key : tower.m_currentTargetKeys) {
+        targetPositions.reserve(targetKeys.size());
+        for (auto& key : targetKeys) {
             if (Enemy* e = gameData.enemies.Get(key))
                 targetPositions.push_back(e->m_position);
         }
@@ -40,7 +42,7 @@ void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles
         // Damage payload
         AttackPayload payload;
         payload.m_ttl = tower.m_stats.attackDuration;
-        payload.m_targetKeys = tower.m_currentTargetKeys;
+        payload.m_targetKeys = targetKeys;
         BuildPayload(tower, payload);
 
         payload.m_impactDesc = tower.m_vfx.impactDesc;

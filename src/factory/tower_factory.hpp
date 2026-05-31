@@ -29,11 +29,12 @@ private:
         std::string description;
         std::string texture;
         int cost = 100;
-        float fireRate = 1.0f;
-        float attackDuration = 0.15f;
-        float radius = 64.0f;
-        int targetCount = 1;
+        float fireRate = 0.0f;
+        float attackDuration = 0.0f;
+        float radius = 0.0f;
+        int targetCount = 0;
         TargetingMode targetingMode = TargetingMode::First;
+        TowerRole role = TowerRole::Shooter;
         std::vector<nlohmann::json> modules;
         TowerVfxDesc vfx;
     };

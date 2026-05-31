@@ -11,12 +11,15 @@
 #include <world/tower_stats.hpp>
 #include <world/tower_vfx.hpp>
 
+enum class TowerRole { Shooter, Wall };
+
 class Tower {
 public:
     std::string m_name;
     std::string m_description;
     std::string m_texture;
     Vector2 m_position;
+    TowerRole m_role = TowerRole::Shooter;
 
     int m_cost = 0;
 
@@ -25,9 +28,8 @@ public:
 
     TowerVfxDesc m_vfx; // set by factory, never modified at runtime
 
-    float m_cooldown    = 0.0f;
-    float m_attackFlash = 0.0f;
-    std::vector<DenseSlotMap<Enemy>::Key> m_currentTargetKeys;
+    float m_cooldown         = 0.0f;
+    float m_attackFlashRatio = 0.0f;
     std::vector<std::unique_ptr<TowerModule>> m_modules;
 
     void AddModule(std::unique_ptr<TowerModule> mod) {

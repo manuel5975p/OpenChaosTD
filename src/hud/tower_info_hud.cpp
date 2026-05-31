@@ -49,9 +49,11 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
 
     m_descLines = WrapText(tower.m_description, m_panelW - m_margin * 2.0f, m_fontDesc);
 
+    // Walls have no combat stats to display
+    int statRows = (tower.m_role == TowerRole::Shooter) ? 3 + moduleRows : 0;
     float panelH = m_margin + m_headerH
         + static_cast<float>(m_descLines.size()) * m_descLineH
-        + (3 + moduleRows) * m_lineH
+        + statRows * m_lineH
         + (m_showSell ? m_sellGap + m_sellH : 0.0f) + m_margin;
 
     // Anchor above the screen point, then clamp so the panel stays on-screen
@@ -95,18 +97,19 @@ void TowerInfoHUD::OnDraw(Game& /*game*/) {
         y += m_descLineH;
     }
 
-    // Core stats
-    DrawText(TextFormat("Range:   %.0f",   tower.m_stats.radius),       static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-    DrawText(TextFormat("Rate:    %.1f/s", tower.m_stats.fireRate),     static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-    DrawText(TextFormat("Targets: %d",     tower.m_stats.targetCount),  static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+    // Core stats — skipped for walls, which have no combat function
+    if (tower.m_role == TowerRole::Shooter) {
+        DrawText(TextFormat("Range:   %.0f",   tower.m_stats.radius),      static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+        DrawText(TextFormat("Rate:    %.1f/s", tower.m_stats.fireRate),    static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+        DrawText(TextFormat("Targets: %d",     tower.m_stats.targetCount), static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
 
-    // Module-derived stats
-    for (const auto& mod : tower.m_modules) {
-        std::string text; Color color;
-        mod->Describe(text, color);
-        if (text.empty()) continue;
-        DrawText(text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, color);
-        y += m_lineH;
+        for (const auto& mod : tower.m_modules) {
+            std::string text; Color color;
+            mod->Describe(text, color);
+            if (text.empty()) continue;
+            DrawText(text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, color);
+            y += m_lineH;
+        }
     }
 
     if (m_showSell) {

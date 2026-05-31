@@ -5,6 +5,11 @@
 
 using json = nlohmann::json;
 
+static TowerRole ParseTowerRole(const std::string& s) {
+    if (s == "Wall") return TowerRole::Wall;
+    return TowerRole::Shooter;
+}
+
 static TargetingMode ParseTargetingMode(const std::string& s) {
     if (s == "Last") return TargetingMode::Last;
     if (s == "MostHealth") return TargetingMode::MostHealth;
@@ -54,11 +59,12 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         tmpl.description    = entry.value("description", "");
         tmpl.texture        = entry.value("texture", "");
         tmpl.cost           = entry.value("cost", 100);
-        tmpl.fireRate       = entry.value("fireRate", 1.0f);
-        tmpl.attackDuration = entry.value("attackDuration", 0.15f);
-        tmpl.radius         = entry.value("radius", 64.0f);
-        tmpl.targetCount    = entry.value("targetCount", 1);
+        tmpl.fireRate       = entry.value("fireRate", 0.0f);
+        tmpl.attackDuration = entry.value("attackDuration", 0.0f);
+        tmpl.radius         = entry.value("radius", 0.0f);
+        tmpl.targetCount    = entry.value("targetCount", 0);
         tmpl.targetingMode  = ParseTargetingMode(entry.value("targetingMode", "First"));
+        tmpl.role           = ParseTowerRole(entry.value("role", "Shooter"));
 
         if (entry.contains("modules")) {
             for (auto& mod : entry["modules"])
@@ -98,6 +104,7 @@ Tower TowerFactory::Create(const std::string& name) const {
     tower.m_description = tmpl.description;
     tower.m_texture     = tmpl.texture;
     tower.m_cost        = tmpl.cost;
+    tower.m_role        = tmpl.role;
     tower.m_base.radius         = tmpl.radius;
     tower.m_base.fireRate       = tmpl.fireRate;
     tower.m_base.attackDuration = tmpl.attackDuration;
