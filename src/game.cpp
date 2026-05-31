@@ -25,6 +25,8 @@ Game::Game() {
     m_enemyFactory.Load(m_jsonStore, m_emitterPresets);
 
     LoadResources();
+    m_soundSystem.SetMusicVolume(m_gameConfig.musicVolume);
+    m_soundSystem.SetSfxVolume(m_gameConfig.sfxVolume);
     m_input.Load(m_jsonStore);
 
     // Init initial state

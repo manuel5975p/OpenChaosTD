@@ -1,6 +1,13 @@
 {
     "towers": [
         {
+            "name": "wall",
+            "description": "Blocks enemy paths. Cannot attack.",
+            "texture": "tower_wall",
+            "cost": 25,
+            "role": "Wall"
+        },
+        {
             "name": "zapper",
             "description": "Fast attack, low damage. Good against swarms.",
             "texture": "tower_zapper",
@@ -14,7 +21,7 @@
                 { "type": "FlatDamage", "damage": 1.5 }
             ],
             "vfx": {
-                "style": "Zap",
+                "style": "Line",
                 "color": [120, 200, 255, 255],
                 "muzzle": "zapper_muzzle",
                 "impact": "zapper_impact"
@@ -46,7 +53,7 @@
             "name": "sniper",
             "description": "Extreme range, high burst damage. Targets the toughest enemy.",
             "texture": "tower_sniper",
-            "cost": 150,
+            "cost": 175,
             "fireRate": 0.5,
             "attackDuration": 0.4,
             "radius": 128,
@@ -57,7 +64,7 @@
                 { "type": "Crit", "critChance": 0.20, "critMultiplier": 4.0 }
             ],
             "vfx": {
-                "style": "Burst",
+                "style": "Line",
                 "color": [240, 240, 255, 255],
                 "muzzle": "sniper_muzzle",
                 "impact": "sniper_impact",
@@ -68,7 +75,7 @@
             "name": "flamer",
             "description": "Short range. Ignites all nearby enemies, dealing damage over time.",
             "texture": "tower_flamer",
-            "cost": 110,
+            "cost": 125,
             "fireRate": 1.2,
             "attackDuration": 0.25,
             "radius": 48,
@@ -90,7 +97,7 @@
             "name": "piercer",
             "description": "Punches through armor. Seeks out the most armored enemy.",
             "texture": "tower_piercer",
-            "cost": 125,
+            "cost": 150,
             "fireRate": 1.0,
             "attackDuration": 0.15,
             "radius": 64,
@@ -101,63 +108,11 @@
                 { "type": "ArmorPiercing", "pierce": 5.0 }
             ],
             "vfx": {
-                "style": "Beam",
+                "style": "Line",
                 "color": [210, 220, 230, 255],
                 "muzzle": "piercer_muzzle",
                 "impact": "piercer_impact"
             }
-        },
-        {
-            "name": "hexer",
-            "description": "Curses all nearby enemies, slowing and stripping armor from the entire group.",
-            "texture": "tower_hexer",
-            "cost": 130,
-            "fireRate": 0.7,
-            "attackDuration": 0.3,
-            "radius": 96,
-            "targetCount": 0,
-            "targetingMode": "First",
-            "modules": [
-                { "type": "FlatDamage",    "damage": 0.3 },
-                { "type": "Slow",          "factor": 0.1, "duration": 2.0 },
-                { "type": "ArmorPiercing", "pierce": 1.5 }
-            ],
-            "vfx": {
-                "style": "Ring",
-                "color": [170, 60, 240, 255],
-                "muzzle": "hexer_muzzle",
-                "trail": { "preset": "hexer_trail", "rate": 20 },
-                "impact": "hexer_impact"
-            }
-        },
-        {
-            "name": "gambler",
-            "description": "Low base damage, but lucky shots hit extremely hard.",
-            "texture": "tower_gambler",
-            "cost": 110,
-            "fireRate": 1.2,
-            "attackDuration": 0.15,
-            "radius": 96,
-            "targetCount": 1,
-            "targetingMode": "First",
-            "modules": [
-                { "type": "FlatDamage", "damage": 2.0 },
-                { "type": "Crit", "critChance": 0.35, "critMultiplier": 4.0 }
-            ],
-            "vfx": {
-                "style": "Zap",
-                "color": [255, 220, 50, 255],
-                "muzzle": "gambler_muzzle",
-                "impact": "gambler_impact",
-                "critImpact": "gambler_crit"
-            }
-        },
-        {
-            "name": "wall",
-            "description": "Blocks enemy paths. Cannot attack.",
-            "texture": "tower_wall",
-            "cost": 30,
-            "role": "Wall"
         }
     ]
 }

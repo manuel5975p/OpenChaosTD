@@ -113,24 +113,9 @@ void RenderSystem::DrawVfx(const std::vector<VfxEffect>& vfx) {
         float t = v.Progress();
 
         switch (v.m_style) {
-            case VfxStyle::Beam:
-                // Double layer: wide soft outer + thin bright inner gives perceived glow
-                for (const auto& target : v.m_targetPositions) {
-                    DrawLineEx(v.m_origin, target, 4.0f, ColorAlpha(v.m_color, t * 0.4f));
-                    DrawLineEx(v.m_origin, target, 2.0f, ColorAlpha(v.m_color, t * 0.9f));
-                }
-                break;
-            case VfxStyle::Zap:
+            case VfxStyle::Line:
                 for (const auto& target : v.m_targetPositions)
                     DrawLineEx(v.m_origin, target, 1.5f, ColorAlpha(v.m_color, t));
-                break;
-            case VfxStyle::Burst:
-                // Circle expands outward as it fades — no line drawn
-                for (const auto& target : v.m_targetPositions) {
-                    float r = (1.0f - t) * 18.0f;
-                    DrawCircleV(target, r, ColorAlpha(v.m_color, t * 0.8f));
-                    DrawCircleLinesV(target, r, ColorAlpha(v.m_color, t));
-                }
                 break;
             case VfxStyle::Ring:
                 // Ring expands from tower outward to full radius

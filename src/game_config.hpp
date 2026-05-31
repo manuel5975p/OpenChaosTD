@@ -10,6 +10,8 @@ struct GameConfig {
     int fps = 120;
     float hudScale = 1.0f;
     std::string title = "OpenChaos TD";
+    float musicVolume = 1.0f;
+    float sfxVolume = 1.0f;
 
     void Load(JsonStore& jsonio);
     void ApplyIcon();

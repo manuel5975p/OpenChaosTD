@@ -3,5 +3,7 @@
     "gameHeight": 1200,
     "fps": 120,
     "hudScale": 1.75,
-    "title": "OpenChaos TD"
+    "title": "OpenChaos TD",
+    "musicVolume": 1.0,
+    "sfxVolume": 1.0
 }

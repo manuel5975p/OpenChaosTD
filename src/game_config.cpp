@@ -12,6 +12,8 @@ void GameConfig::Load(JsonStore& jsonio) {
     if (j.contains("fps")) fps = j["fps"].get<int>();
     if (j.contains("hudScale")) hudScale = j["hudScale"].get<float>();
     if (j.contains("title")) title = j["title"].get<std::string>();
+    if (j.contains("musicVolume")) musicVolume = j["musicVolume"].get<float>();
+    if (j.contains("sfxVolume")) sfxVolume = j["sfxVolume"].get<float>();
 }
 
 void GameConfig::ApplyIcon() {

@@ -30,10 +30,8 @@ static Color ParseColor(const json& j) {
 }
 
 static VfxStyle ParseVfxStyle(const std::string& s) {
-    if (s == "Burst") return VfxStyle::Burst;
-    if (s == "Ring")  return VfxStyle::Ring;
-    if (s == "Zap")   return VfxStyle::Zap;
-    return VfxStyle::Beam;
+    if (s == "Ring") return VfxStyle::Ring;
+    return VfxStyle::Line;
 }
 
 void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
@@ -73,7 +71,7 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
 
         if (entry.contains("vfx")) {
             const auto& vj = entry["vfx"];
-            tmpl.vfx.style = ParseVfxStyle(vj.value("style", "Beam"));
+            tmpl.vfx.style = ParseVfxStyle(vj.value("style", "Line"));
             if (vj.contains("color"))      tmpl.vfx.color = ParseColor(vj["color"]);
             if (vj.contains("muzzle"))     tmpl.vfx.muzzleDesc = presets.Get(vj["muzzle"]);
             if (vj.contains("impact"))     tmpl.vfx.impactDesc = presets.Get(vj["impact"]);
