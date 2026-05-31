@@ -2,10 +2,10 @@
 #include <engine/util/json_store.hpp>
 
 void GameData::Load(JsonStore& jsonio) {
-    if (!jsonio.Exists("config/gameplay.json"))
+    if (!jsonio.Exists("data/gameplay.json"))
         return;
 
-    auto j = jsonio.Load("config/gameplay.json");
+    auto j = jsonio.Load("data/gameplay.json");
     if (j.contains("startingLives")) startingLives = j["startingLives"].get<int>();
     if (j.contains("startingGold")) startingGold = j["startingGold"].get<int>();
     if (j.contains("sellRefundRate")) sellRefundRate = j["sellRefundRate"].get<float>();

@@ -18,7 +18,7 @@ void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     m_builders["Shield"]       = [](const json& j){ return std::make_unique<ShieldModule>(j.value("amount", 0.0f)); };
     m_builders["Split"]        = [](const json& j){ return std::make_unique<SplitModule>(j.value("child", ""), j.value("count", 0)); };
 
-    auto data = jsonio.Load("config/enemies.json");
+    auto data = jsonio.Load("data/enemies.json");
     if (data.is_null() || !data.contains("enemies")) {
         std::cerr << "EnemyFactory: failed to load enemies data\n";
         return;

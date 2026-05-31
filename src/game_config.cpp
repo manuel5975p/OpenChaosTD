@@ -3,10 +3,10 @@
 #include <raylib.h>
 
 void GameConfig::Load(JsonStore& jsonio) {
-    if (!jsonio.Exists("config/config.json"))
+    if (!jsonio.Exists("config/settings.json"))
         return;
 
-    auto j = jsonio.Load("config/config.json");
+    auto j = jsonio.Load("config/settings.json");
     if (j.contains("gameWidth")) gameWidth = j["gameWidth"].get<int>();
     if (j.contains("gameHeight")) gameHeight = j["gameHeight"].get<int>();
     if (j.contains("fps")) fps = j["fps"].get<int>();
