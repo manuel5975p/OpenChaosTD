@@ -56,15 +56,6 @@
             "lifetime": 0.35,
             "size": 4.0
         },
-        "sniper_crit": {
-            "count": 26,
-            "color": [255, 255, 200, 255],
-            "endColor": [220, 200, 100, 0],
-            "speed": 130, "speedVariance": 45,
-            "spread": 360,
-            "lifetime": 0.5,
-            "size": 5.5
-        },
         "flamer_muzzle": {
             "count": 10,
             "color": [255, 160, 40, 255],
@@ -129,7 +120,7 @@
             "lifetime": 0.15,
             "size": 3.0
         },
-        "gambler_crit": {
+        "crit_impact": {
             "count": 22,
             "color": [255, 200, 0, 255],
             "endColor": [220, 150, 0, 0],
@@ -138,7 +129,6 @@
             "lifetime": 0.45,
             "size": 5.0
         },
-
         "ice_drift": {
             "count": 1,
             "color": [160, 220, 255, 180],
@@ -148,7 +138,6 @@
             "lifetime": 0.35,
             "size": 2.0
         },
-
         "slow_effect": {
             "count": 1,
             "color": [160, 220, 255, 180],
@@ -249,35 +238,6 @@
             "spread": 360,
             "lifetime": 0.45,
             "size": 4.5
-        },
-
-        "hexer_muzzle": {
-            "count": 8,
-            "color": [190, 80, 255, 255],
-            "endColor": [120, 30, 200, 0],
-            "angle": 270,
-            "spread": 92,
-            "speed": 25, "speedVariance": 10,
-            "lifetime": 0.25,
-            "size": 2.5
-        },
-        "hexer_trail": {
-            "count": 1,
-            "color": [160, 60, 240, 180],
-            "endColor": [90, 15, 170, 0],
-            "speed": 12, "speedVariance": 5,
-            "spread": 360,
-            "lifetime": 0.3,
-            "size": 2.0
-        },
-        "hexer_impact": {
-            "count": 5,
-            "color": [150, 55, 230, 255],
-            "endColor": [80, 10, 160, 0],
-            "speed": 40, "speedVariance": 15,
-            "spread": 360,
-            "lifetime": 0.18,
-            "size": 2.5
         }
     }
 }

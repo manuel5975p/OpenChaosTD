@@ -16,8 +16,10 @@ struct AttackPayload {
     bool m_wasCrit = false;
     std::vector<Effect> m_effects;
 
-    EmitterDesc m_impactDesc;
-    EmitterDesc m_critImpactDesc;   // used on crit when count > 0, else m_impactDesc
+    std::vector<EmitterDesc> m_impactDescs;
+    std::vector<EmitterDesc> m_critImpactDescs;  // emitted in addition to m_impactDescs on crit
+
+    EmitterDesc m_trailDesc;
 
     float m_delay = 0.0f;
     bool m_resolved = false;

@@ -18,13 +18,12 @@
             "targetCount": 2,
             "targetingMode": "First",
             "modules": [
-                { "type": "FlatDamage", "damage": 1.5 }
+                { "type": "FlatDamage", "damage": 1.5, "impact": "zapper_impact" }
             ],
             "vfx": {
                 "style": "Line",
                 "color": [120, 200, 255, 255],
-                "muzzle": "zapper_muzzle",
-                "impact": "zapper_impact"
+                "muzzle": "zapper_muzzle"
             }
         },
         {
@@ -38,15 +37,13 @@
             "targetCount": 0,
             "targetingMode": "First",
             "modules": [
-                { "type": "FlatDamage", "damage": 0.5 },
-                { "type": "Slow", "factor": 0.5, "duration": 2.0 }
+                { "type": "FlatDamage", "damage": 0.5, "impact": "freezer_impact" },
+                { "type": "Slow", "factor": 0.5, "duration": 2.0, "effect": "slow_effect", "trail": "ice_drift" }
             ],
             "vfx": {
                 "style": "Ring",
                 "color": [80, 190, 255, 255],
-                "muzzle": "freezer_muzzle",
-                "trail": { "preset": "ice_drift", "rate": 25 },
-                "impact": "freezer_impact"
+                "muzzle": "freezer_muzzle"
             }
         },
         {
@@ -60,15 +57,13 @@
             "targetCount": 1,
             "targetingMode": "MostHealth",
             "modules": [
-                { "type": "FlatDamage", "damage": 10.0 },
-                { "type": "Crit", "critChance": 0.20, "critMultiplier": 4.0 }
+                { "type": "FlatDamage", "damage": 10.0, "impact": "sniper_impact" },
+                { "type": "Crit", "critChance": 0.20, "critMultiplier": 4.0, "critImpact": "crit_impact" }
             ],
             "vfx": {
                 "style": "Line",
                 "color": [240, 240, 255, 255],
-                "muzzle": "sniper_muzzle",
-                "impact": "sniper_impact",
-                "critImpact": "sniper_crit"
+                "muzzle": "sniper_muzzle"
             }
         },
         {
@@ -82,15 +77,13 @@
             "targetCount": 0,
             "targetingMode": "First",
             "modules": [
-                { "type": "FlatDamage", "damage": 0.5 },
-                { "type": "Burn", "damage": 2.0, "duration": 3.0 }
+                { "type": "FlatDamage", "damage": 0.5, "impact": "flamer_impact" },
+                { "type": "Burn", "damage": 2.0, "duration": 3.0, "effect": "burn_effect", "trail": "flamer_ember" }
             ],
             "vfx": {
                 "style": "Ring",
                 "color": [255, 100, 20, 255],
-                "muzzle": "flamer_muzzle",
-                "trail": { "preset": "flamer_ember", "rate": 35 },
-                "impact": "flamer_impact"
+                "muzzle": "flamer_muzzle"
             }
         },
         {
@@ -104,14 +97,13 @@
             "targetCount": 1,
             "targetingMode": "MostArmor",
             "modules": [
-                { "type": "FlatDamage", "damage": 4.0 },
+                { "type": "FlatDamage", "damage": 4.0, "impact": "piercer_impact" },
                 { "type": "ArmorPiercing", "pierce": 5.0 }
             ],
             "vfx": {
                 "style": "Line",
                 "color": [210, 220, 230, 255],
-                "muzzle": "piercer_muzzle",
-                "impact": "piercer_impact"
+                "muzzle": "piercer_muzzle"
             }
         }
     ]

@@ -35,15 +35,31 @@ static VfxStyle ParseVfxStyle(const std::string& s) {
 }
 
 void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
-    // Resolve fixed effect visuals once; capture by value into the builder lambdas
-    EmitterDesc slowDesc = presets.Get("slow_effect");
-    EmitterDesc burnDesc = presets.Get("burn_effect");
+    m_presets = &presets;
 
-    m_builders["FlatDamage"]    = [](const json& j){ return std::make_unique<FlatDamageModule>(j.value("damage", 0.0f)); };
-    m_builders["Slow"]          = [slowDesc](const json& j){ return std::make_unique<SlowModule>(j.value("factor", 1.0f), j.value("duration", 0.0f), slowDesc); };
-    m_builders["Burn"]          = [burnDesc](const json& j){ return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), burnDesc); };
+    m_builders["FlatDamage"] = [this](const json& j){
+        EmitterDesc impact;
+        if (j.contains("impact")) impact = m_presets->Get(j["impact"].get<std::string>());
+        return std::make_unique<FlatDamageModule>(j.value("damage", 0.0f), std::move(impact));
+    };
+    m_builders["Slow"] = [this](const json& j){
+        EmitterDesc effect, trail;
+        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
+        if (j.contains("trail"))  trail  = m_presets->Get(j["trail"].get<std::string>());
+        return std::make_unique<SlowModule>(j.value("factor", 1.0f), j.value("duration", 0.0f), std::move(effect), std::move(trail));
+    };
+    m_builders["Burn"] = [this](const json& j){
+        EmitterDesc effect, trail;
+        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
+        if (j.contains("trail"))  trail  = m_presets->Get(j["trail"].get<std::string>());
+        return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), std::move(effect), std::move(trail));
+    };
     m_builders["ArmorPiercing"] = [](const json& j){ return std::make_unique<ArmorPiercingModule>(j.value("pierce", 0.0f)); };
-    m_builders["Crit"]          = [](const json& j){ return std::make_unique<CritModule>(j.value("critChance", 0.0f), j.value("critMultiplier", 2.0f)); };
+    m_builders["Crit"]          = [this](const json& j){
+        EmitterDesc critImpact;
+        if (j.contains("critImpact")) critImpact = m_presets->Get(j["critImpact"].get<std::string>());
+        return std::make_unique<CritModule>(j.value("critChance", 0.0f), j.value("critMultiplier", 2.0f), std::move(critImpact));
+    };
 
     auto data = jsonio.Load("data/towers.json");
     if (data.is_null() || !data.contains("towers")) {
@@ -72,16 +88,8 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         if (entry.contains("vfx")) {
             const auto& vj = entry["vfx"];
             tmpl.vfx.style = ParseVfxStyle(vj.value("style", "Line"));
-            if (vj.contains("color"))      tmpl.vfx.color = ParseColor(vj["color"]);
-            if (vj.contains("muzzle"))     tmpl.vfx.muzzleDesc = presets.Get(vj["muzzle"]);
-            if (vj.contains("impact"))     tmpl.vfx.impactDesc = presets.Get(vj["impact"]);
-            if (vj.contains("critImpact")) tmpl.vfx.critImpactDesc = presets.Get(vj["critImpact"]);
-            if (vj.contains("trail")) {
-                const auto& tj = vj["trail"];
-                tmpl.vfx.trailRate = tj.value("rate", 0.0f);
-                if (tj.contains("preset"))
-                    tmpl.vfx.trailDesc = presets.Get(tj["preset"]);
-            }
+            if (vj.contains("color"))  tmpl.vfx.color = ParseColor(vj["color"]);
+            if (vj.contains("muzzle")) tmpl.vfx.muzzleDesc = presets.Get(vj["muzzle"]);
         }
 
         std::string name = tmpl.name;

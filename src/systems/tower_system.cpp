@@ -7,6 +7,8 @@
 #include <world/tower.hpp>
 #include <world/enemy_modules.hpp>
 
+static constexpr float TrailEmitRate = 25.0f;
+
 
 void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles){
     for (Tower& tower : gameData.towers) {
@@ -45,9 +47,6 @@ void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles
         payload.m_targetKeys = targetKeys;
         BuildPayload(tower, payload);
 
-        payload.m_impactDesc = tower.m_vfx.impactDesc;
-        payload.m_critImpactDesc = tower.m_vfx.critImpactDesc;
-
         // Visual effect
         VfxEffect vfx;
         vfx.m_origin = tower.m_position;
@@ -57,8 +56,7 @@ void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles
         vfx.m_radius = tower.m_stats.radius;
         vfx.m_color = tower.m_vfx.color;
         vfx.m_style = tower.m_vfx.style;
-        vfx.m_trailDesc = tower.m_vfx.trailDesc;
-        vfx.m_trailRate = tower.m_vfx.trailRate;
+        vfx.m_trailDesc = payload.m_trailDesc;
 
         // Muzzle burst
         if (tower.m_vfx.muzzleDesc.count > 0)
@@ -132,10 +130,13 @@ void TowerSystem::TickPayloads(float dt, GameData& gameData, ParticleSystem& par
             for (auto& effect : payload.m_effects)
                 enemy->AddEffect(effect);
 
-            // Impact particles — use crit desc if this hit critted
-            bool useCrit = crit && payload.m_critImpactDesc.count > 0;
-            particles.Emit(enemy->m_position,
-                useCrit ? payload.m_critImpactDesc : payload.m_impactDesc);
+            // Impact particles — all modules contribute their burst; crit adds extra descs
+            for (auto& desc : payload.m_impactDescs)
+                particles.Emit(enemy->m_position, desc);
+            if (crit) {
+                for (auto& desc : payload.m_critImpactDescs)
+                    particles.Emit(enemy->m_position, desc);
+            }
         }
         payload.m_resolved = true;
     }
@@ -162,8 +163,8 @@ void TowerSystem::TickVfx(float dt, GameData& gameData, ParticleSystem& particle
     for (auto& vfx : gameData.m_vfx) {
         vfx.m_duration -= dt;
 
-        if (vfx.m_trailRate > 0.0f) {
-            vfx.m_trailAccumulator += vfx.m_trailRate * dt;
+        if (vfx.m_trailDesc.count > 0) {
+            vfx.m_trailAccumulator += TrailEmitRate * dt;
             while (vfx.m_trailAccumulator >= 1.0f) {
                 particles.Emit(SampleVfxPoint(vfx), vfx.m_trailDesc);
                 vfx.m_trailAccumulator -= 1.0f;

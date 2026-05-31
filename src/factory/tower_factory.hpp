@@ -39,6 +39,7 @@ private:
         TowerVfxDesc vfx;
     };
 
+    const EmitterPresets* m_presets = nullptr;
     std::unordered_map<std::string, ModuleBuilder> m_builders;
     std::unordered_map<std::string, TowerTemplate> m_templates;
     std::vector<std::string> m_order;
