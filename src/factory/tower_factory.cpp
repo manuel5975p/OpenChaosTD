@@ -71,7 +71,7 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         tmpl.description    = entry.value("description", "");
         tmpl.texture        = entry.value("texture", "");
         tmpl.cost           = entry.value("cost", 100);
-        tmpl.fireRate       = entry.value("fireRate", 0.0f);
+        tmpl.fireRate       = entry.value("shotsPerMinute", 0) / 60.0f;
         tmpl.attackDuration = entry.value("attackDuration", 0.0f);
         tmpl.radius         = entry.value("radius", 0.0f);
         tmpl.targetCount    = entry.value("targetCount", 0);

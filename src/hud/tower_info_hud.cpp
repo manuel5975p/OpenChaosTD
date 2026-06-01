@@ -101,7 +101,7 @@ void TowerInfoHUD::OnDraw(Game& /*game*/) {
     // Core stats — skipped for walls, which have no combat function
     if (tower.m_role == TowerRole::Shooter) {
         DrawText(TextFormat("Range:   %.0f",   tower.m_stats.radius),      static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-        DrawText(TextFormat("Rate:    %.1f/s", tower.m_stats.fireRate),    static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+        DrawText(TextFormat("Rate:    %d/min", static_cast<int>(tower.m_stats.fireRate * 60.0f + 0.5f)), static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
         DrawText(TextFormat("Targets: %d",     tower.m_stats.targetCount), static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
 
         for (const auto& mod : tower.m_modules) {
