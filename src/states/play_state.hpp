@@ -26,6 +26,7 @@ private:
     void HandleHudSignals(Game& game);
     void HandleTowerPlacement(Game& game, Vector2 mouseWorld);
     void SyncHUDState(Game& game);
+    void UpgradeSelectedTower(Game& game);
 
     // Game speed: run the simulation kSpeedSteps[m_speedIndex] times per frame
     void StepSimulation(Game& game, float dt);

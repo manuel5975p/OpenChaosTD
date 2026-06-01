@@ -71,7 +71,7 @@ void PlayingState::StepSimulation(Game& game, float dt) {
     m_enemySystem.FollowPath(dt, game.GetGameData());
 
     m_towerSystem.Update(dt, game.GetGameData(), game.GetParticles());
-    m_towerSystem.TickPayloads(dt, game.GetGameData(), game.GetParticles());
+    m_towerSystem.TickPayloads(game.GetGameData(), game.GetParticles());
     m_towerSystem.TickVfx(dt, game.GetGameData());
     game.GetParticles().Tick(dt);
 
@@ -102,7 +102,7 @@ void PlayingState::Draw(Game& game) {
             float half = game.GetGameData().map.GetTileSize() / 2.0f;
             Vector2 tileCenter = Vector2Add(game.GetGameData().map.TileToWorld(x, y), {half, half});
             Texture2D& tex = game.GetResources().GetTexture(game.GetTowerFactory().GetTexture(name));
-            m_renderSystem.DrawGhostTower(tileCenter, game.GetTowerFactory().GetRadius(name), tex);
+            m_renderSystem.DrawGhostTower(tileCenter, game.GetTowerFactory().GetRange(name), tex);
         }
     }
     m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetResources());
@@ -131,6 +131,13 @@ void PlayingState::HandleHudSignals(Game& game) {
         m_selection.towerKey = DenseSlotMap<Tower>::INVALID_KEY;
     }
 
+    if (m_towerInfoHUD.WasTargetingCycleRequested())
+        if (Tower* tower = game.GetGameData().towers.Get(m_selection.towerKey))
+            tower->m_base.targetingMode = NextTargetingMode(tower->m_base.targetingMode);
+
+    if (m_towerInfoHUD.WasUpgradeRequested())
+        UpgradeSelectedTower(game);
+
     if (m_scoreHUD.WasWaveRequested())
         m_waveManager.StartWave(game.GetGameData());
 
@@ -139,6 +146,26 @@ void PlayingState::HandleHudSignals(Game& game) {
 
     if (m_scoreHUD.WasSpeedToggled())
         CycleSpeed();
+}
+
+void PlayingState::UpgradeSelectedTower(Game& game) {
+    Tower* tower = game.GetGameData().towers.Get(m_selection.towerKey);
+    if (!tower || !tower->m_upgrades) return;
+
+    const auto& ups = *tower->m_upgrades;
+    if (tower->m_level >= static_cast<int>(ups.size())) return; // already max level
+
+    const TowerUpgrade& up = ups[tower->m_level];
+    if (game.GetGameData().gold < up.cost) return;
+
+    game.GetGameData().gold -= up.cost;
+    for (auto& [k, v] : up.adds) ApplyStat(tower->m_base, k, v, false);
+    for (auto& [k, v] : up.muls) ApplyStat(tower->m_base, k, v, true);
+    for (auto& mod : up.addModules)
+        if (auto m = game.GetTowerFactory().BuildModule(mod)) tower->AddModule(std::move(m));
+
+    tower->m_cost += up.cost; // sell refund reflects total invested
+    tower->m_level++;
 }
 
 void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
@@ -184,7 +211,7 @@ void PlayingState::SyncHUDState(Game& game) {
     if (m_selection.towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
         if (Tower* tower = game.GetGameData().towers.Get(m_selection.towerKey)) {
             Vector2 screenPos = GetWorldToScreen2D(tower->m_position, m_renderSystem.GetCamera());
-            m_towerInfoHUD.SetTarget(game, *tower, screenPos, !game.GetGameData().waveActive);
+            m_towerInfoHUD.SetTarget(game, *tower, screenPos, true);
         } else {
             m_towerInfoHUD.Hide();
         }

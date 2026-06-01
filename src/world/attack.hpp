@@ -13,12 +13,10 @@ struct AttackPayload {
     float m_armorPierce = 0.0f;
     float m_critChance = 0.0f;
     float m_critMultiplier = 1.0f;
-    bool m_wasCrit = false;
     std::vector<Effect> m_effects;
 
     std::vector<EmitterDesc> m_impactDescs;
     std::vector<EmitterDesc> m_critImpactDescs;  // emitted in addition to m_impactDescs on crit
 
-    bool m_resolved = false;
-    float m_ttl = 0.0f;  // expires after attackDuration so it outlives the crit roll
+    bool m_resolved = false; // damage applied once; erased the same tick it resolves
 };

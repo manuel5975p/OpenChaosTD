@@ -18,8 +18,11 @@ public:
 
     const std::vector<std::string>& GetNames() const { return m_order; }
     int GetCost(const std::string& name) const;
-    float GetRadius(const std::string& name) const;
+    float GetRange(const std::string& name) const;
     const std::string& GetTexture(const std::string& name) const;
+
+    // Build one effect module from a JSON definition (shared by Create and upgrades).
+    std::unique_ptr<TowerModule> BuildModule(const nlohmann::json& mod) const;
 
 private:
     using ModuleBuilder = std::function<std::unique_ptr<TowerModule>(const nlohmann::json&)>;
@@ -29,14 +32,11 @@ private:
         std::string description;
         std::string texture;
         int cost = 100;
-        float fireRate = 0.0f;
-        float attackDuration = 0.0f;
-        float radius = 0.0f;
-        int targetCount = 0;
-        TargetingMode targetingMode = TargetingMode::First;
         TowerRole role = TowerRole::Shooter;
+        TowerStats stats;
+        TowerVisual visual;
         std::vector<nlohmann::json> modules;
-        TowerVfxDesc vfx;
+        std::vector<TowerUpgrade> upgrades;
     };
 
     const EmitterPresets* m_presets = nullptr;

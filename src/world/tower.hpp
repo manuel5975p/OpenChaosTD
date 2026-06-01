@@ -9,7 +9,8 @@
 #include <world/enemy.hpp>
 #include <world/tower_modules.hpp>
 #include <world/tower_stats.hpp>
-#include <world/tower_vfx.hpp>
+#include <world/tower_visual.hpp>
+#include <world/tower_upgrade.hpp>
 
 enum class TowerRole { Shooter, Wall };
 
@@ -26,11 +27,14 @@ public:
     TowerStats m_base;   // set from JSON, never modified at runtime
     TowerStats m_stats;  // recomputed each tick from base + ContributeTower modules
 
-    TowerVfxDesc m_vfx; // set by factory, never modified at runtime
+    TowerVisual m_visual; // set by factory, never modified at runtime
 
     float m_cooldown         = 0.0f;
     float m_attackFlashRatio = 0.0f;
     std::vector<std::unique_ptr<TowerModule>> m_modules;
+
+    int m_level = 0;
+    const std::vector<TowerUpgrade>* m_upgrades = nullptr; // stable pointer into the factory template
 
     void AddModule(std::unique_ptr<TowerModule> mod) {
         m_modules.push_back(std::move(mod));

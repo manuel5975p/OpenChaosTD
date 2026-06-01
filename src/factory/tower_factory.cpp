@@ -34,14 +34,45 @@ static VfxStyle ParseVfxStyle(const std::string& s) {
     return VfxStyle::Line;
 }
 
+static TowerStats ParseCombat(const json& j) {
+    TowerStats s;
+    s.damage         = j.value("damage", 0.0f);
+    s.shotsPerMinute = j.value("shotsPerMinute", 0.0f);
+    s.range          = j.value("range", 0.0f);
+    s.targetCount    = j.value("targetCount", 0);
+    s.targetingMode  = ParseTargetingMode(j.value("targeting", "First"));
+    s.armorPierce    = j.value("armorPierce", 0.0f);
+    s.critChance     = j.value("critChance", 0.0f);
+    s.critMultiplier = j.value("critMultiplier", 1.0f);
+    return s;
+}
+
+static TowerVisual ParseVisual(const json& j, const EmitterPresets& presets) {
+    TowerVisual v;
+    v.style = ParseVfxStyle(j.value("style", "Line"));
+    v.attackDuration = j.value("attackDuration", 0.0f);
+    if (j.contains("color"))      v.color          = ParseColor(j["color"]);
+    if (j.contains("muzzle"))     v.muzzleDesc     = presets.Get(j["muzzle"].get<std::string>());
+    if (j.contains("impact"))     v.impactDesc     = presets.Get(j["impact"].get<std::string>());
+    if (j.contains("critImpact")) v.critImpactDesc = presets.Get(j["critImpact"].get<std::string>());
+    return v;
+}
+
+static TowerUpgrade ParseUpgrade(const json& j) {
+    TowerUpgrade up;
+    up.cost = j.value("cost", 0);
+    if (j.contains("add"))
+        for (auto& [k, v] : j["add"].items()) up.adds.push_back({k, v.get<float>()});
+    if (j.contains("mul"))
+        for (auto& [k, v] : j["mul"].items()) up.muls.push_back({k, v.get<float>()});
+    if (j.contains("effects"))
+        for (auto& m : j["effects"]) up.addModules.push_back(m);
+    return up;
+}
+
 void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     m_presets = &presets;
 
-    m_builders["FlatDamage"] = [this](const json& j){
-        EmitterDesc impact;
-        if (j.contains("impact")) impact = m_presets->Get(j["impact"].get<std::string>());
-        return std::make_unique<FlatDamageModule>(j.value("damage", 0.0f), std::move(impact));
-    };
     m_builders["Slow"] = [this](const json& j){
         EmitterDesc effect;
         if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
@@ -52,12 +83,6 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
         return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), std::move(effect));
     };
-    m_builders["ArmorPiercing"] = [](const json& j){ return std::make_unique<ArmorPiercingModule>(j.value("pierce", 0.0f)); };
-    m_builders["Crit"]          = [this](const json& j){
-        EmitterDesc critImpact;
-        if (j.contains("critImpact")) critImpact = m_presets->Get(j["critImpact"].get<std::string>());
-        return std::make_unique<CritModule>(j.value("critChance", 0.0f), j.value("critMultiplier", 2.0f), std::move(critImpact));
-    };
 
     auto data = jsonio.Load("data/towers.json");
     if (data.is_null() || !data.contains("towers")) {
@@ -67,34 +92,37 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
 
     for (auto& entry : data["towers"]) {
         TowerTemplate tmpl;
-        tmpl.name           = entry["name"];
-        tmpl.description    = entry.value("description", "");
-        tmpl.texture        = entry.value("texture", "");
-        tmpl.cost           = entry.value("cost", 100);
-        tmpl.fireRate       = entry.value("shotsPerMinute", 0) / 60.0f;
-        tmpl.attackDuration = entry.value("attackDuration", 0.0f);
-        tmpl.radius         = entry.value("radius", 0.0f);
-        tmpl.targetCount    = entry.value("targetCount", 0);
-        tmpl.targetingMode  = ParseTargetingMode(entry.value("targetingMode", "First"));
-        tmpl.role           = ParseTowerRole(entry.value("role", "Shooter"));
+        tmpl.name        = entry["name"];
+        tmpl.description = entry.value("description", "");
+        tmpl.texture     = entry.value("texture", "");
+        tmpl.cost        = entry.value("cost", 100);
+        tmpl.role        = ParseTowerRole(entry.value("role", "Shooter"));
 
-        if (entry.contains("modules")) {
-            for (auto& mod : entry["modules"])
+        if (entry.contains("combat")) tmpl.stats  = ParseCombat(entry["combat"]);
+        if (entry.contains("visual")) tmpl.visual = ParseVisual(entry["visual"], presets);
+
+        if (entry.contains("effects"))
+            for (auto& mod : entry["effects"])
                 tmpl.modules.push_back(mod);
-        }
 
-        if (entry.contains("vfx")) {
-            const auto& vj = entry["vfx"];
-            tmpl.vfx.style = ParseVfxStyle(vj.value("style", "Line"));
-            if (vj.contains("color"))  tmpl.vfx.color = ParseColor(vj["color"]);
-            if (vj.contains("muzzle")) tmpl.vfx.muzzleDesc = presets.Get(vj["muzzle"]);
-        }
+        if (entry.contains("upgrades"))
+            for (auto& up : entry["upgrades"])
+                tmpl.upgrades.push_back(ParseUpgrade(up));
 
         std::string name = tmpl.name;
         m_order.push_back(name);
         m_templates[name] = std::move(tmpl);
         std::cout << "TowerFactory: loaded '" << name << "'\n";
     }
+}
+
+std::unique_ptr<TowerModule> TowerFactory::BuildModule(const json& mod) const {
+    std::string type = mod.value("type", "");
+    auto bit = m_builders.find(type);
+    if (bit != m_builders.end())
+        return bit->second(mod);
+    std::cerr << "TowerFactory: unknown module type '" << type << "'\n";
+    return nullptr;
 }
 
 Tower TowerFactory::Create(const std::string& name) const {
@@ -109,22 +137,14 @@ Tower TowerFactory::Create(const std::string& name) const {
     tower.m_texture     = tmpl.texture;
     tower.m_cost        = tmpl.cost;
     tower.m_role        = tmpl.role;
-    tower.m_base.radius         = tmpl.radius;
-    tower.m_base.fireRate       = tmpl.fireRate;
-    tower.m_base.attackDuration = tmpl.attackDuration;
-    tower.m_base.targetCount   = tmpl.targetCount;
-    tower.m_base.targetingMode = tmpl.targetingMode;
-    tower.m_stats = tower.m_base;
-    tower.m_vfx   = tmpl.vfx;
+    tower.m_base   = tmpl.stats;
+    tower.m_stats  = tower.m_base;
+    tower.m_visual = tmpl.visual;
+    tower.m_upgrades = &tmpl.upgrades; // stable: templates are fixed after Load
 
-    for (auto& mod : tmpl.modules) {
-        std::string type = mod.value("type", "");
-        auto bit = m_builders.find(type);
-        if (bit != m_builders.end())
-            tower.AddModule(bit->second(mod));
-        else
-            std::cerr << "TowerFactory: unknown module type '" << type << "'\n";
-    }
+    for (auto& mod : tmpl.modules)
+        if (auto m = BuildModule(mod))
+            tower.AddModule(std::move(m));
 
     return tower;
 }
@@ -138,9 +158,9 @@ int TowerFactory::GetCost(const std::string& name) const {
     return (it != m_templates.end()) ? it->second.cost : 0;
 }
 
-float TowerFactory::GetRadius(const std::string& name) const {
+float TowerFactory::GetRange(const std::string& name) const {
     auto it = m_templates.find(name);
-    return (it != m_templates.end()) ? it->second.radius : 0.0f;
+    return (it != m_templates.end()) ? it->second.stats.range : 0.0f;
 }
 
 const std::string& TowerFactory::GetTexture(const std::string& name) const {

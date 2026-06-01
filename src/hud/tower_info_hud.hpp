@@ -13,10 +13,13 @@ class TowerInfoHUD : public HUD {
 public:
     void Build(Game& game);
 
-    // Point the panel at a tower, position it near a screen anchor, and show it
-    void SetTarget(Game& game, const Tower& tower, Vector2 screenPos, bool showSell);
+    // Point the panel at a tower, position it near a screen anchor, and show it.
+    // interactive = a real selected tower (shows config buttons) vs a hover preview.
+    void SetTarget(Game& game, const Tower& tower, Vector2 screenPos, bool interactive);
 
     bool WasSellRequested() { return m_sellSignal.Consume(); }
+    bool WasTargetingCycleRequested() { return m_targetSignal.Consume(); }
+    bool WasUpgradeRequested() { return m_upgradeSignal.Consume(); }
 
 protected:
     void OnProcessInput(Game& game) override;
@@ -37,7 +40,14 @@ private:
 
     const Tower* m_target = nullptr;
     Button m_sellBtn;
+    Button m_targetBtn;
+    Button m_upgradeBtn;
     HudSignal m_sellSignal;
+    HudSignal m_targetSignal;
+    HudSignal m_upgradeSignal;
     bool m_showSell = true;
+    bool m_showTargeting = false;
+    bool m_showUpgrade = false;
+    bool m_upgradeReady = false; // affordable and not yet max level
     std::vector<std::string> m_descLines;
 };

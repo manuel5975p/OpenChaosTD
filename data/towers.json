@@ -12,99 +12,133 @@
             "description": "Fast attack, low damage. Good against swarms.",
             "texture": "tower_zapper",
             "cost": 75,
-            "shotsPerMinute": 180,
-            "attackDuration": 0.08,
-            "radius": 64,
-            "targetCount": 2,
-            "targetingMode": "First",
-            "modules": [
-                { "type": "FlatDamage", "damage": 2, "impact": "zapper_impact" }
-            ],
-            "vfx": {
+            "combat": {
+                "damage": 2,
+                "shotsPerMinute": 180,
+                "range": 64,
+                "targetCount": 2,
+                "targeting": "First"
+            },
+            "effects": [],
+            "visual": {
                 "style": "Line",
+                "attackDuration": 0.08,
                 "color": [120, 200, 255, 255],
-                "muzzle": "zapper_muzzle"
-            }
+                "muzzle": "zapper_muzzle",
+                "impact": "zapper_impact"
+            },
+            "upgrades": [
+                { "cost": 60,  "add": { "damage": 1 } },
+                { "cost": 120, "add": { "targetCount": 1 }, "mul": { "shotsPerMinute": 1.2 } }
+            ]
         },
         {
             "name": "freezer",
             "description": "Slows all nearby enemies. Pairs well with high-damage towers.",
             "texture": "tower_freezer",
             "cost": 100,
-            "shotsPerMinute": 48,
-            "attackDuration": 0.3,
-            "radius": 48,
-            "targetCount": 0,
-            "targetingMode": "First",
-            "modules": [
-                { "type": "FlatDamage", "damage": 0.5, "impact": "freezer_impact" },
+            "combat": {
+                "damage": 0.5,
+                "shotsPerMinute": 48,
+                "range": 48,
+                "targetCount": 0,
+                "targeting": "First"
+            },
+            "effects": [
                 { "type": "Slow", "factor": 0.5, "duration": 2.0, "effect": "slow_effect" }
             ],
-            "vfx": {
+            "visual": {
                 "style": "Ring",
+                "attackDuration": 0.3,
                 "color": [80, 190, 255, 255],
-                "muzzle": "freezer_muzzle"
-            }
+                "muzzle": "freezer_muzzle",
+                "impact": "freezer_impact"
+            },
+            "upgrades": [
+                { "cost": 90,  "mul": { "shotsPerMinute": 1.5 } },
+                { "cost": 150, "add": { "range": 16 } }
+            ]
         },
         {
             "name": "sniper",
             "description": "Extreme range, high burst damage. Targets the toughest enemy.",
             "texture": "tower_sniper",
             "cost": 175,
-            "shotsPerMinute": 30,
-            "attackDuration": 0.4,
-            "radius": 128,
-            "targetCount": 1,
-            "targetingMode": "MostHealth",
-            "modules": [
-                { "type": "FlatDamage", "damage": 10.0, "impact": "sniper_impact" },
-                { "type": "Crit", "critChance": 0.20, "critMultiplier": 4.0, "critImpact": "crit_impact" }
-            ],
-            "vfx": {
+            "combat": {
+                "damage": 10,
+                "shotsPerMinute": 30,
+                "range": 128,
+                "targetCount": 1,
+                "targeting": "MostHealth",
+                "critChance": 0.20,
+                "critMultiplier": 4.0
+            },
+            "effects": [],
+            "visual": {
                 "style": "Line",
+                "attackDuration": 0.4,
                 "color": [240, 240, 255, 255],
-                "muzzle": "sniper_muzzle"
-            }
+                "muzzle": "sniper_muzzle",
+                "impact": "sniper_impact",
+                "critImpact": "crit_impact"
+            },
+            "upgrades": [
+                { "cost": 150, "mul": { "damage": 1.5 } },
+                { "cost": 250, "add": { "critChance": 0.15 } }
+            ]
         },
         {
             "name": "flamer",
             "description": "Short range. Ignites all nearby enemies, dealing damage over time.",
             "texture": "tower_flamer",
             "cost": 125,
-            "shotsPerMinute": 90,
-            "attackDuration": 0.25,
-            "radius": 48,
-            "targetCount": 0,
-            "targetingMode": "First",
-            "modules": [
-                { "type": "FlatDamage", "damage": 0.5, "impact": "flamer_impact" },
+            "combat": {
+                "damage": 0.5,
+                "shotsPerMinute": 90,
+                "range": 48,
+                "targetCount": 0,
+                "targeting": "First"
+            },
+            "effects": [
                 { "type": "Burn", "damage": 0.5, "duration": 8.0, "effect": "burn_effect" }
             ],
-            "vfx": {
+            "visual": {
                 "style": "Ring",
+                "attackDuration": 0.25,
                 "color": [255, 100, 20, 255],
-                "muzzle": "flamer_muzzle"
-            }
+                "muzzle": "flamer_muzzle",
+                "impact": "flamer_impact"
+            },
+            "upgrades": [
+                { "cost": 100, "mul": { "shotsPerMinute": 1.4 } },
+                { "cost": 160, "add": { "range": 16, "damage": 0.5 } }
+            ]
         },
         {
             "name": "piercer",
             "description": "Punches through armor. Seeks out the most armored enemy.",
             "texture": "tower_piercer",
             "cost": 150,
-            "shotsPerMinute": 60,
-            "attackDuration": 0.15,
-            "radius": 64,
-            "targetCount": 1,
-            "targetingMode": "MostArmor",
-            "modules": [
-                { "type": "FlatDamage", "damage": 4.0, "impact": "piercer_impact" },
-                { "type": "ArmorPiercing", "pierce": 5.0 }
-            ],
-            "vfx": {
+            "combat": {
+                "damage": 4,
+                "shotsPerMinute": 60,
+                "range": 64,
+                "targetCount": 1,
+                "targeting": "MostArmor",
+                "armorPierce": 5.0
+            },
+            "effects": [],
+            "visual": {
                 "style": "Line",
+                "attackDuration": 0.15,
                 "color": [210, 220, 230, 255],
-                "muzzle": "piercer_muzzle"
-            }
+                "muzzle": "piercer_muzzle",
+                "impact": "piercer_impact"
+            },
+            "upgrades": [
+                { "cost": 120, "add": { "damage": 2, "armorPierce": 3 } },
+                { "cost": 200, "effects": [ { "type": "Burn", "damage": 1, "duration": 4, "effect": "burn_effect" } ] }
+            ]
         }
     ]
 }

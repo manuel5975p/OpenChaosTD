@@ -1,21 +1,7 @@
 #include <world/tower_modules.hpp>
 #include <world/attack.hpp>
 #include <world/effect.hpp>
-#include <algorithm>
 #include <cstdio>
-
-void FlatDamageModule::Contribute(AttackPayload& attack) const {
-    attack.m_damage += m_damage;
-    if (m_impactDesc.count > 0)
-        attack.m_impactDescs.push_back(m_impactDesc);
-}
-
-void FlatDamageModule::Describe(std::string& text, Color& color) const {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Damage:  %g", m_damage);
-    text = buf;
-    color = RAYWHITE;
-}
 
 // --- SlowModule ---
 
@@ -53,34 +39,4 @@ void BurnModule::Describe(std::string& text, Color& color) const {
     snprintf(buf, sizeof(buf), "Burn:    %g/s  %.1fs", m_value, m_duration);
     text = buf;
     color = ORANGE;
-}
-
-// --- ArmorPiercingModule ---
-
-void ArmorPiercingModule::Contribute(AttackPayload& attack) const {
-    attack.m_armorPierce += m_pierce;
-}
-
-void ArmorPiercingModule::Describe(std::string& text, Color& color) const {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Pierce:  %g", m_pierce);
-    text = buf;
-    color = GOLD;
-}
-
-// --- CritModule ---
-
-void CritModule::Contribute(AttackPayload& attack) const {
-    // Keep the strongest values so stacking multiple crit modules is order-independent
-    attack.m_critChance = std::max(attack.m_critChance, m_chance);
-    attack.m_critMultiplier = std::max(attack.m_critMultiplier, m_multiplier);
-    if (m_critImpactDesc.count > 0)
-        attack.m_critImpactDescs.push_back(m_critImpactDesc);
-}
-
-void CritModule::Describe(std::string& text, Color& color) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Crit:    %.0f%%  x%.1f", m_chance * 100.0f, m_multiplier);
-    text = buf;
-    color = YELLOW;
 }
