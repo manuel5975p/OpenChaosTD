@@ -6,6 +6,7 @@
 #include <systems/world_system.hpp>
 #include <systems/enemy_system.hpp>
 #include <systems/tower_system.hpp>
+#include <world/map_generator.hpp>
 #include <hud/tower_build_hud.hpp>
 #include <hud/status_hud.hpp>
 #include <hud/tower_info_hud.hpp>
@@ -25,6 +26,13 @@ private:
     void HandleHudSignals(Game& game);
     void HandleTowerPlacement(Game& game, Vector2 mouseWorld);
     void SyncHUDState(Game& game);
+
+    // Game speed: run the simulation kSpeedSteps[m_speedIndex] times per frame
+    void StepSimulation(Game& game, float dt);
+    void CycleSpeed() { m_speedIndex = (m_speedIndex + 1) % static_cast<int>(sizeof(kSpeedSteps) / sizeof(kSpeedSteps[0])); }
+
+    static constexpr int kSpeedSteps[] = {1, 2, 3};
+    int m_speedIndex = 0;
 
     struct SelectionContext {
         DenseSlotMap<Tower>::Key towerKey = DenseSlotMap<Tower>::INVALID_KEY;
@@ -48,4 +56,5 @@ private:
     TowerSystem m_towerSystem;
     EnemySystem m_enemySystem;
     WaveManager m_waveManager;
+    MapGenerator m_mapGenerator;
 };

@@ -19,6 +19,8 @@ void StatusHUD::Build(Game& game) {
     m_startWaveBtn.m_rect = { w - btnWaveW - margin, btnY, btnWaveW, btnH };
     m_autoBtn.m_label = "Auto";
     m_autoBtn.m_rect = { w - btnWaveW - margin - btnAutoW - margin, btnY, btnAutoW, btnH };
+    m_speedBtn.m_label = "1x";
+    m_speedBtn.m_rect = { w - btnWaveW - margin - (btnAutoW + margin) * 2.0f, btnY, btnAutoW, btnH };
 }
 
 void StatusHUD::OnProcessInput(Game& game) {
@@ -30,10 +32,15 @@ void StatusHUD::OnProcessInput(Game& game) {
 
     m_autoBtn.Update(mousePos, pressed);
     m_startWaveBtn.Update(mousePos, pressed);
+    m_speedBtn.Update(mousePos, pressed);
 
     // Auto toggle is always clickable, even mid-wave
     if (m_autoBtn.IsClicked())
         m_autoSignal.Raise();
+
+    // Speed cycle is always clickable, even mid-wave
+    if (m_speedBtn.IsClicked())
+        m_speedSignal.Raise();
 
     // Start wave only when no wave is running
     if (!data.waveActive && m_startWaveBtn.IsClicked())
@@ -64,6 +71,10 @@ void StatusHUD::OnDraw(Game& game) {
         waveStr = TextFormat("Wave: %d  |  Done", data.waveNumber);
 
     DrawTextCenteredX(waveStr, static_cast<int>(m_panelRect.width / 2.0f), m_textY, fontMain, RAYWHITE);
+
+    // Speed cycle — highlighted when faster than 1x
+    m_speedBtn.Draw(m_speed > 1);
+    m_speedBtn.DrawLabel(fontBtn, m_speed > 1 ? GOLD : RAYWHITE);
 
     // Auto toggle — highlighted when active
     m_autoBtn.Draw(m_autoSpawn);

@@ -12,8 +12,7 @@ void PlayingState::OnEnter(Game& game) {
     game.GetParticles().Clear();
     game.GetSoundSystem().PlayMusic("openchaostd_main");
 
-    m_worldSystem.GenerateMap(game.GetGameData().map, 15, 19);
-    game.GetGameData().map.BuildPathMesh();
+    m_mapGenerator.Generate(game.GetGameData().map, 15, 19, 3, 40);
 
     m_renderSystem.CenterCamera(game.GetGameData().map, game.GetScreen());
 
@@ -31,6 +30,7 @@ void PlayingState::OnExit(Game& game) {
 
 void PlayingState::ProcessInput(Game& game, float dt) {
     if (game.GetInput().IsPressed("Debug")) m_debug = !m_debug;
+    if (game.GetInput().IsPressed("Speed")) CycleSpeed();
     m_renderSystem.ControlCamera(dt, game.GetInput());
 
     // HUDs consume mouse input first so clicks don't bleed through to the world.
@@ -55,8 +55,16 @@ void PlayingState::Update(Game& game, float dt) {
         game.ChangeState(std::make_unique<EndState>(false));
 
     m_scoreHUD.SetAutoSpawn(m_waveManager.IsAutoSpawn());
-    m_eventLog.Update(game, dt);
+    m_scoreHUD.SetSpeed(kSpeedSteps[m_speedIndex]);
+    m_eventLog.Update(game, dt); // HUD fade tracks real time, not game speed
 
+    // Run the simulation once per speed step. Each sub-step uses the real frame dt so per-frame
+    // timing (tower cooldowns, spawn pacing) stays accurate instead of feeding one oversized step.
+    for (int s = 0; s < kSpeedSteps[m_speedIndex] && !m_gameOver && !game.GetGameData().victory; s++)
+        StepSimulation(game, dt);
+}
+
+void PlayingState::StepSimulation(Game& game, float dt) {
     m_waveManager.Update(dt, game.GetGameData(), m_worldSystem, game.GetEnemyFactory());
 
     m_enemySystem.TickEnemies(dt, game.GetGameData(), game.GetParticles());
@@ -128,6 +136,9 @@ void PlayingState::HandleHudSignals(Game& game) {
 
     if (m_scoreHUD.WasAutoToggled())
         m_waveManager.ToggleAutoSpawn();
+
+    if (m_scoreHUD.WasSpeedToggled())
+        CycleSpeed();
 }
 
 void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {

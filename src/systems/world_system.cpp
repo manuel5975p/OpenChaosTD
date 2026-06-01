@@ -68,30 +68,6 @@ void WorldSystem::RemoveEnemy(DenseSlotMap<Enemy>::Key key, GameData& gameData){
     gameData.enemies.Erase(key);
 }
 
-void WorldSystem::GenerateMap(Map& map, int x, int y){
-    map.Create(x, y);
-
-    int xmid = (map.GetCols() -1) /2;
-    int ymid = (map.GetRows() -1) /2;
-    for(int col=0; col < map.GetCols(); col++) {
-        for(int row=0; row < map.GetRows(); row++) {
-
-            if(row == 1 && col == xmid) map.AddNest(col, row);
-            if(row == 1 && col == 1) map.AddNest(col, row);
-            if(row == 1 && col == map.GetCols()-2) map.AddNest(col, row);
-
-            if(row == map.GetRows() -2 && col == xmid) map.SetCore(col, row);
-
-            Tile rockTile;
-            rockTile.m_type = TileType::Rock;
-            rockTile.m_buildable = false;
-            rockTile.m_walkable = false;
-
-            if(row == ymid && col < map.GetCols() -3) map.Get(col, row) = std::move(rockTile);
-        }
-    }
-}
-
 void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
     std::vector<DenseSlotMap<Enemy>::Key> enemyErase;
     for (auto& enemy: gameData.enemies) {

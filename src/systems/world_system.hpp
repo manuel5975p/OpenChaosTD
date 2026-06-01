@@ -14,7 +14,6 @@ public:
 
     void CheckEnemyReachedCore(GameData& gameData);
     void CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory, ParticleSystem& particles);
-    void GenerateMap(Map& map, int x, int y);
     void CheckGameOver(bool& gameOver, GameData& gameData);
 
 private:
