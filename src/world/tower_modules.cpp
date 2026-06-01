@@ -22,6 +22,12 @@ void SlowModule::Describe(std::string& text, Color& color) const {
     color = SKYBLUE;
 }
 
+void SlowModule::PatchStat(const std::string& key, float v, bool mul) {
+    auto apply = [&](float& f) { f = mul ? f * v : f + v; };
+    if      (key == "slowFactor")   apply(m_factor);
+    else if (key == "slowDuration") apply(m_duration);
+}
+
 // --- BurnModule ---
 
 BurnModule::BurnModule(float value, float duration, EmitterDesc particleDesc)
@@ -39,4 +45,10 @@ void BurnModule::Describe(std::string& text, Color& color) const {
     snprintf(buf, sizeof(buf), "Burn:    %g/s  %.1fs", m_value, m_duration);
     text = buf;
     color = ORANGE;
+}
+
+void BurnModule::PatchStat(const std::string& key, float v, bool mul) {
+    auto apply = [&](float& f) { f = mul ? f * v : f + v; };
+    if      (key == "burnDamage")   apply(m_value);
+    else if (key == "burnDuration") apply(m_duration);
 }

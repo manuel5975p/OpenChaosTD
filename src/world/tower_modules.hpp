@@ -13,6 +13,8 @@ public:
     virtual void Contribute(AttackPayload&) const {}
     virtual void ContributeTower(TowerStats&) const {}
     virtual void Describe(std::string&, Color&) const {}
+    // Called by the upgrade system to patch module-owned parameters (e.g. slowFactor, burnDamage).
+    virtual void PatchStat(const std::string& /*key*/, float /*v*/, bool /*mul*/) {}
 };
 
 class SlowModule : public TowerModule {
@@ -23,6 +25,7 @@ public:
     SlowModule(float factor, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void Describe(std::string& text, Color& color) const override;
+    void PatchStat(const std::string& key, float v, bool mul) override;
 };
 
 class BurnModule : public TowerModule {
@@ -33,4 +36,5 @@ public:
     BurnModule(float value, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void Describe(std::string& text, Color& color) const override;
+    void PatchStat(const std::string& key, float v, bool mul) override;
 };

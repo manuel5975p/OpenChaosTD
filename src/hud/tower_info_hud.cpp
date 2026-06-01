@@ -19,6 +19,36 @@ void TowerInfoHUD::Build(Game& game) {
     Hide(); // shown only while a tower is selected or hovered
 }
 
+// Readable name for an upgrade key (combat stats and module parameters).
+static const char* StatLabel(const std::string& key) {
+    if (key == "damage")         return "Damage";
+    if (key == "shotsPerMinute") return "Rate";
+    if (key == "range")          return "Range";
+    if (key == "targetCount")    return "Targets";
+    if (key == "armorPierce")    return "Pierce";
+    if (key == "critChance")     return "Crit";
+    if (key == "critMultiplier") return "Crit Mult";
+    if (key == "slowFactor")     return "Slow";
+    if (key == "slowDuration")   return "Slow Time";
+    if (key == "burnDamage")     return "Burn";
+    if (key == "burnDuration")   return "Burn Time";
+    return key.c_str();
+}
+
+// Human-readable delta lines for one upgrade level.
+static std::vector<std::string> BuildUpgradePreview(const TowerUpgrade& up) {
+    std::vector<std::string> lines;
+    for (const auto& [k, v] : up.adds)
+        lines.push_back(TextFormat("+%g %s", v, StatLabel(k)));
+    for (const auto& [k, v] : up.muls)
+        lines.push_back(TextFormat("x%g %s", v, StatLabel(k)));
+    for (const auto& mod : up.addModules) {
+        std::string type = mod.value("type", "");
+        if (!type.empty()) lines.push_back("Adds " + type);
+    }
+    return lines;
+}
+
 static std::vector<std::string> WrapText(const std::string& text, float maxWidth, int fontSize) {
     std::vector<std::string> lines;
     std::istringstream stream(text);
@@ -82,15 +112,19 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
         btnY -= m_sellGap + m_sellH;
     }
     m_upgradeReady = false;
+    m_hasNextUpgrade = false;
+    m_upgradePreview.clear();
     if (m_showUpgrade) {
         int lvl = tower.m_level;
         int count = static_cast<int>(tower.m_upgrades->size());
         if (lvl >= count) {
             m_upgradeBtn.m_label = "Max Level";
         } else {
-            int cost = (*tower.m_upgrades)[lvl].cost;
-            m_upgradeBtn.m_label = TextFormat("Upgrade $%d", cost);
-            m_upgradeReady = game.GetGameData().gold >= cost;
+            const TowerUpgrade& up = (*tower.m_upgrades)[lvl];
+            m_upgradeBtn.m_label = TextFormat("Upgrade $%d", up.cost);
+            m_upgradeReady = game.GetGameData().gold >= up.cost;
+            m_hasNextUpgrade = true;
+            m_upgradePreview = BuildUpgradePreview(up);
         }
         m_upgradeBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
     }
@@ -103,9 +137,11 @@ void TowerInfoHUD::OnProcessInput(Game& game) {
     ConsumePanelClick(game.GetInput());
     Vector2 mousePos = game.GetInput().GetMousePosition();
 
-    if (m_showUpgrade && m_upgradeReady) {
+    // Update whenever an upgrade is available so hover registers even when unaffordable,
+    // but only raise the buy signal when the player can pay.
+    if (m_hasNextUpgrade) {
         m_upgradeBtn.Update(mousePos, pressed);
-        if (m_upgradeBtn.IsClicked())
+        if (m_upgradeReady && m_upgradeBtn.IsClicked())
             m_upgradeSignal.Raise();
     }
     if (m_showTargeting) {
@@ -120,7 +156,7 @@ void TowerInfoHUD::OnProcessInput(Game& game) {
     }
 }
 
-void TowerInfoHUD::OnDraw(Game& /*game*/) {
+void TowerInfoHUD::OnDraw(Game& game) {
     if (!m_target) return;
     const Tower& tower = *m_target;
 
@@ -129,8 +165,18 @@ void TowerInfoHUD::OnDraw(Game& /*game*/) {
     float x = m_panelRect.x + m_margin;
     float y = m_panelRect.y + m_margin;
 
-    // Tower name as header
+    // Tower name as header, with level indicator right-aligned
     DrawText(tower.m_name.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
+    if (tower.m_role == TowerRole::Shooter && tower.m_upgrades && !tower.m_upgrades->empty()) {
+        int maxLvl = static_cast<int>(tower.m_upgrades->size());
+        bool isMax = tower.m_level >= maxLvl;
+        const char* lvlText = isMax ? "MAX" : TextFormat("Lv %d", tower.m_level + 1);
+        Color lvlColor = isMax ? GOLD : Color{180, 180, 180, 255};
+        int tw = MeasureText(lvlText, m_fontHeader);
+        DrawText(lvlText,
+                 static_cast<int>(m_panelRect.x + m_panelW - m_margin) - tw,
+                 static_cast<int>(y), m_fontHeader, lvlColor);
+    }
     y += m_headerH;
 
     // Description (word-wrapped, computed in SetTarget)
@@ -168,6 +214,8 @@ void TowerInfoHUD::OnDraw(Game& /*game*/) {
         const WidgetStyle& style = m_upgradeReady ? kDefaultStyle : kDisabledStyle;
         m_upgradeBtn.Draw(false, style);
         m_upgradeBtn.DrawLabel(m_fontSm, m_upgradeReady ? Color{160, 240, 120, 255} : DARKGRAY);
+        if (m_hasNextUpgrade && m_upgradeBtn.IsHovered())
+            DrawUpgradeTooltip(game);
     }
 
     if (m_showTargeting) {
@@ -178,5 +226,39 @@ void TowerInfoHUD::OnDraw(Game& /*game*/) {
     if (m_showSell) {
         m_sellBtn.Draw();
         m_sellBtn.DrawLabel(m_fontSm, GREEN);
+    }
+}
+
+void TowerInfoHUD::DrawUpgradeTooltip(Game& game) {
+    // Box sized to the widest of the header and the preview lines
+    int maxW = MeasureText("Next Level", m_fontSm);
+    for (const auto& line : m_upgradePreview)
+        maxW = std::max(maxW, MeasureText(line.c_str(), m_fontSm));
+
+    float boxW = maxW + m_margin * 2.0f;
+    float boxH = m_margin * 2.0f + static_cast<float>(m_upgradePreview.size() + 1) * m_lineH;
+
+    // Prefer the left of the panel; flip to the right if it would clip off-screen
+    float boxX = m_panelRect.x - boxW - m_sellGap;
+    if (boxX < 0.0f)
+        boxX = m_panelRect.x + m_panelW + m_sellGap;
+
+    // Align with the upgrade button, clamped to stay on-screen vertically
+    float boxY = m_upgradeBtn.m_rect.y;
+    float screenH = static_cast<float>(game.GetScreen().GetGameHeight());
+    if (boxY + boxH > screenH) boxY = screenH - boxH;
+    if (boxY < 0.0f) boxY = 0.0f;
+
+    Rectangle box = { boxX, boxY, boxW, boxH };
+    DrawRectangleRec(box, {20, 20, 20, 235});
+    DrawRectangleLinesEx(box, 1.0f, {255, 180, 0, 255});
+
+    float tx = boxX + m_margin;
+    float ty = boxY + m_margin;
+    DrawText("Next Level", static_cast<int>(tx), static_cast<int>(ty), m_fontSm, GOLD);
+    ty += m_lineH;
+    for (const auto& line : m_upgradePreview) {
+        DrawText(line.c_str(), static_cast<int>(tx), static_cast<int>(ty), m_fontSm, RAYWHITE);
+        ty += m_lineH;
     }
 }

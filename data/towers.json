@@ -11,12 +11,12 @@
             "name": "zapper",
             "description": "Fast attack, low damage. Good against swarms.",
             "texture": "tower_zapper",
-            "cost": 75,
+            "cost": 100,
             "combat": {
                 "damage": 2,
                 "shotsPerMinute": 180,
                 "range": 64,
-                "targetCount": 2,
+                "targetCount": 1,
                 "targeting": "First"
             },
             "effects": [],
@@ -28,8 +28,15 @@
                 "impact": "zapper_impact"
             },
             "upgrades": [
-                { "cost": 60,  "add": { "damage": 1 } },
-                { "cost": 120, "add": { "targetCount": 1 }, "mul": { "shotsPerMinute": 1.2 } }
+                {
+                    "cost": 150,
+                    "add": { "damage": 1},
+                    "mul": { "shotsPerMinute": 1.5 }
+                },
+                {
+                    "cost": 200,
+                    "add": { "damage": 2, "targetCount": 1, "range": 16} 
+                }
             ]
         },
         {
@@ -55,8 +62,8 @@
                 "impact": "freezer_impact"
             },
             "upgrades": [
-                { "cost": 90,  "mul": { "shotsPerMinute": 1.5 } },
-                { "cost": 150, "add": { "range": 16 } }
+                { "cost": 90,  "mul": { "slowFactor": 0.75 } },
+                { "cost": 150, "add": { "range": 16, "slowDuration": 1.5 } }
             ]
         },
         {
@@ -120,8 +127,8 @@
             "texture": "tower_piercer",
             "cost": 150,
             "combat": {
-                "damage": 4,
-                "shotsPerMinute": 60,
+                "damage": 5,
+                "shotsPerMinute": 90,
                 "range": 64,
                 "targetCount": 1,
                 "targeting": "MostArmor",
@@ -136,7 +143,10 @@
                 "impact": "piercer_impact"
             },
             "upgrades": [
-                { "cost": 120, "add": { "damage": 2, "armorPierce": 3 } },
+                {
+                    "cost": 120, 
+                    "add": { "damage": 2, "armorPierce": 3 } 
+                },
                 { "cost": 200, "effects": [ { "type": "Burn", "damage": 1, "duration": 4, "effect": "burn_effect" } ] }
             ]
         }

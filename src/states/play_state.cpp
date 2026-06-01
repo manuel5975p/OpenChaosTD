@@ -159,8 +159,14 @@ void PlayingState::UpgradeSelectedTower(Game& game) {
     if (game.GetGameData().gold < up.cost) return;
 
     game.GetGameData().gold -= up.cost;
-    for (auto& [k, v] : up.adds) ApplyStat(tower->m_base, k, v, false);
-    for (auto& [k, v] : up.muls) ApplyStat(tower->m_base, k, v, true);
+    for (auto& [k, v] : up.adds) {
+        ApplyStat(tower->m_base, k, v, false);
+        for (auto& mod : tower->m_modules) mod->PatchStat(k, v, false);
+    }
+    for (auto& [k, v] : up.muls) {
+        ApplyStat(tower->m_base, k, v, true);
+        for (auto& mod : tower->m_modules) mod->PatchStat(k, v, true);
+    }
     for (auto& mod : up.addModules)
         if (auto m = game.GetTowerFactory().BuildModule(mod)) tower->AddModule(std::move(m));
 

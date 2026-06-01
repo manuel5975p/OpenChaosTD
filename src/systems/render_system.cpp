@@ -61,6 +61,17 @@ void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, Resources& asse
         Color tint = (flashRatio > 0.0f) ? ColorLerp(WHITE, ORANGE, flashRatio) : WHITE;
         DrawTextureV(texture, {tower.m_position.x - hw, tower.m_position.y - hh}, tint);
 
+        // Draw level number at bottom-right of sprite once any upgrade has been purchased
+        if (tower.m_upgrades && !tower.m_upgrades->empty() && tower.m_level > 0) {
+            bool isMax = tower.m_level >= static_cast<int>(tower.m_upgrades->size());
+            const char* lvlText = TextFormat("%d", tower.m_level + 1);
+            constexpr int kFontSize = 10;
+            int tw = MeasureText(lvlText, kFontSize);
+            DrawText(lvlText,
+                     static_cast<int>(tower.m_position.x + hw) - tw - 1,
+                     static_cast<int>(tower.m_position.y + hh) - kFontSize - 1,
+                     kFontSize, isMax ? GOLD : WHITE);
+        }
     }
 }
 
