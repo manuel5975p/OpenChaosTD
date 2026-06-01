@@ -35,6 +35,8 @@ void WaveManager::BuildSpawnQueue(const WaveDef& def, int nestCount, int countMu
     m_nextSpawn = 0;
     m_elapsed = 0.0f;
 
+    if (nestCount <= 0) return; // no nests — nothing to spawn from, and avoids modulo-by-zero
+
     int nestIdx = 0;
     for (const auto& grp : def.groups) {
         int count = grp.count * countMultiplier;

@@ -62,7 +62,7 @@ void PlayingState::Update(Game& game, float dt) {
     m_enemySystem.TickEnemies(dt, game.GetGameData(), game.GetParticles());
     m_enemySystem.FollowPath(dt, game.GetGameData());
 
-    m_towerSystem.update(dt, game.GetGameData(), game.GetParticles());
+    m_towerSystem.Update(dt, game.GetGameData(), game.GetParticles());
     m_towerSystem.TickPayloads(dt, game.GetGameData(), game.GetParticles());
     m_towerSystem.TickVfx(dt, game.GetGameData());
     game.GetParticles().Tick(dt);

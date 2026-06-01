@@ -8,7 +8,7 @@
 
 
 
-void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles){
+void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles){
     for (Tower& tower : gameData.towers) {
         // Recompute live stats from base, then let modules override/augment
         tower.m_stats = tower.m_base;
@@ -18,7 +18,11 @@ void TowerSystem::update(float dt, GameData& gameData, ParticleSystem& particles
         if (tower.m_role == TowerRole::Wall) continue;
 
         tower.m_cooldown -= dt;
-        tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_stats.attackDuration);
+        // Decay the attack flash over attackDuration; guard against a zero duration (div-by-zero)
+        if (tower.m_stats.attackDuration > 0.0f)
+            tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_stats.attackDuration);
+        else
+            tower.m_attackFlashRatio = 0.0f;
 
         if (tower.m_cooldown > 0.0f) continue;
 
@@ -104,8 +108,6 @@ void TowerSystem::TickPayloads(float dt, GameData& gameData, ParticleSystem& par
         payload.m_ttl -= dt;
 
         if (payload.m_resolved) continue;
-        payload.m_delay -= dt;
-        if (payload.m_delay > 0.0f) continue;
 
         for (auto& key : payload.m_targetKeys) {
             Enemy* enemy = gameData.enemies.Get(key);

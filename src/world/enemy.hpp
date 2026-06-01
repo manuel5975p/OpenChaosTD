@@ -43,7 +43,7 @@ public:
         for (auto& existing : m_effects) {
             if (existing.m_type != effect.m_type) continue;
             switch (effect.m_type) {
-                case EffectType::Burn: if (effect.m_value > existing.m_value) existing = effect; break;
+                case EffectType::Burn: if (effect.m_value >= existing.m_value) existing = effect; break;
                 case EffectType::Slow: if (effect.m_value <= existing.m_value) existing = effect; break;
             }
             return;

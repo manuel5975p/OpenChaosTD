@@ -19,7 +19,6 @@ struct AttackPayload {
     std::vector<EmitterDesc> m_impactDescs;
     std::vector<EmitterDesc> m_critImpactDescs;  // emitted in addition to m_impactDescs on crit
 
-    float m_delay = 0.0f;
     bool m_resolved = false;
     float m_ttl = 0.0f;  // expires after attackDuration so it outlives the crit roll
 };

@@ -61,7 +61,8 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
                     m_panelW, panelH };
     ClampPanelToScreen(game.GetScreen().GetGameWidth(), game.GetScreen().GetGameHeight());
 
-    m_sellBtn.m_label = TextFormat("Sell: $%d", tower.m_cost / 2);
+    int refund = static_cast<int>(tower.m_cost * game.GetGameData().sellRefundRate);
+    m_sellBtn.m_label = TextFormat("Sell: $%d", refund);
     m_sellBtn.m_rect = { m_panelRect.x + m_margin, m_panelRect.y + panelH - m_margin - m_sellH,
                          m_panelW - m_margin * 2.0f, m_sellH };
 

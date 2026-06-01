@@ -97,15 +97,12 @@ void Map::SetCore(int cols, int rows) {
     m_grid.Get(cols, rows).m_type = TileType::Core;
     m_grid.Get(cols, rows).m_buildable = false;
     m_grid.Get(cols, rows).m_walkable = true;
-    std::cout << "Core placed x: " << cols << " y: " << rows << std::endl;
 }
 
 void Map::AddNest(int cols, int rows) {
     for (auto& nest : m_nests) {
-        if (nest.first == cols && nest.second == rows) {
-            std::cout << "Nest not placed x: " << cols << " y: " << rows << " is already a nest" << std::endl;
-            return;
-        }
+        if (nest.first == cols && nest.second == rows)
+            return; // already a nest
     }
 
     m_nests.push_back({cols, rows});
@@ -113,7 +110,6 @@ void Map::AddNest(int cols, int rows) {
     m_grid.Get(cols, rows).m_buildable = false;
     m_grid.Get(cols, rows).m_walkable = true;
     m_paths.push_back({}); // reserve slot for this nest's path
-    std::cout << "Nest placed x: " << cols << " y: " << rows << std::endl;
 }
 
 void Map::BuildPathMesh() {
@@ -139,19 +135,15 @@ void Map::BuildPathMesh() {
     }
 
     m_pathMesh = BfsSolve({m_core.first, m_core.second}, graph);
-    std::cout << "PathMesh calculated" << std::endl;
 
     ConstructPaths();
 }
 
 bool Map::ValidatePathMesh() {
     for (auto& nest : m_nests) {
-        if (m_pathMesh.Get(nest.first, nest.second).distance == std::numeric_limits<int>::max()) {
-            std::cout << "PathMesh is not valid" << std::endl;
+        if (m_pathMesh.Get(nest.first, nest.second).distance == std::numeric_limits<int>::max())
             return false;
-        }
     }
-    std::cout << "PathMesh is valid" << std::endl;
     return true;
 }
 
@@ -182,7 +174,5 @@ void Map::ConstructPaths() {
                 node.second * static_cast<float>(m_tileSize) + half
             });
         }
-
-        std::cout << "Path " << i << " constructed with " << m_paths[i].size() << " nodes" << std::endl;
     }
 }

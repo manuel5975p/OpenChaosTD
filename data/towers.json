@@ -51,7 +51,7 @@
             "description": "Extreme range, high burst damage. Targets the toughest enemy.",
             "texture": "tower_sniper",
             "cost": 175,
-            "fireRate": 0.25,
+            "fireRate": 0.5,
             "attackDuration": 0.4,
             "radius": 128,
             "targetCount": 1,
@@ -71,14 +71,14 @@
             "description": "Short range. Ignites all nearby enemies, dealing damage over time.",
             "texture": "tower_flamer",
             "cost": 125,
-            "fireRate": 1.2,
+            "fireRate": 1.5,
             "attackDuration": 0.25,
             "radius": 48,
             "targetCount": 0,
             "targetingMode": "First",
             "modules": [
                 { "type": "FlatDamage", "damage": 0.5, "impact": "flamer_impact" },
-                { "type": "Burn", "damage": 2.0, "duration": 3.0, "effect": "burn_effect" }
+                { "type": "Burn", "damage": 0.5, "duration": 8.0, "effect": "burn_effect" }
             ],
             "vfx": {
                 "style": "Ring",

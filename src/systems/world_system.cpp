@@ -1,7 +1,6 @@
 #include <systems/world_system.hpp>
 #include <world/tile.hpp>
 #include <factory/enemy_factory.hpp>
-#include <iostream>
 #include <raymath.h>
 #include <vector>
 
@@ -28,7 +27,6 @@ void WorldSystem::RemoveTower(int x, int y, GameData& gameData){
         tile.m_walkable = true;
         tile.m_buildable = true;
         tile.m_towerKey = DenseSlotMap<Tower>::INVALID_KEY;
-        std::cout << "Tower removed x: " << x << " y: " << y << std::endl;
 
         gameData.map.BuildPathMesh();
     }
@@ -38,10 +36,8 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
     Tile& tile = gameData.map.Get(x, y);
 
     // Return if tile not buildable
-    if(!tile.m_buildable){
-        std::cout << "Tower not placed x: " << x << " y: " << y << " tile is not buildable" << std::endl;
+    if(!tile.m_buildable)
         return false;
-    }
 
     // Check if paths are still valid after tower placement
     tile.m_walkable = false;
@@ -49,7 +45,6 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
     if(!gameData.map.ValidatePathMesh()){
         tile.m_walkable = true;
         gameData.map.BuildPathMesh();
-        std::cout << "Tower not placed x: " << x << " y: " << y << " blocks path to core" << std::endl;
         return false;
     }
 

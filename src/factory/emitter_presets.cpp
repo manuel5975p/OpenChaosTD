@@ -18,7 +18,7 @@ static EmitterDesc ParseEmitterDesc(const json& j) {
     d.count            = j.value("count", 0);
     d.speed            = j.value("speed", 50.0f);
     d.speedVariance    = j.value("speedVariance", 20.0f);
-    d.spread           = j.value("spread", 3.14159f);
+    d.spread           = j.value("spread", 360.0f);
     d.angle            = j.value("angle", 0.0f);
     d.lifetime         = j.value("lifetime", 0.2f);
     d.size             = j.value("size", 3.0f);

@@ -16,9 +16,9 @@ public:
     int GetCols() const { return m_grid.GetWidth(); }
     int GetRows() const { return m_grid.GetHeight(); }
     int GetTileSize() const { return m_tileSize; }
-    const std::pair<int, int> GetCore() const { return m_core; }
-    const std::vector<std::pair<int, int>> GetNests() const { return m_nests; }
-    const std::vector<std::vector<Vector2>> GetPaths() const { return m_paths; }
+    const std::pair<int, int>& GetCore() const { return m_core; }
+    const std::vector<std::pair<int, int>>& GetNests() const { return m_nests; }
+    const std::vector<std::vector<Vector2>>& GetPaths() const { return m_paths; }
     const Grid2D<Node>& GetPathMesh() const {return m_pathMesh;}
 
     // Coordinate conversion

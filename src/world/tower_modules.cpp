@@ -1,6 +1,7 @@
 #include <world/tower_modules.hpp>
 #include <world/attack.hpp>
 #include <world/effect.hpp>
+#include <algorithm>
 #include <cstdio>
 
 void FlatDamageModule::Contribute(AttackPayload& attack) const {
@@ -70,8 +71,9 @@ void ArmorPiercingModule::Describe(std::string& text, Color& color) const {
 // --- CritModule ---
 
 void CritModule::Contribute(AttackPayload& attack) const {
-    attack.m_critChance = m_chance;
-    attack.m_critMultiplier = m_multiplier;
+    // Keep the strongest values so stacking multiple crit modules is order-independent
+    attack.m_critChance = std::max(attack.m_critChance, m_chance);
+    attack.m_critMultiplier = std::max(attack.m_critMultiplier, m_multiplier);
     if (m_critImpactDesc.count > 0)
         attack.m_critImpactDescs.push_back(m_critImpactDesc);
 }
