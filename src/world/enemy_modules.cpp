@@ -29,19 +29,6 @@ void ArmorModule::Describe(std::string& text, Color& color) const {
     color = RAYWHITE;
 }
 
-// --- ResistanceModule ---
-
-void ResistanceModule::ContributeStats(EnemyStats& stats) const {
-    stats.resistance = std::min(1.0f, stats.resistance + m_factor);
-}
-
-void ResistanceModule::Describe(std::string& text, Color& color) const {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Resist:  %.0f%%", m_factor * 100.0f);
-    text = buf;
-    color = RAYWHITE;
-}
-
 // --- ImmuneModule ---
 
 bool ImmuneModule::ShouldBlock(EffectType type) const {
@@ -50,8 +37,11 @@ bool ImmuneModule::ShouldBlock(EffectType type) const {
 
 void ImmuneModule::Describe(std::string& text, Color& color) const {
     switch (m_effect) {
-        case EffectType::Slow: text = "Immune:  Slow"; color = SKYBLUE;  return;
-        case EffectType::Burn: text = "Immune:  Burn"; color = ORANGE;   return;
+        case EffectType::Slow:       text = "Immune:  Slow";  color = SKYBLUE; return;
+        case EffectType::Burn:       text = "Immune:  Burn";  color = ORANGE;  return;
+        case EffectType::ArmorShred: text = "Immune:  Shred"; color = GRAY;    return;
+        case EffectType::Stun:       text = "Immune:  Stun";  color = YELLOW;  return;
+        case EffectType::Weakness:   text = "Immune:  Weak";  color = PURPLE;  return;
     }
     text = "";
     color = RAYWHITE;

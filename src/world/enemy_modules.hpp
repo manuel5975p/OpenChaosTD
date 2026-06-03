@@ -41,14 +41,6 @@ public:
     void Describe(std::string& text, Color& color) const override;
 };
 
-class ResistanceModule : public EnemyModule {
-public:
-    float m_factor;
-    explicit ResistanceModule(float factor) : m_factor(factor) {}
-    void ContributeStats(EnemyStats& stats) const override;
-    void Describe(std::string& text, Color& color) const override;
-};
-
 // Enemy ignores any incoming effect of the given type
 class ImmuneModule : public EnemyModule {
 public:

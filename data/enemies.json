@@ -20,7 +20,7 @@
         },
         {
             "name": "golem",
-            "description": "Armored, regenerating construct. Resists most attacks.",
+            "description": "Armored, regenerating construct. Slow but durable.",
             "texture": "enemy_golem",
             "health": 50,
             "speed": 25,
@@ -28,8 +28,7 @@
             "deathEmitter": "death_medium",
             "modules": [
                 { "type": "Regeneration", "rate": 2.0 },
-                { "type": "Armor",        "amount": 1.0 },
-                { "type": "Resistance",   "factor": 0.4 }
+                { "type": "Armor",        "amount": 1.0 }
             ]
         },
         {
@@ -55,7 +54,6 @@
             "modules": [
                 { "type": "Regeneration", "rate": 5.0 },
                 { "type": "Armor",        "amount": 2.0 },
-                { "type": "Resistance",   "factor": 0.3 },
                 { "type": "Split", "child": "golem", "count": 2 }
             ]
         },

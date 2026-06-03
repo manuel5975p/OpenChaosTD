@@ -34,8 +34,13 @@
                     "mul": { "shotsPerMinute": 1.5 }
                 },
                 {
-                    "cost": 200,
-                    "add": { "damage": 2, "targetCount": 1, "range": 16} 
+                    "cost": 350,
+                    "add": { "damage": 2, "targetCount": 1, "range": 16}
+                },
+                {
+                    "cost": 400,
+                    "mul": { "shotsPerMinute": 0.5 },
+                    "effects": [ { "type": "SlowStart", "bonusPerStack": 18, "maxStacks": 8, "idleTime": 1.2 } ]
                 }
             ]
         },
@@ -43,16 +48,16 @@
             "name": "freezer",
             "description": "Slows all nearby enemies. Pairs well with high-damage towers.",
             "texture": "tower_freezer",
-            "cost": 100,
+            "cost": 125,
             "combat": {
-                "damage": 0.5,
+                "damage": 0,
                 "shotsPerMinute": 48,
                 "range": 48,
                 "targetCount": 0,
                 "targeting": "First"
             },
             "effects": [
-                { "type": "Slow", "factor": 0.5, "duration": 2.0, "effect": "slow_effect" }
+                { "type": "Slow", "slowPercent": 40, "duration": 2.0, "effect": "slow_effect" }
             ],
             "visual": {
                 "style": "Ring",
@@ -62,8 +67,9 @@
                 "impact": "freezer_impact"
             },
             "upgrades": [
-                { "cost": 90,  "mul": { "slowFactor": 0.75 } },
-                { "cost": 150, "add": { "range": 16, "slowDuration": 1.5 } }
+                { "cost": 175, "add": { "slowPercent": 20 } },
+                { "cost": 300, "add": { "range": 16, "slowDuration": 1.5 } },
+                { "cost": 350, "effects": [ { "type": "Stun", "duration": 1.0, "effect": "stun_effect" } ] }
             ]
         },
         {
@@ -91,7 +97,8 @@
             },
             "upgrades": [
                 { "cost": 150, "mul": { "damage": 1.5 } },
-                { "cost": 250, "add": { "critChance": 0.15 } }
+                { "cost": 250, "add": { "critChance": 0.15 } },
+                { "cost": 300, "effects": [ { "type": "Weakness", "amount": 8, "duration": 5.0, "effect": "weakness_effect" } ] }
             ]
         },
         {
@@ -147,7 +154,8 @@
                     "cost": 120, 
                     "add": { "damage": 2, "armorPierce": 3 } 
                 },
-                { "cost": 200, "effects": [ { "type": "Burn", "damage": 1, "duration": 4, "effect": "burn_effect" } ] }
+                { "cost": 200, "effects": [ { "type": "Burn", "damage": 1, "duration": 4, "effect": "burn_effect" } ] },
+                { "cost": 250, "effects": [ { "type": "ArmorShred", "amount": 2, "duration": 4, "effect": "shred_effect" } ] }
             ]
         }
     ]

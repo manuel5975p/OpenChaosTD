@@ -1,6 +1,6 @@
 {
     "startingLives": 20,
-    "startingGold": 500,
+    "startingGold": 1000,
     "sellRefundRate": 0.5,
     "totalWaves": 0,
     "autoSpawnDelay": 3.0

@@ -1,6 +1,7 @@
 #include <systems/enemy_system.hpp>
 
 #include <raymath.h>
+#include <algorithm>
 
 void EnemySystem::FollowPath(float dt, GameData& gameData){
     for (auto& enemy : gameData.enemies) {
@@ -63,13 +64,21 @@ void EnemySystem::TickEnemies(float dt, GameData& gameData, ParticleSystem& part
 
             switch (effect.m_type) {
                 case EffectType::Burn:
-                    enemy.m_currentHealth -= effect.m_value * (1.0f - enemy.m_stats.resistance) * dt;
+                    enemy.m_currentHealth -= effect.m_value * dt;
                     break;
-                case EffectType::Slow: {
-                    float weakenedFactor = effect.m_value + (1.0f - effect.m_value) * enemy.m_stats.resistance;
-                    enemy.m_stats.speed *= weakenedFactor;
+                case EffectType::Slow:
+                    // m_value is slow strength as a percent (90 = 90% slower)
+                    enemy.m_stats.speed *= 1.0f - effect.m_value / 100.0f;
                     break;
-                }
+                case EffectType::ArmorShred:
+                    // Flat armor reduction; floored at 0
+                    enemy.m_stats.armor = std::max(0.0f, enemy.m_stats.armor - effect.m_value);
+                    break;
+                case EffectType::Stun:
+                    enemy.m_stats.speed = 0.0f; // FollowPath skips enemies with speed <= 0
+                    break;
+                case EffectType::Weakness:
+                    break; // consumed on hit in TowerSystem::TickPayloads
             }
             effect.m_duration -= dt;
         }

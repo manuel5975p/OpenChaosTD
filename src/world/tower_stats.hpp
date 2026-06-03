@@ -10,7 +10,6 @@ enum class TargetingMode {
     Fastest,
     Slowest,
     MostArmor,
-    MostResistance,
     MostShield
 };
 
@@ -29,7 +28,6 @@ inline const char* TargetingModeName(TargetingMode m) {
         case TargetingMode::Fastest:        return "Fastest";
         case TargetingMode::Slowest:        return "Slowest";
         case TargetingMode::MostArmor:      return "Most Armor";
-        case TargetingMode::MostResistance: return "Most Resist";
         case TargetingMode::MostShield:     return "Most Shield";
     }
     return "First";

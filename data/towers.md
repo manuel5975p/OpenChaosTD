@@ -32,22 +32,29 @@ Populates `TowerStats`. All fields are optional and default to 0 / `"First"` / 1
 | `critMultiplier`| float  | Damage multiplier on crit (default 1.0) |
 
 **Targeting modes:** `First`, `Last`, `MostHealth`, `LowestHealth`, `Fastest`, `Slowest`,
-`MostArmor`, `MostResistance`, `MostShield`
+`MostArmor`, `MostShield`
 
 ---
 
 ## `effects` array
 
-Each entry adds a behavior module (`SlowModule` or `BurnModule`) to the tower.
-All fields inside each entry are module-specific.
+Each entry adds a behavior module to the tower (`Slow`, `Burn`, `ArmorShred`, `Weakness`,
+`Stun`, or `SlowStart`). All fields inside each entry are module-specific.
+
+**Effect rules** (apply to every status effect a module inflicts):
+- Effects never stack. Reapplying refreshes the timer (and value) only when the new effect is
+  **equal or stronger** (by its magnitude; for Stun the magnitude is its duration).
+- Every effect expires after its `duration`.
+- `ArmorShred` floors armor at 0. `Stun` and `Weakness` are also cleared the moment the enemy
+  is next hit (Stun frees movement; Weakness adds its bonus damage to that hit, then is gone).
 
 ### Slow
 ```json
-{ "type": "Slow", "factor": 0.5, "duration": 2.0, "effect": "slow_effect" }
+{ "type": "Slow", "slowPercent": 50, "duration": 2.0, "effect": "slow_effect" }
 ```
 | Field      | Type   | Description |
 |------------|--------|-------------|
-| `factor`   | float  | Speed multiplier applied to the enemy (0.5 = half speed) |
+| `slowPercent` | float | Slow strength as a percent (90 = 90% slower) |
 | `duration` | float  | Seconds the slow lasts |
 | `effect`   | string | Emitter preset name for the on-enemy particle effect |
 
@@ -60,6 +67,49 @@ All fields inside each entry are module-specific.
 | `damage`   | float  | Damage per second while burning |
 | `duration` | float  | Seconds the burn lasts |
 | `effect`   | string | Emitter preset name for the on-enemy particle effect |
+
+### ArmorShred
+```json
+{ "type": "ArmorShred", "amount": 2, "duration": 4.0, "effect": "shred_effect" }
+```
+| Field      | Type   | Description |
+|------------|--------|-------------|
+| `amount`   | float  | Flat armor removed while active (enemy armor floored at 0) |
+| `duration` | float  | Seconds the shred lasts |
+| `effect`   | string | Emitter preset name for the on-enemy particle effect |
+
+### Weakness
+```json
+{ "type": "Weakness", "amount": 8, "duration": 5.0, "effect": "weakness_effect" }
+```
+| Field      | Type   | Description |
+|------------|--------|-------------|
+| `amount`   | float  | Flat bonus damage the next hit deals; consumed on that hit |
+| `duration` | float  | Seconds the weakness lasts if not consumed |
+| `effect`   | string | Emitter preset name for the on-enemy particle effect |
+
+### Stun
+```json
+{ "type": "Stun", "duration": 1.0, "effect": "stun_effect" }
+```
+| Field      | Type   | Description |
+|------------|--------|-------------|
+| `duration` | float  | Seconds the enemy can't move; also cleared the moment it's next hit |
+| `effect`   | string | Emitter preset name for the on-enemy particle effect |
+
+### SlowStart
+```json
+{ "type": "SlowStart", "bonusPerStack": 18, "maxStacks": 8, "idleTime": 1.2 }
+```
+A self-buff on the tower (no enemy effect). Each shot adds a stack up to `maxStacks`; each stack
+raises `shotsPerMinute` by `bonusPerStack`. All stacks clear after `idleTime` seconds of not firing.
+Pair with a `"mul": { "shotsPerMinute": 0.5 }` on the same upgrade for a slow-start, ramping feel.
+
+| Field           | Type  | Description |
+|-----------------|-------|-------------|
+| `bonusPerStack` | float | Flat shotsPerMinute added per stack |
+| `maxStacks`     | int   | Stack cap |
+| `idleTime`      | float | Seconds without firing before all stacks are lost |
 
 ---
 
@@ -111,9 +161,17 @@ All three optional fields are independent and can appear together in one upgrade
 
 **Module parameters** (broadcast to all installed modules; ignored by modules that don't handle the key):
 
-| Key            | Module     | Affects |
-|----------------|------------|---------|
-| `slowFactor`   | SlowModule | Speed multiplier (lower = stronger slow) |
-| `slowDuration` | SlowModule | Seconds the slow lasts |
-| `burnDamage`   | BurnModule | Damage per second while burning |
-| `burnDuration` | BurnModule | Seconds the burn lasts |
+| Key                | Module           | Affects |
+|--------------------|------------------|---------|
+| `slowPercent`      | SlowModule       | Slow strength % (higher = stronger slow) |
+| `slowDuration`     | SlowModule       | Seconds the slow lasts |
+| `burnDamage`       | BurnModule       | Damage per second while burning |
+| `burnDuration`     | BurnModule       | Seconds the burn lasts |
+| `shredAmount`      | ArmorShredModule | Flat armor removed |
+| `shredDuration`    | ArmorShredModule | Seconds the shred lasts |
+| `weaknessAmount`   | WeaknessModule   | Flat bonus damage on the next hit |
+| `weaknessDuration` | WeaknessModule   | Seconds the weakness lasts |
+| `stunDuration`     | StunModule       | Seconds the stun lasts |
+| `bonusPerStack`    | SlowStartModule  | shotsPerMinute added per stack |
+| `maxStacks`        | SlowStartModule  | Stack cap |
+| `idleTime`         | SlowStartModule  | Seconds idle before stacks clear |

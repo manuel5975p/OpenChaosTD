@@ -40,14 +40,22 @@ public:
         for (const auto& mod : m_modules)
             if (mod->ShouldBlock(effect.m_type)) return;
 
+        // Effects don't stack; reapply only refreshes (timer + value) when equal or stronger
         for (auto& existing : m_effects) {
             if (existing.m_type != effect.m_type) continue;
-            switch (effect.m_type) {
-                case EffectType::Burn: if (effect.m_value >= existing.m_value) existing = effect; break;
-                case EffectType::Slow: if (effect.m_value <= existing.m_value) existing = effect; break;
-            }
+            if (effect.m_value >= existing.m_value) existing = effect;
             return;
         }
         m_effects.push_back(std::move(effect));
+    }
+
+    Effect* FindEffect(EffectType type) {
+        for (auto& e : m_effects)
+            if (e.m_type == type) return &e;
+        return nullptr;
+    }
+
+    void RemoveEffect(EffectType type) {
+        std::erase_if(m_effects, [type](const Effect& e){ return e.m_type == type; });
     }
 };

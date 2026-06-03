@@ -17,7 +17,6 @@ static TargetingMode ParseTargetingMode(const std::string& s) {
     if (s == "Fastest") return TargetingMode::Fastest;
     if (s == "Slowest") return TargetingMode::Slowest;
     if (s == "MostArmor") return TargetingMode::MostArmor;
-    if (s == "MostResistance") return TargetingMode::MostResistance;
     if (s == "MostShield") return TargetingMode::MostShield;
     return TargetingMode::First;
 }
@@ -76,12 +75,30 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     m_builders["Slow"] = [this](const json& j){
         EmitterDesc effect;
         if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
-        return std::make_unique<SlowModule>(j.value("factor", 1.0f), j.value("duration", 0.0f), std::move(effect));
+        return std::make_unique<SlowModule>(j.value("slowPercent", 0.0f), j.value("duration", 0.0f), std::move(effect));
     };
     m_builders["Burn"] = [this](const json& j){
         EmitterDesc effect;
         if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
         return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), std::move(effect));
+    };
+    m_builders["ArmorShred"] = [this](const json& j){
+        EmitterDesc effect;
+        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
+        return std::make_unique<ArmorShredModule>(j.value("amount", 0.0f), j.value("duration", 0.0f), std::move(effect));
+    };
+    m_builders["Weakness"] = [this](const json& j){
+        EmitterDesc effect;
+        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
+        return std::make_unique<WeaknessModule>(j.value("amount", 0.0f), j.value("duration", 0.0f), std::move(effect));
+    };
+    m_builders["Stun"] = [this](const json& j){
+        EmitterDesc effect;
+        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
+        return std::make_unique<StunModule>(j.value("duration", 0.0f), std::move(effect));
+    };
+    m_builders["SlowStart"] = [](const json& j){
+        return std::make_unique<SlowStartModule>(j.value("bonusPerStack", 0.0f), j.value("maxStacks", 0), j.value("idleTime", 1.0f));
     };
 
     auto data = jsonio.Load("data/towers.json");

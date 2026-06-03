@@ -28,10 +28,18 @@ static const char* StatLabel(const std::string& key) {
     if (key == "armorPierce")    return "Pierce";
     if (key == "critChance")     return "Crit";
     if (key == "critMultiplier") return "Crit Mult";
-    if (key == "slowFactor")     return "Slow";
+    if (key == "slowPercent")    return "Slow";
     if (key == "slowDuration")   return "Slow Time";
     if (key == "burnDamage")     return "Burn";
     if (key == "burnDuration")   return "Burn Time";
+    if (key == "shredAmount")    return "Shred";
+    if (key == "shredDuration")  return "Shred Time";
+    if (key == "weaknessAmount") return "Weakness";
+    if (key == "weaknessDuration") return "Weak Time";
+    if (key == "stunDuration")   return "Stun Time";
+    if (key == "bonusPerStack")  return "Ramp";
+    if (key == "maxStacks")      return "Max Stacks";
+    if (key == "idleTime")       return "Idle";
     return key.c_str();
 }
 
@@ -39,7 +47,7 @@ static const char* StatLabel(const std::string& key) {
 static std::vector<std::string> BuildUpgradePreview(const TowerUpgrade& up) {
     std::vector<std::string> lines;
     for (const auto& [k, v] : up.adds)
-        lines.push_back(TextFormat("+%g %s", v, StatLabel(k)));
+        lines.push_back(TextFormat(k == "slowPercent" ? "+%g%% %s" : "+%g %s", v, StatLabel(k)));
     for (const auto& [k, v] : up.muls)
         lines.push_back(TextFormat("x%g %s", v, StatLabel(k)));
     for (const auto& mod : up.addModules) {

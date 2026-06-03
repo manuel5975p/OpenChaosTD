@@ -6,14 +6,16 @@
 using json = nlohmann::json;
 
 static EffectType ParseEffectType(const std::string& name) {
-    if (name == "Slow") return EffectType::Slow;
+    if (name == "Slow")       return EffectType::Slow;
+    if (name == "ArmorShred") return EffectType::ArmorShred;
+    if (name == "Stun")       return EffectType::Stun;
+    if (name == "Weakness")   return EffectType::Weakness;
     return EffectType::Burn;
 }
 
 void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     m_builders["Regeneration"] = [](const json& j){ return std::make_unique<RegenerationModule>(j.value("rate", 0.0f)); };
     m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("amount", 0.0f)); };
-    m_builders["Resistance"]   = [](const json& j){ return std::make_unique<ResistanceModule>(j.value("factor", 0.0f)); };
     m_builders["Immune"]       = [](const json& j){ return std::make_unique<ImmuneModule>(ParseEffectType(j.value("effect", ""))); };
     m_builders["Shield"]       = [](const json& j){ return std::make_unique<ShieldModule>(j.value("amount", 0.0f)); };
     m_builders["Split"]        = [](const json& j){ return std::make_unique<SplitModule>(j.value("child", ""), j.value("count", 0)); };

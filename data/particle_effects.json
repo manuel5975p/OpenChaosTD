@@ -120,6 +120,34 @@
             "lifetime": 0.28,
             "size": 2.5
         },
+        "shred_effect": {
+            "count": 1,
+            "color": [200, 200, 205, 200],
+            "endColor": [120, 120, 130, 0],
+            "speed": 26, "speedVariance": 10,
+            "spread": 360,
+            "lifetime": 0.3,
+            "size": 1.8
+        },
+        "stun_effect": {
+            "count": 1,
+            "color": [255, 225, 80, 255],
+            "endColor": [255, 180, 0, 0],
+            "angle": 270,
+            "spread": 120,
+            "speed": 18, "speedVariance": 6,
+            "lifetime": 0.4,
+            "size": 2.2
+        },
+        "weakness_effect": {
+            "count": 1,
+            "color": [190, 110, 230, 200],
+            "endColor": [120, 50, 160, 0],
+            "speed": 12, "speedVariance": 5,
+            "spread": 360,
+            "lifetime": 0.42,
+            "size": 2.2
+        },
         "death_small": {
             "count": 80,
             "color": [220, 55, 55, 255],

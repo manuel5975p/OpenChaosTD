@@ -10,10 +10,12 @@
 
 void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles){
     for (Tower& tower : gameData.towers) {
-        // Recompute live stats from base, then let modules override/augment
+        // Recompute live stats from base, then let modules update their state and augment stats
         tower.m_stats = tower.m_base;
-        for (auto& mod : tower.m_modules)
+        for (auto& mod : tower.m_modules) {
+            mod->Tick(dt);
             mod->ContributeTower(tower.m_stats);
+        }
 
         if (tower.m_role == TowerRole::Wall) continue;
 
@@ -35,6 +37,8 @@ void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles
 
         tower.m_cooldown         = (tower.m_stats.shotsPerMinute > 0.0f) ? 60.0f / tower.m_stats.shotsPerMinute : 999.0f;
         tower.m_attackFlashRatio = 1.0f;
+        for (auto& mod : tower.m_modules)
+            mod->OnFire();
 
         std::vector<Vector2> targetPositions;
         targetPositions.reserve(targetKeys.size());
@@ -126,9 +130,16 @@ void TowerSystem::TickPayloads(GameData& gameData, ParticleSystem& particles) {
             if (crit)
                 dmg *= payload.m_critMultiplier;
             float net = std::max(0.0f, dmg - armor);
+            // A pre-existing Weakness adds flat bonus damage to this hit, then is consumed
+            if (Effect* w = enemy->FindEffect(EffectType::Weakness)) {
+                net += w->m_value;
+                enemy->RemoveEffect(EffectType::Weakness);
+            }
             for (auto& mod : enemy->m_modules)
                 net = mod->InterceptDamage(net);
             enemy->m_currentHealth -= net;
+            enemy->RemoveEffect(EffectType::Stun); // any hit wakes a stunned enemy
+            // Apply this payload's effects last so a weakness/stun tower never consumes its own effect
             for (auto& effect : payload.m_effects)
                 enemy->AddEffect(effect);
 
@@ -167,7 +178,6 @@ bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mo
         case TargetingMode::Fastest:        return a.m_stats.speed < b.m_stats.speed;
         case TargetingMode::Slowest:        return a.m_stats.speed > b.m_stats.speed;
         case TargetingMode::MostArmor:      return a.m_stats.armor > b.m_stats.armor;
-        case TargetingMode::MostResistance: return a.m_stats.resistance > b.m_stats.resistance;
         case TargetingMode::MostShield:     return TotalShield(a) > TotalShield(b);
     }
     return false;
