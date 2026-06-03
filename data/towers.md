@@ -28,8 +28,6 @@ Populates `TowerStats`. All fields are optional and default to 0 / `"First"` / 1
 | `targetCount`   | int    | Max simultaneous targets; 0 = all in range |
 | `targeting`     | string | Priority rule — see targeting modes below |
 | `armorPierce`   | float  | Armor value ignored before damage reduction |
-| `critChance`    | float  | Probability of a critical hit (0.0–1.0) |
-| `critMultiplier`| float  | Damage multiplier on crit (default 1.0) |
 
 **Targeting modes:** `First`, `Last`, `MostHealth`, `LowestHealth`, `Fastest`, `Slowest`,
 `MostArmor`, `MostShield`
@@ -39,7 +37,7 @@ Populates `TowerStats`. All fields are optional and default to 0 / `"First"` / 1
 ## `effects` array
 
 Each entry adds a behavior module to the tower (`Slow`, `Burn`, `ArmorShred`, `Weakness`,
-`Stun`, or `SlowStart`). All fields inside each entry are module-specific.
+`Stun`, `SlowStart`, or `Crit`). All fields inside each entry are module-specific.
 
 **Effect rules** (apply to every status effect a module inflicts):
 - Effects never stack. Reapplying refreshes the timer (and value) only when the new effect is
@@ -111,6 +109,18 @@ Pair with a `"mul": { "shotsPerMinute": 0.5 }` on the same upgrade for a slow-st
 | `maxStacks`     | int   | Stack cap |
 | `idleTime`      | float | Seconds without firing before all stacks are lost |
 
+### Crit
+```json
+{ "type": "Crit", "critChance": 0.2, "critMultiplier": 4.0 }
+```
+Supplies the attack's crit chance and multiplier (the roll happens during damage resolution).
+No enemy effect. Pair with a `critImpact` visual for an on-crit particle burst.
+
+| Field           | Type  | Description |
+|-----------------|-------|-------------|
+| `critChance`    | float | Probability of a critical hit (0.0–1.0) |
+| `critMultiplier`| float | Damage multiplier on crit (default 1.0) |
+
 ---
 
 ## `visual` block
@@ -156,8 +166,6 @@ All three optional fields are independent and can appear together in one upgrade
 | `range`         | Attack radius |
 | `targetCount`   | Max simultaneous targets |
 | `armorPierce`   | Armor penetration |
-| `critChance`    | Critical hit probability |
-| `critMultiplier`| Critical damage multiplier |
 
 **Module parameters** (broadcast to all installed modules; ignored by modules that don't handle the key):
 
@@ -175,3 +183,5 @@ All three optional fields are independent and can appear together in one upgrade
 | `bonusPerStack`    | SlowStartModule  | shotsPerMinute added per stack |
 | `maxStacks`        | SlowStartModule  | Stack cap |
 | `idleTime`         | SlowStartModule  | Seconds idle before stacks clear |
+| `critChance`       | CritModule       | Critical hit probability (requires a Crit module on the tower) |
+| `critMultiplier`   | CritModule       | Critical damage multiplier (requires a Crit module on the tower) |

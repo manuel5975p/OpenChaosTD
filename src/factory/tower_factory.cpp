@@ -41,8 +41,6 @@ static TowerStats ParseCombat(const json& j) {
     s.targetCount    = j.value("targetCount", 0);
     s.targetingMode  = ParseTargetingMode(j.value("targeting", "First"));
     s.armorPierce    = j.value("armorPierce", 0.0f);
-    s.critChance     = j.value("critChance", 0.0f);
-    s.critMultiplier = j.value("critMultiplier", 1.0f);
     return s;
 }
 
@@ -73,32 +71,25 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     m_presets = &presets;
 
     m_builders["Slow"] = [this](const json& j){
-        EmitterDesc effect;
-        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
-        return std::make_unique<SlowModule>(j.value("slowPercent", 0.0f), j.value("duration", 0.0f), std::move(effect));
+        return std::make_unique<SlowModule>(j.value("slowPercent", 0.0f), j.value("duration", 0.0f), ResolveEmitter(j));
     };
     m_builders["Burn"] = [this](const json& j){
-        EmitterDesc effect;
-        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
-        return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), std::move(effect));
+        return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), ResolveEmitter(j));
     };
     m_builders["ArmorShred"] = [this](const json& j){
-        EmitterDesc effect;
-        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
-        return std::make_unique<ArmorShredModule>(j.value("amount", 0.0f), j.value("duration", 0.0f), std::move(effect));
+        return std::make_unique<ArmorShredModule>(j.value("amount", 0.0f), j.value("duration", 0.0f), ResolveEmitter(j));
     };
     m_builders["Weakness"] = [this](const json& j){
-        EmitterDesc effect;
-        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
-        return std::make_unique<WeaknessModule>(j.value("amount", 0.0f), j.value("duration", 0.0f), std::move(effect));
+        return std::make_unique<WeaknessModule>(j.value("amount", 0.0f), j.value("duration", 0.0f), ResolveEmitter(j));
     };
     m_builders["Stun"] = [this](const json& j){
-        EmitterDesc effect;
-        if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
-        return std::make_unique<StunModule>(j.value("duration", 0.0f), std::move(effect));
+        return std::make_unique<StunModule>(j.value("duration", 0.0f), ResolveEmitter(j));
     };
     m_builders["SlowStart"] = [](const json& j){
         return std::make_unique<SlowStartModule>(j.value("bonusPerStack", 0.0f), j.value("maxStacks", 0), j.value("idleTime", 1.0f));
+    };
+    m_builders["Crit"] = [](const json& j){
+        return std::make_unique<CritModule>(j.value("critChance", 0.0f), j.value("critMultiplier", 1.0f));
     };
 
     auto data = jsonio.Load("data/towers.json");
@@ -131,6 +122,12 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         m_templates[name] = std::move(tmpl);
         std::cout << "TowerFactory: loaded '" << name << "'\n";
     }
+}
+
+EmitterDesc TowerFactory::ResolveEmitter(const json& j) const {
+    EmitterDesc effect;
+    if (j.contains("effect")) effect = m_presets->Get(j["effect"].get<std::string>());
+    return effect;
 }
 
 std::unique_ptr<TowerModule> TowerFactory::BuildModule(const json& mod) const {

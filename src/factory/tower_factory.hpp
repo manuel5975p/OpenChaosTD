@@ -27,6 +27,9 @@ public:
 private:
     using ModuleBuilder = std::function<std::unique_ptr<TowerModule>(const nlohmann::json&)>;
 
+    // Look up the optional "effect" emitter preset on a module definition (default if absent).
+    EmitterDesc ResolveEmitter(const nlohmann::json& j) const;
+
     struct TowerTemplate {
         std::string name;
         std::string description;

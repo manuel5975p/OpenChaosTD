@@ -40,22 +40,23 @@ struct TowerStats {
     int targetCount = 0;
     TargetingMode targetingMode = TargetingMode::First;
     float armorPierce = 0.0f;
-    float critChance = 0.0f;     // 0 = no crit
-    float critMultiplier = 1.0f;
 };
+
+// Apply an additive (mul=false) or multiplicative (mul=true) delta to one numeric field.
+// Shared by ApplyStat and every TowerModule::PatchStat.
+inline void ApplyDelta(float& field, float v, bool mul) {
+    field = mul ? field * v : field + v;
+}
 
 // Apply an upgrade delta to a named stat field (additive, or multiplicative when mul=true).
 inline void ApplyStat(TowerStats& s, const std::string& key, float v, bool mul) {
-    auto apply = [&](float& field) { field = mul ? field * v : field + v; };
-    if      (key == "damage")         apply(s.damage);
-    else if (key == "shotsPerMinute") apply(s.shotsPerMinute);
-    else if (key == "range")          apply(s.range);
-    else if (key == "armorPierce")    apply(s.armorPierce);
-    else if (key == "critChance")     apply(s.critChance);
-    else if (key == "critMultiplier") apply(s.critMultiplier);
+    if      (key == "damage")         ApplyDelta(s.damage, v, mul);
+    else if (key == "shotsPerMinute") ApplyDelta(s.shotsPerMinute, v, mul);
+    else if (key == "range")          ApplyDelta(s.range, v, mul);
+    else if (key == "armorPierce")    ApplyDelta(s.armorPierce, v, mul);
     else if (key == "targetCount") {
         float t = static_cast<float>(s.targetCount);
-        apply(t);
+        ApplyDelta(t, v, mul);
         s.targetCount = static_cast<int>(t + 0.5f);
     }
 }

@@ -159,14 +159,14 @@ void PlayingState::UpgradeSelectedTower(Game& game) {
     if (game.GetGameData().gold < up.cost) return;
 
     game.GetGameData().gold -= up.cost;
-    for (auto& [k, v] : up.adds) {
-        ApplyStat(tower->m_base, k, v, false);
-        for (auto& mod : tower->m_modules) mod->PatchStat(k, v, false);
-    }
-    for (auto& [k, v] : up.muls) {
-        ApplyStat(tower->m_base, k, v, true);
-        for (auto& mod : tower->m_modules) mod->PatchStat(k, v, true);
-    }
+    // Each key is broadcast to the tower's base stats and every module; each consumer
+    // applies only the keys it recognizes (TowerStats keys vs. module-owned params).
+    auto applyDelta = [&](const std::string& k, float v, bool mul) {
+        ApplyStat(tower->m_base, k, v, mul);
+        for (auto& mod : tower->m_modules) mod->PatchStat(k, v, mul);
+    };
+    for (auto& [k, v] : up.adds) applyDelta(k, v, false);
+    for (auto& [k, v] : up.muls) applyDelta(k, v, true);
     for (auto& mod : up.addModules)
         if (auto m = game.GetTowerFactory().BuildModule(mod)) tower->AddModule(std::move(m));
 

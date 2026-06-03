@@ -82,11 +82,11 @@
                 "shotsPerMinute": 30,
                 "range": 128,
                 "targetCount": 1,
-                "targeting": "MostHealth",
-                "critChance": 0.20,
-                "critMultiplier": 4.0
+                "targeting": "MostHealth"
             },
-            "effects": [],
+            "effects": [
+                { "type": "Crit", "critChance": 0.2, "critMultiplier": 4.0 }
+            ],
             "visual": {
                 "style": "Line",
                 "attackDuration": 0.4,

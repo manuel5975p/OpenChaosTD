@@ -6,84 +6,99 @@
 #include <world/tower.hpp>
 #include <world/enemy_modules.hpp>
 
-
+// Cooldown sentinels (seconds). Cooldown counts down each frame; a shot is taken at <= 0.
+constexpr float kIdleRetryCooldown = 0.05f;  // short retry while no target is in range
+constexpr float kInactiveCooldown  = 999.0f; // shotsPerMinute == 0: effectively never fires
+constexpr float kSecondsPerMinute  = 60.0f;  // shot interval = 60 / shotsPerMinute
 
 void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles){
     for (Tower& tower : gameData.towers) {
-        // Recompute live stats from base, then let modules update their state and augment stats
-        tower.m_stats = tower.m_base;
-        for (auto& mod : tower.m_modules) {
-            mod->Tick(dt);
-            mod->ContributeTower(tower.m_stats);
-        }
+        RecomputeStats(tower, dt); // runs for walls too (no-op without modules)
 
         if (tower.m_role == TowerRole::Wall) continue;
 
         tower.m_cooldown -= dt;
-        // Decay the attack flash over the visual's attackDuration; guard against a zero duration
-        if (tower.m_visual.attackDuration > 0.0f)
-            tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_visual.attackDuration);
-        else
-            tower.m_attackFlashRatio = 0.0f;
+        DecayAttackFlash(tower, dt);
 
-        if (tower.m_cooldown > 0.0f) continue;
+        if (tower.m_cooldown > 0.0f) continue; // not ready to fire yet
 
         std::vector<DenseSlotMap<Enemy>::Key> targetKeys = FindTargets(tower, gameData.enemies, tower.m_stats.targetCount);
-
         if (targetKeys.empty()) {
-            tower.m_cooldown = 0.05f;
+            tower.m_cooldown = kIdleRetryCooldown;
             continue;
         }
 
-        tower.m_cooldown         = (tower.m_stats.shotsPerMinute > 0.0f) ? 60.0f / tower.m_stats.shotsPerMinute : 999.0f;
-        tower.m_attackFlashRatio = 1.0f;
-        for (auto& mod : tower.m_modules)
-            mod->OnFire();
-
-        std::vector<Vector2> targetPositions;
-        targetPositions.reserve(targetKeys.size());
-        for (auto& key : targetKeys) {
-            if (Enemy* e = gameData.enemies.Get(key))
-                targetPositions.push_back(e->m_position);
-        }
-
-        // Damage payload
-        AttackPayload payload;
-        payload.m_targetKeys = targetKeys;
-        BuildPayload(tower, payload);
-
-        // Visual effect
-        VfxEffect vfx;
-        vfx.m_origin = tower.m_position;
-        vfx.m_targetPositions = std::move(targetPositions);
-        vfx.m_duration = tower.m_visual.attackDuration;
-        vfx.m_maxDuration = tower.m_visual.attackDuration;
-        vfx.m_radius = tower.m_stats.range;
-        vfx.m_color = tower.m_visual.color;
-        vfx.m_style = tower.m_visual.style;
-        // Muzzle burst
-        if (tower.m_visual.muzzleDesc.count > 0)
-            particles.Emit(tower.m_position, tower.m_visual.muzzleDesc);
-
-        gameData.m_payloads.push_back(std::move(payload));
-        gameData.m_vfx.push_back(std::move(vfx));
+        Fire(tower, targetKeys, gameData, particles);
     }
 }
 
-std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(Tower& tower, DenseSlotMap<Enemy>& enemies, int max_targets) {
+// Recompute live stats from base, then let modules update their state and augment stats.
+void TowerSystem::RecomputeStats(Tower& tower, float dt) {
+    tower.m_stats = tower.m_base;
+    for (auto& mod : tower.m_modules) {
+        mod->Tick(dt);
+        mod->ContributeTower(tower.m_stats);
+    }
+}
+
+// Decay the attack flash over the visual's attackDuration; guard against a zero duration.
+void TowerSystem::DecayAttackFlash(Tower& tower, float dt) {
+    if (tower.m_visual.attackDuration > 0.0f)
+        tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_visual.attackDuration);
+    else
+        tower.m_attackFlashRatio = 0.0f;
+}
+
+// Execute one shot: reset cooldown/flash, notify modules, and enqueue the damage payload + VFX.
+void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>& targetKeys, GameData& gameData, ParticleSystem& particles) {
+    tower.m_cooldown         = (tower.m_stats.shotsPerMinute > 0.0f) ? kSecondsPerMinute / tower.m_stats.shotsPerMinute : kInactiveCooldown;
+    tower.m_attackFlashRatio = 1.0f;
+    for (auto& mod : tower.m_modules) // note: after the cooldown reset, so a new stack affects the next-but-one shot
+        mod->OnFire();
+
+    std::vector<Vector2> targetPositions;
+    targetPositions.reserve(targetKeys.size());
+    for (auto& key : targetKeys) {
+        if (Enemy* e = gameData.enemies.Get(key))
+            targetPositions.push_back(e->m_position);
+    }
+
+    AttackPayload payload;
+    payload.m_targetKeys = targetKeys;
+    BuildPayload(tower, payload);
+
+    VfxEffect vfx = BuildVfx(tower, std::move(targetPositions));
+
+    if (tower.m_visual.muzzleDesc.count > 0) // muzzle burst
+        particles.Emit(tower.m_position, tower.m_visual.muzzleDesc);
+
+    gameData.m_payloads.push_back(std::move(payload));
+    gameData.m_vfx.push_back(std::move(vfx));
+}
+
+VfxEffect TowerSystem::BuildVfx(const Tower& tower, std::vector<Vector2> targetPositions) {
+    VfxEffect vfx;
+    vfx.m_origin = tower.m_position;
+    vfx.m_targetPositions = std::move(targetPositions);
+    vfx.m_duration = tower.m_visual.attackDuration;
+    vfx.m_maxDuration = tower.m_visual.attackDuration;
+    vfx.m_radius = tower.m_stats.range;
+    vfx.m_color = tower.m_visual.color;
+    vfx.m_style = tower.m_visual.style;
+    return vfx;
+}
+
+std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(const Tower& tower, DenseSlotMap<Enemy>& enemies, int max_targets) {
     std::vector<Enemy*> inRange = FindEnemiesInRange(tower, enemies);
 
     std::sort(inRange.begin(), inRange.end(), [&](const Enemy* a, const Enemy* b) {
         return CompareTarget(*a, *b, tower.m_stats.targetingMode);
     });
 
+    int size = static_cast<int>(inRange.size());
+    int count = (max_targets == 0) ? size : std::min(size, max_targets); // 0 = target all in range
+
     std::vector<DenseSlotMap<Enemy>::Key> result;
-    int count = std::min(static_cast<int>(inRange.size()), max_targets);
-
-    // count == 0 means target all enemies in range
-    if (count == 0)
-        count = static_cast<int>(inRange.size());
-
     result.reserve(count);
     for (int i = 0; i < count; i++)
         result.push_back(enemies.KeyOf(inRange[i]));
@@ -91,7 +106,7 @@ std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(Tower& tower, Den
     return result;
 }
 
-std::vector<Enemy*> TowerSystem::FindEnemiesInRange(Tower& tower, DenseSlotMap<Enemy>& enemies) {
+std::vector<Enemy*> TowerSystem::FindEnemiesInRange(const Tower& tower, DenseSlotMap<Enemy>& enemies) {
     std::vector<Enemy*> result;
     for (auto& enemy : enemies) {
         if (enemy.m_currentHealth <= 0.0f) continue;
@@ -105,14 +120,52 @@ void TowerSystem::BuildPayload(const Tower& tower, AttackPayload& payload) {
     // Scalar combat values come from stats; behavioural effects come from modules
     payload.m_damage = tower.m_stats.damage;
     payload.m_armorPierce = tower.m_stats.armorPierce;
-    payload.m_critChance = tower.m_stats.critChance;
-    payload.m_critMultiplier = tower.m_stats.critMultiplier;
     if (tower.m_visual.impactDesc.count > 0)
         payload.m_impactDescs.push_back(tower.m_visual.impactDesc);
     if (tower.m_visual.critImpactDesc.count > 0)
         payload.m_critImpactDescs.push_back(tower.m_visual.critImpactDesc);
     for (auto& mod : tower.m_modules)
         mod->Contribute(payload);
+}
+
+// Base damage for one hit: effective armor reduction plus a single crit roll.
+// outCrit reports whether this hit crit (used for crit-only impact particles).
+static float ResolveDamage(const AttackPayload& payload, const Enemy& enemy, bool& outCrit) {
+    float armor = std::max(0.0f, enemy.m_stats.armor - payload.m_armorPierce);
+    float dmg = payload.m_damage;
+    outCrit = payload.m_critChance > 0.0f
+        && GetRandomValue(0, 99) < (int)(payload.m_critChance * 100.0f);
+    if (outCrit)
+        dmg *= payload.m_critMultiplier;
+    return std::max(0.0f, dmg - armor);
+}
+
+// A pre-existing Weakness adds flat bonus damage to this hit, then is consumed (0 if none).
+static float ConsumeWeaknessBonus(Enemy& enemy) {
+    if (Effect* w = enemy.FindEffect(EffectType::Weakness)) {
+        float bonus = w->m_value;
+        enemy.RemoveEffect(EffectType::Weakness);
+        return bonus;
+    }
+    return 0.0f;
+}
+
+// Post-damage effect bookkeeping: any hit wakes a stunned enemy, then the payload's own effects
+// are applied last so a weakness/stun tower never consumes the effect it just applied.
+static void ApplyOnHitEffects(const AttackPayload& payload, Enemy& enemy) {
+    enemy.RemoveEffect(EffectType::Stun);
+    for (auto& effect : payload.m_effects)
+        enemy.AddEffect(effect);
+}
+
+// Impact particles — all modules contribute their burst; crit adds extra descs.
+static void EmitImpact(ParticleSystem& particles, const Enemy& enemy, bool crit, const AttackPayload& payload) {
+    for (auto& desc : payload.m_impactDescs)
+        particles.Emit(enemy.m_position, desc);
+    if (crit) {
+        for (auto& desc : payload.m_critImpactDescs)
+            particles.Emit(enemy.m_position, desc);
+    }
 }
 
 void TowerSystem::TickPayloads(GameData& gameData, ParticleSystem& particles) {
@@ -123,33 +176,14 @@ void TowerSystem::TickPayloads(GameData& gameData, ParticleSystem& particles) {
             Enemy* enemy = gameData.enemies.Get(key);
             if (!enemy) continue;
 
-            float armor = std::max(0.0f, enemy->m_stats.armor - payload.m_armorPierce);
-            float dmg = payload.m_damage;
-            bool crit = payload.m_critChance > 0.0f
-                && GetRandomValue(0, 99) < (int)(payload.m_critChance * 100.0f);
-            if (crit)
-                dmg *= payload.m_critMultiplier;
-            float net = std::max(0.0f, dmg - armor);
-            // A pre-existing Weakness adds flat bonus damage to this hit, then is consumed
-            if (Effect* w = enemy->FindEffect(EffectType::Weakness)) {
-                net += w->m_value;
-                enemy->RemoveEffect(EffectType::Weakness);
-            }
+            bool crit = false;
+            float net = ResolveDamage(payload, *enemy, crit);
+            net += ConsumeWeaknessBonus(*enemy); // before interception/health, per effect rules
             for (auto& mod : enemy->m_modules)
                 net = mod->InterceptDamage(net);
             enemy->m_currentHealth -= net;
-            enemy->RemoveEffect(EffectType::Stun); // any hit wakes a stunned enemy
-            // Apply this payload's effects last so a weakness/stun tower never consumes its own effect
-            for (auto& effect : payload.m_effects)
-                enemy->AddEffect(effect);
-
-            // Impact particles — all modules contribute their burst; crit adds extra descs
-            for (auto& desc : payload.m_impactDescs)
-                particles.Emit(enemy->m_position, desc);
-            if (crit) {
-                for (auto& desc : payload.m_critImpactDescs)
-                    particles.Emit(enemy->m_position, desc);
-            }
+            ApplyOnHitEffects(payload, *enemy); // stun cleared after damage; new effects applied last
+            EmitImpact(particles, *enemy, crit, payload);
         }
         payload.m_resolved = true;
     }

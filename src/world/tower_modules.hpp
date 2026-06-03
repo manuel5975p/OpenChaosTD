@@ -75,6 +75,16 @@ public:
     void PatchStat(const std::string& key, float v, bool mul) override;
 };
 
+// Supplies the attack's critical-hit chance and multiplier (the roll happens in damage resolution)
+class CritModule : public TowerModule {
+public:
+    float m_critChance, m_critMultiplier; // m_critChance in [0..1]; m_critMultiplier applied on a crit
+    CritModule(float critChance, float critMultiplier);
+    void Contribute(AttackPayload& attack) const override;
+    void Describe(std::string& text, Color& color) const override;
+    void PatchStat(const std::string& key, float v, bool mul) override;
+};
+
 // Self-buff: each shot adds a stack (capped) that raises fire rate; stacks clear after idle time
 class SlowStartModule : public TowerModule {
 public:

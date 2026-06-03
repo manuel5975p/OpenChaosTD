@@ -2,6 +2,7 @@
 #include <game.hpp>
 #include <raylib.h>
 #include <sstream>
+#include <unordered_map>
 
 void TowerInfoHUD::Build(Game& game) {
     HUD::Build(game.GetGameConfig().hudScale);
@@ -19,37 +20,37 @@ void TowerInfoHUD::Build(Game& game) {
     Hide(); // shown only while a tower is selected or hovered
 }
 
-// Readable name for an upgrade key (combat stats and module parameters).
+// Readable name for an upgrade key (combat stats and module parameters); falls back to the raw key.
 static const char* StatLabel(const std::string& key) {
-    if (key == "damage")         return "Damage";
-    if (key == "shotsPerMinute") return "Rate";
-    if (key == "range")          return "Range";
-    if (key == "targetCount")    return "Targets";
-    if (key == "armorPierce")    return "Pierce";
-    if (key == "critChance")     return "Crit";
-    if (key == "critMultiplier") return "Crit Mult";
-    if (key == "slowPercent")    return "Slow";
-    if (key == "slowDuration")   return "Slow Time";
-    if (key == "burnDamage")     return "Burn";
-    if (key == "burnDuration")   return "Burn Time";
-    if (key == "shredAmount")    return "Shred";
-    if (key == "shredDuration")  return "Shred Time";
-    if (key == "weaknessAmount") return "Weakness";
-    if (key == "weaknessDuration") return "Weak Time";
-    if (key == "stunDuration")   return "Stun Time";
-    if (key == "bonusPerStack")  return "Ramp";
-    if (key == "maxStacks")      return "Max Stacks";
-    if (key == "idleTime")       return "Idle";
-    return key.c_str();
+    static const std::unordered_map<std::string, const char*> labels = {
+        {"damage", "Damage"},          {"shotsPerMinute", "Rate"},       {"range", "Range"},
+        {"targetCount", "Targets"},    {"armorPierce", "Pierce"},        {"critChance", "Crit"},
+        {"critMultiplier", "Crit Mult"}, {"slowPercent", "Slow"},        {"slowDuration", "Slow Time"},
+        {"burnDamage", "Burn"},        {"burnDuration", "Burn Time"},    {"shredAmount", "Shred"},
+        {"shredDuration", "Shred Time"}, {"weaknessAmount", "Weakness"}, {"weaknessDuration", "Weak Time"},
+        {"stunDuration", "Stun Time"}, {"bonusPerStack", "Ramp"},        {"maxStacks", "Max Stacks"},
+        {"idleTime", "Idle"},
+    };
+    auto it = labels.find(key);
+    return it != labels.end() ? it->second : key.c_str();
+}
+
+// Only slowPercent renders as a percentage in the upgrade preview.
+static bool IsPercentKey(const std::string& key) { return key == "slowPercent"; }
+
+// One delta line: "x1.5 Rate" for multiplicative, "+40% Slow" / "+2 Range" for additive.
+static std::string FormatStatDelta(const std::string& key, float v, bool mul) {
+    const char* fmt = mul ? "x%g %s" : (IsPercentKey(key) ? "+%g%% %s" : "+%g %s");
+    return TextFormat(fmt, v, StatLabel(key));
 }
 
 // Human-readable delta lines for one upgrade level.
 static std::vector<std::string> BuildUpgradePreview(const TowerUpgrade& up) {
     std::vector<std::string> lines;
     for (const auto& [k, v] : up.adds)
-        lines.push_back(TextFormat(k == "slowPercent" ? "+%g%% %s" : "+%g %s", v, StatLabel(k)));
+        lines.push_back(FormatStatDelta(k, v, false));
     for (const auto& [k, v] : up.muls)
-        lines.push_back(TextFormat("x%g %s", v, StatLabel(k)));
+        lines.push_back(FormatStatDelta(k, v, true));
     for (const auto& mod : up.addModules) {
         std::string type = mod.value("type", "");
         if (!type.empty()) lines.push_back("Adds " + type);
@@ -90,8 +91,8 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
 
     m_descLines = WrapText(tower.m_description, m_panelW - m_margin * 2.0f, m_fontDesc);
 
-    // Walls have no combat stats to display. Shooters: Damage/Range/Rate/Targets (+ optional Crit/Pierce) + effect modules
-    int extraRows = (tower.m_base.critChance > 0.0f ? 1 : 0) + (tower.m_base.armorPierce > 0.0f ? 1 : 0);
+    // Walls have no combat stats to display. Shooters: Damage/Range/Rate/Targets (+ optional Pierce) + effect modules (incl. Crit)
+    int extraRows = (tower.m_base.armorPierce > 0.0f ? 1 : 0);
     int statRows = (tower.m_role == TowerRole::Shooter) ? 4 + extraRows + moduleRows : 0;
     float panelH = m_margin + m_headerH
         + static_cast<float>(m_descLines.size()) * m_descLineH
@@ -200,10 +201,6 @@ void TowerInfoHUD::OnDraw(Game& game) {
         DrawText(TextFormat("Rate:    %d/min", static_cast<int>(tower.m_stats.shotsPerMinute + 0.5f)), static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
         DrawText(TextFormat("Targets: %d",     tower.m_stats.targetCount),                     static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
 
-        if (tower.m_stats.critChance > 0.0f) {
-            DrawText(TextFormat("Crit:    %.0f%%  x%.1f", tower.m_stats.critChance * 100.0f, tower.m_stats.critMultiplier),
-                     static_cast<int>(x), static_cast<int>(y), m_fontSm, YELLOW); y += m_lineH;
-        }
         if (tower.m_stats.armorPierce > 0.0f) {
             DrawText(TextFormat("Pierce:  %g", tower.m_stats.armorPierce),
                      static_cast<int>(x), static_cast<int>(y), m_fontSm, GOLD); y += m_lineH;

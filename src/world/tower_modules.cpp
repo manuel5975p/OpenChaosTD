@@ -23,9 +23,8 @@ void SlowModule::Describe(std::string& text, Color& color) const {
 }
 
 void SlowModule::PatchStat(const std::string& key, float v, bool mul) {
-    auto apply = [&](float& f) { f = mul ? f * v : f + v; };
-    if      (key == "slowPercent")  apply(m_slowPercent);
-    else if (key == "slowDuration") apply(m_duration);
+    if      (key == "slowPercent")  ApplyDelta(m_slowPercent, v, mul);
+    else if (key == "slowDuration") ApplyDelta(m_duration, v, mul);
 }
 
 // --- BurnModule ---
@@ -48,9 +47,8 @@ void BurnModule::Describe(std::string& text, Color& color) const {
 }
 
 void BurnModule::PatchStat(const std::string& key, float v, bool mul) {
-    auto apply = [&](float& f) { f = mul ? f * v : f + v; };
-    if      (key == "burnDamage")   apply(m_damage);
-    else if (key == "burnDuration") apply(m_duration);
+    if      (key == "burnDamage")   ApplyDelta(m_damage, v, mul);
+    else if (key == "burnDuration") ApplyDelta(m_duration, v, mul);
 }
 
 // --- ArmorShredModule ---
@@ -73,9 +71,8 @@ void ArmorShredModule::Describe(std::string& text, Color& color) const {
 }
 
 void ArmorShredModule::PatchStat(const std::string& key, float v, bool mul) {
-    auto apply = [&](float& f) { f = mul ? f * v : f + v; };
-    if      (key == "shredAmount")   apply(m_amount);
-    else if (key == "shredDuration") apply(m_duration);
+    if      (key == "shredAmount")   ApplyDelta(m_amount, v, mul);
+    else if (key == "shredDuration") ApplyDelta(m_duration, v, mul);
 }
 
 // --- WeaknessModule ---
@@ -98,9 +95,8 @@ void WeaknessModule::Describe(std::string& text, Color& color) const {
 }
 
 void WeaknessModule::PatchStat(const std::string& key, float v, bool mul) {
-    auto apply = [&](float& f) { f = mul ? f * v : f + v; };
-    if      (key == "weaknessAmount")   apply(m_amount);
-    else if (key == "weaknessDuration") apply(m_duration);
+    if      (key == "weaknessAmount")   ApplyDelta(m_amount, v, mul);
+    else if (key == "weaknessDuration") ApplyDelta(m_duration, v, mul);
 }
 
 // --- StunModule ---
@@ -124,8 +120,29 @@ void StunModule::Describe(std::string& text, Color& color) const {
 }
 
 void StunModule::PatchStat(const std::string& key, float v, bool mul) {
-    auto apply = [&](float& f) { f = mul ? f * v : f + v; };
-    if (key == "stunDuration") apply(m_duration);
+    if (key == "stunDuration") ApplyDelta(m_duration, v, mul);
+}
+
+// --- CritModule ---
+
+CritModule::CritModule(float critChance, float critMultiplier)
+    : m_critChance(critChance), m_critMultiplier(critMultiplier) {}
+
+void CritModule::Contribute(AttackPayload& attack) const {
+    attack.m_critChance = m_critChance;
+    attack.m_critMultiplier = m_critMultiplier;
+}
+
+void CritModule::Describe(std::string& text, Color& color) const {
+    char buf[40];
+    snprintf(buf, sizeof(buf), "Crit:    %.0f%%  x%.1f", m_critChance * 100.0f, m_critMultiplier);
+    text = buf;
+    color = YELLOW;
+}
+
+void CritModule::PatchStat(const std::string& key, float v, bool mul) {
+    if      (key == "critChance")     ApplyDelta(m_critChance, v, mul);
+    else if (key == "critMultiplier") ApplyDelta(m_critMultiplier, v, mul);
 }
 
 // --- SlowStartModule ---
@@ -159,8 +176,7 @@ void SlowStartModule::Describe(std::string& text, Color& color) const {
 }
 
 void SlowStartModule::PatchStat(const std::string& key, float v, bool mul) {
-    auto applyF = [&](float& f) { f = mul ? f * v : f + v; };
-    if      (key == "bonusPerStack") applyF(m_bonusPerStack);
-    else if (key == "idleTime")      applyF(m_idleTime);
+    if      (key == "bonusPerStack") ApplyDelta(m_bonusPerStack, v, mul);
+    else if (key == "idleTime")      ApplyDelta(m_idleTime, v, mul);
     else if (key == "maxStacks")     m_maxStacks = mul ? static_cast<int>(m_maxStacks * v + 0.5f) : m_maxStacks + static_cast<int>(v + 0.5f);
 }
