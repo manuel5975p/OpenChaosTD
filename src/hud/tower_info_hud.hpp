@@ -51,7 +51,7 @@ private:
     bool m_upgradeReady = false;    // affordable and not yet max level
     bool m_hasNextUpgrade = false;  // an unpurchased upgrade level exists
     std::vector<std::string> m_descLines;
-    std::vector<std::string> m_upgradePreview; // delta lines for the next upgrade
+    std::vector<DescLine> m_upgradePreview; // delta lines for the next upgrade
 
     void DrawUpgradeTooltip(Game& game);
 };

@@ -2,7 +2,6 @@
 #include <game.hpp>
 #include <raylib.h>
 #include <sstream>
-#include <unordered_map>
 
 void TowerInfoHUD::Build(Game& game) {
     HUD::Build(game.GetGameConfig().hudScale);
@@ -18,44 +17,6 @@ void TowerInfoHUD::Build(Game& game) {
     m_fontDesc    = ScaledInt(10.0f);
     m_fontHeader  = ScaledInt(14.0f);
     Hide(); // shown only while a tower is selected or hovered
-}
-
-// Readable name for an upgrade key (combat stats and module parameters); falls back to the raw key.
-static const char* StatLabel(const std::string& key) {
-    static const std::unordered_map<std::string, const char*> labels = {
-        {"damage", "Damage"},          {"shotsPerMinute", "Rate"},       {"range", "Range"},
-        {"targetCount", "Targets"},    {"armorPierce", "Pierce"},        {"critChance", "Crit"},
-        {"critMultiplier", "Crit Mult"}, {"slowPercent", "Slow"},        {"slowDuration", "Slow Time"},
-        {"burnDamage", "Burn"},        {"burnDuration", "Burn Time"},    {"shredAmount", "Shred"},
-        {"shredDuration", "Shred Time"}, {"weaknessAmount", "Weakness"}, {"weaknessDuration", "Weak Time"},
-        {"stunDuration", "Stun Time"}, {"bonusPerStack", "Ramp"},        {"maxStacks", "Max Stacks"},
-        {"idleTime", "Idle"},
-    };
-    auto it = labels.find(key);
-    return it != labels.end() ? it->second : key.c_str();
-}
-
-// Only slowPercent renders as a percentage in the upgrade preview.
-static bool IsPercentKey(const std::string& key) { return key == "slowPercent"; }
-
-// One delta line: "x1.5 Rate" for multiplicative, "+40% Slow" / "+2 Range" for additive.
-static std::string FormatStatDelta(const std::string& key, float v, bool mul) {
-    const char* fmt = mul ? "x%g %s" : (IsPercentKey(key) ? "+%g%% %s" : "+%g %s");
-    return TextFormat(fmt, v, StatLabel(key));
-}
-
-// Human-readable delta lines for one upgrade level.
-static std::vector<std::string> BuildUpgradePreview(const TowerUpgrade& up) {
-    std::vector<std::string> lines;
-    for (const auto& [k, v] : up.m_adds)
-        lines.push_back(FormatStatDelta(k, v, false));
-    for (const auto& [k, v] : up.m_muls)
-        lines.push_back(FormatStatDelta(k, v, true));
-    for (const auto& mod : up.m_addModules) {
-        std::string type = mod.value("type", "");
-        if (!type.empty()) lines.push_back("Adds " + type);
-    }
-    return lines;
 }
 
 static std::vector<std::string> WrapText(const std::string& text, float maxWidth, int fontSize) {
@@ -91,9 +52,15 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
 
     m_descLines = WrapText(tower.m_description, m_panelW - m_margin * 2.0f, m_fontDesc);
 
-    // Walls have no combat stats to display. Shooters: Damage/Range/Rate/Targets (+ optional Pierce) + effect modules (incl. Crit)
-    int extraRows = (tower.m_base.m_armorPierce > 0.0f ? 1 : 0);
-    int statRows = (tower.m_role == TowerRole::Shooter) ? 4 + extraRows + moduleRows : 0;
+    // Walls have no combat stats to display. Shooters: the core stat lines (incl. optional
+    // Pierce) from TowerStats::Describe, plus one line per effect module (incl. Crit).
+    int coreStatRows = 0;
+    if (tower.m_role == TowerRole::Shooter) {
+        std::vector<DescLine> statLines;
+        tower.m_stats.Describe(statLines);
+        coreStatRows = static_cast<int>(statLines.size());
+    }
+    int statRows = (tower.m_role == TowerRole::Shooter) ? coreStatRows + moduleRows : 0;
     float panelH = m_margin + m_headerH
         + static_cast<float>(m_descLines.size()) * m_descLineH
         + statRows * m_lineH
@@ -133,7 +100,7 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
             m_upgradeBtn.m_label = TextFormat("Upgrade $%d", up.m_cost);
             m_upgradeReady = game.GetGameData().m_gold >= up.m_cost;
             m_hasNextUpgrade = true;
-            m_upgradePreview = BuildUpgradePreview(up);
+            up.Describe(m_upgradePreview);
         }
         m_upgradeBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
     }
@@ -196,14 +163,11 @@ void TowerInfoHUD::OnDraw(Game& game) {
 
     // Core stats — skipped for walls, which have no combat function
     if (tower.m_role == TowerRole::Shooter) {
-        DrawText(TextFormat("Damage:  %g",     tower.m_stats.m_damage),                          static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-        DrawText(TextFormat("Range:   %.0f",   tower.m_stats.m_range),                           static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-        DrawText(TextFormat("Rate:    %d/min", static_cast<int>(tower.m_stats.m_shotsPerMinute + 0.5f)), static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-        DrawText(TextFormat("Targets: %d",     tower.m_stats.m_targetCount),                     static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-
-        if (tower.m_stats.m_armorPierce > 0.0f) {
-            DrawText(TextFormat("Pierce:  %g", tower.m_stats.m_armorPierce),
-                     static_cast<int>(x), static_cast<int>(y), m_fontSm, GOLD); y += m_lineH;
+        std::vector<DescLine> statLines;
+        tower.m_stats.Describe(statLines);
+        for (const auto& line : statLines) {
+            DrawText(line.m_text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, line.m_color);
+            y += m_lineH;
         }
 
         for (const auto& mod : tower.m_modules) {
@@ -238,7 +202,7 @@ void TowerInfoHUD::DrawUpgradeTooltip(Game& game) {
     // Box sized to the widest of the header and the preview lines
     int maxW = MeasureText("Next Level", m_fontSm);
     for (const auto& line : m_upgradePreview)
-        maxW = std::max(maxW, MeasureText(line.c_str(), m_fontSm));
+        maxW = std::max(maxW, MeasureText(line.m_text.c_str(), m_fontSm));
 
     float boxW = maxW + m_margin * 2.0f;
     float boxH = m_margin * 2.0f + static_cast<float>(m_upgradePreview.size() + 1) * m_lineH;
@@ -263,7 +227,7 @@ void TowerInfoHUD::DrawUpgradeTooltip(Game& game) {
     DrawText("Next Level", static_cast<int>(tx), static_cast<int>(ty), m_fontSm, GOLD);
     ty += m_lineH;
     for (const auto& line : m_upgradePreview) {
-        DrawText(line.c_str(), static_cast<int>(tx), static_cast<int>(ty), m_fontSm, RAYWHITE);
+        DrawText(line.m_text.c_str(), static_cast<int>(tx), static_cast<int>(ty), m_fontSm, line.m_color);
         ty += m_lineH;
     }
 }
