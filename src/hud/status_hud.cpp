@@ -43,7 +43,7 @@ void StatusHUD::OnProcessInput(Game& game) {
         m_speedSignal.Raise();
 
     // Start wave only when no wave is running
-    if (!data.waveActive && m_startWaveBtn.IsClicked())
+    if (!data.m_waveActive && m_startWaveBtn.IsClicked())
         m_waveSignal.Raise();
 }
 
@@ -58,17 +58,17 @@ void StatusHUD::OnDraw(Game& game) {
     int goldX    = marginX + ScaledInt(110.0f);
 
     // Left side: lives and gold
-    DrawText(TextFormat("Lives: %d", data.lives), marginX, m_textY, fontMain, RAYWHITE);
-    DrawText(TextFormat("Gold: %d",  data.gold),  goldX,   m_textY, fontMain, GOLD);
+    DrawText(TextFormat("Lives: %d", data.m_lives), marginX, m_textY, fontMain, RAYWHITE);
+    DrawText(TextFormat("Gold: %d",  data.m_gold),  goldX,   m_textY, fontMain, GOLD);
 
     // Center: wave number and elapsed time
     const char* waveStr;
-    if (data.waveNumber == 0)
+    if (data.m_waveNumber == 0)
         waveStr = "Wave: --";
-    else if (data.waveActive)
-        waveStr = TextFormat("Wave: %d  |  %.1fs", data.waveNumber, data.waveTimer);
+    else if (data.m_waveActive)
+        waveStr = TextFormat("Wave: %d  |  %.1fs", data.m_waveNumber, data.m_waveTimer);
     else
-        waveStr = TextFormat("Wave: %d  |  Done", data.waveNumber);
+        waveStr = TextFormat("Wave: %d  |  Done", data.m_waveNumber);
 
     DrawTextCenteredX(waveStr, static_cast<int>(m_panelRect.width / 2.0f), m_textY, fontMain, RAYWHITE);
 
@@ -81,7 +81,7 @@ void StatusHUD::OnDraw(Game& game) {
     m_autoBtn.DrawLabel(fontBtn, m_autoSpawn ? GOLD : RAYWHITE);
 
     // Start wave button — greyed out while a wave is running
-    const WidgetStyle& waveStyle = data.waveActive ? kDisabledStyle : kDefaultStyle;
+    const WidgetStyle& waveStyle = data.m_waveActive ? kDisabledStyle : kDefaultStyle;
     m_startWaveBtn.Draw(false, waveStyle);
-    m_startWaveBtn.DrawLabel(fontBtn, data.waveActive ? DARKGRAY : RAYWHITE);
+    m_startWaveBtn.DrawLabel(fontBtn, data.m_waveActive ? DARKGRAY : RAYWHITE);
 }

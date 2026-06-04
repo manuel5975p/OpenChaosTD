@@ -12,9 +12,9 @@ void PlayingState::OnEnter(Game& game) {
     game.GetParticles().Clear();
     game.GetSoundSystem().PlayMusic("openchaostd_main");
 
-    m_mapGenerator.Generate(game.GetGameData().map, 15, 19, 3, 40);
+    m_mapGenerator.Generate(game.GetGameData().m_map, 15, 19, 3, 40);
 
-    m_renderSystem.CenterCamera(game.GetGameData().map, game.GetScreen());
+    m_renderSystem.CenterCamera(game.GetGameData().m_map, game.GetScreen());
 
     m_towerHUD.Build(game);
     m_scoreHUD.Build(game);
@@ -48,7 +48,7 @@ void PlayingState::ProcessInput(Game& game, float dt) {
 }
 
 void PlayingState::Update(Game& game, float dt) {
-    if (game.GetGameData().victory)
+    if (game.GetGameData().m_victory)
         game.ChangeState(std::make_unique<EndState>(true));
 
     if (m_gameOver)
@@ -60,7 +60,7 @@ void PlayingState::Update(Game& game, float dt) {
 
     // Run the simulation once per speed step. Each sub-step uses the real frame dt so per-frame
     // timing (tower cooldowns, spawn pacing) stays accurate instead of feeding one oversized step.
-    for (int s = 0; s < kSpeedSteps[m_speedIndex] && !m_gameOver && !game.GetGameData().victory; s++)
+    for (int s = 0; s < kSpeedSteps[m_speedIndex] && !m_gameOver && !game.GetGameData().m_victory; s++)
         StepSimulation(game, dt);
 }
 
@@ -85,27 +85,27 @@ void PlayingState::Draw(Game& game) {
     Vector2 mouseWorld = game.GetInput().GetWorldMousePosition(m_renderSystem.GetCamera());
 
     BeginMode2D(m_renderSystem.GetCamera());
-    m_renderSystem.DrawMap(game.GetGameData().map, game.GetResources());
-    m_renderSystem.DrawPaths(game.GetGameData().map);
+    m_renderSystem.DrawMap(game.GetGameData().m_map, game.GetResources());
+    m_renderSystem.DrawPaths(game.GetGameData().m_map);
     if (m_debug) {
-        m_renderSystem.DebugDrawMap(game.GetGameData().map);
-        m_renderSystem.DebugDrawEnemies(game.GetGameData().enemies);
+        m_renderSystem.DebugDrawMap(game.GetGameData().m_map);
+        m_renderSystem.DebugDrawEnemies(game.GetGameData().m_enemies);
     }
-    m_renderSystem.DrawTowers(game.GetGameData().towers, game.GetResources());
-    m_renderSystem.DrawRangeIndicator(m_selection.towerKey, game.GetGameData().map, game.GetGameData().towers, mouseWorld);
-    if (!game.GetGameData().waveActive &&
+    m_renderSystem.DrawTowers(game.GetGameData().m_towers, game.GetResources());
+    m_renderSystem.DrawRangeIndicator(m_selection.towerKey, game.GetGameData().m_map, game.GetGameData().m_towers, mouseWorld);
+    if (!game.GetGameData().m_waveActive &&
         m_selection.towerKey == DenseSlotMap<Tower>::INVALID_KEY &&
         !m_towerHUD.GetSelectedTower().empty()) {
         int x, y;
-        if (game.GetGameData().map.WorldToTile(mouseWorld, x, y)) {
+        if (game.GetGameData().m_map.WorldToTile(mouseWorld, x, y)) {
             const std::string& name = m_towerHUD.GetSelectedTower();
-            float half = game.GetGameData().map.GetTileSize() / 2.0f;
-            Vector2 tileCenter = Vector2Add(game.GetGameData().map.TileToWorld(x, y), {half, half});
+            float half = game.GetGameData().m_map.GetTileSize() / 2.0f;
+            Vector2 tileCenter = Vector2Add(game.GetGameData().m_map.TileToWorld(x, y), {half, half});
             Texture2D& tex = game.GetResources().GetTexture(game.GetTowerFactory().GetTexture(name));
             m_renderSystem.DrawGhostTower(tileCenter, game.GetTowerFactory().GetRange(name), tex);
         }
     }
-    m_renderSystem.DrawEnemies(game.GetGameData().enemies, game.GetResources());
+    m_renderSystem.DrawEnemies(game.GetGameData().m_enemies, game.GetResources());
     m_renderSystem.DrawVfx(game.GetGameData().m_vfx);
     game.GetParticles().Draw();
     EndMode2D();
@@ -121,10 +121,10 @@ void PlayingState::Draw(Game& game) {
 
 void PlayingState::HandleHudSignals(Game& game) {
     if (m_towerInfoHUD.WasSellRequested()) {
-        if (Tower* tower = game.GetGameData().towers.Get(m_selection.towerKey)) {
+        if (Tower* tower = game.GetGameData().m_towers.Get(m_selection.towerKey)) {
             int x, y;
-            if (game.GetGameData().map.WorldToTile(tower->m_position, x, y)) {
-                game.GetGameData().gold += static_cast<int>(tower->m_cost * game.GetGameData().sellRefundRate);
+            if (game.GetGameData().m_map.WorldToTile(tower->m_position, x, y)) {
+                game.GetGameData().m_gold += static_cast<int>(tower->m_cost * game.GetGameData().m_sellRefundRate);
                 m_worldSystem.RemoveTower(x, y, game.GetGameData());
             }
         }
@@ -132,8 +132,8 @@ void PlayingState::HandleHudSignals(Game& game) {
     }
 
     if (m_towerInfoHUD.WasTargetingCycleRequested())
-        if (Tower* tower = game.GetGameData().towers.Get(m_selection.towerKey))
-            tower->m_base.targetingMode = NextTargetingMode(tower->m_base.targetingMode);
+        if (Tower* tower = game.GetGameData().m_towers.Get(m_selection.towerKey))
+            tower->m_base.m_targetingMode = NextTargetingMode(tower->m_base.m_targetingMode);
 
     if (m_towerInfoHUD.WasUpgradeRequested())
         UpgradeSelectedTower(game);
@@ -149,28 +149,28 @@ void PlayingState::HandleHudSignals(Game& game) {
 }
 
 void PlayingState::UpgradeSelectedTower(Game& game) {
-    Tower* tower = game.GetGameData().towers.Get(m_selection.towerKey);
+    Tower* tower = game.GetGameData().m_towers.Get(m_selection.towerKey);
     if (!tower || !tower->m_upgrades) return;
 
     const auto& ups = *tower->m_upgrades;
     if (tower->m_level >= static_cast<int>(ups.size())) return; // already max level
 
     const TowerUpgrade& up = ups[tower->m_level];
-    if (game.GetGameData().gold < up.cost) return;
+    if (game.GetGameData().m_gold < up.m_cost) return;
 
-    game.GetGameData().gold -= up.cost;
+    game.GetGameData().m_gold -= up.m_cost;
     // Each key is broadcast to the tower's base stats and every module; each consumer
     // applies only the keys it recognizes (TowerStats keys vs. module-owned params).
     auto applyDelta = [&](const std::string& k, float v, bool mul) {
         ApplyStat(tower->m_base, k, v, mul);
         for (auto& mod : tower->m_modules) mod->PatchStat(k, v, mul);
     };
-    for (auto& [k, v] : up.adds) applyDelta(k, v, false);
-    for (auto& [k, v] : up.muls) applyDelta(k, v, true);
-    for (auto& mod : up.addModules)
+    for (auto& [k, v] : up.m_adds) applyDelta(k, v, false);
+    for (auto& [k, v] : up.m_muls) applyDelta(k, v, true);
+    for (auto& mod : up.m_addModules)
         if (auto m = game.GetTowerFactory().BuildModule(mod)) tower->AddModule(std::move(m));
 
-    tower->m_cost += up.cost; // sell refund reflects total invested
+    tower->m_cost += up.m_cost; // sell refund reflects total invested
     tower->m_level++;
 }
 
@@ -179,13 +179,13 @@ void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
     if (game.GetInput().IsMouseInputConsumed()) return;
 
     int x, y;
-    if (!game.GetGameData().map.WorldToTile(mouseWorld, x, y)) {
+    if (!game.GetGameData().m_map.WorldToTile(mouseWorld, x, y)) {
         // Clicked outside the map — deselect
         m_selection.towerKey = DenseSlotMap<Tower>::INVALID_KEY;
         return;
     }
 
-    Tile& tile = game.GetGameData().map.Get(x, y);
+    Tile& tile = game.GetGameData().m_map.Get(x, y);
 
     // Tile has a tower — select it regardless of wave state
     if (tile.m_towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
@@ -197,17 +197,17 @@ void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
     m_selection.towerKey = DenseSlotMap<Tower>::INVALID_KEY;
 
     // Placement is blocked during waves or when no tower type is selected
-    if (game.GetGameData().waveActive) {
+    if (game.GetGameData().m_waveActive) {
         if (!m_towerHUD.GetSelectedTower().empty())
             m_eventLog.Add("Cannot place towers during a wave!");
         return;
     }
     if (m_towerHUD.GetSelectedTower().empty()) return;
     int cost = game.GetTowerFactory().GetCost(m_towerHUD.GetSelectedTower());
-    if (game.GetGameData().gold >= cost) {
+    if (game.GetGameData().m_gold >= cost) {
         Tower tower = game.GetTowerFactory().Create(m_towerHUD.GetSelectedTower());
         if (m_worldSystem.PlaceTower(x, y, tower, game.GetGameData())) {
-            game.GetGameData().gold -= cost;
+            game.GetGameData().m_gold -= cost;
             m_towerHUD.ClearSelection();
         }
     }
@@ -215,7 +215,7 @@ void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
 
 void PlayingState::SyncHUDState(Game& game) {
     if (m_selection.towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
-        if (Tower* tower = game.GetGameData().towers.Get(m_selection.towerKey)) {
+        if (Tower* tower = game.GetGameData().m_towers.Get(m_selection.towerKey)) {
             Vector2 screenPos = GetWorldToScreen2D(tower->m_position, m_renderSystem.GetCamera());
             m_towerInfoHUD.SetTarget(game, *tower, screenPos, true);
         } else {

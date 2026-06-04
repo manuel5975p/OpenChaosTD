@@ -11,10 +11,10 @@ void Button::Update(Vector2 mouse, bool pressed) {
 }
 
 void Button::Draw(bool selected, const WidgetStyle& style) const {
-    Color bg = m_hovered ? style.bgHovered : style.bgNormal;
+    Color bg = m_hovered ? style.m_bgHovered : style.m_bgNormal;
     DrawRectangleRec(m_rect, bg);
-    Color border = selected ? style.borderSel : style.border;
-    DrawRectangleLinesEx(m_rect, selected ? style.borderWidthActive : style.borderWidth, border);
+    Color border = selected ? style.m_borderSel : style.m_border;
+    DrawRectangleLinesEx(m_rect, selected ? style.m_borderWidthActive : style.m_borderWidth, border);
 }
 
 void Button::DrawLabel(int fontSize, Color color) const {
@@ -29,52 +29,52 @@ void Button::DrawLabel(int fontSize, Color color) const {
 // --- Slider ---
 
 void Slider::Update(Vector2 mouse, bool held) {
-    bool over = CheckCollisionPointRec(mouse, rect);
+    bool over = CheckCollisionPointRec(mouse, m_rect);
     m_dragging = held && (over || m_dragging);
 
-    if (m_dragging && max > min) {
-        float t = std::clamp((mouse.x - rect.x) / rect.width, 0.0f, 1.0f);
-        value = min + t * (max - min);
+    if (m_dragging && m_max > m_min) {
+        float t = std::clamp((mouse.x - m_rect.x) / m_rect.width, 0.0f, 1.0f);
+        m_value = m_min + t * (m_max - m_min);
     }
 }
 
 void Slider::Draw(const WidgetStyle& style) const {
-    DrawRectangleRec(rect, style.bgNormal);
-    DrawRectangleLinesEx(rect, style.borderWidth, style.border);
+    DrawRectangleRec(m_rect, style.m_bgNormal);
+    DrawRectangleLinesEx(m_rect, style.m_borderWidth, style.m_border);
 
-    if (max <= min) return;
+    if (m_max <= m_min) return;
 
-    float t = (value - min) / (max - min);
-    Rectangle filled = { rect.x, rect.y, rect.width * t, rect.height };
-    DrawRectangleRec(filled, style.accent);
+    float t = (m_value - m_min) / (m_max - m_min);
+    Rectangle filled = { m_rect.x, m_rect.y, m_rect.width * t, m_rect.height };
+    DrawRectangleRec(filled, style.m_accent);
 
     // Knob
-    float kx = rect.x + rect.width * t;
-    DrawRectangle(static_cast<int>(kx - 3), static_cast<int>(rect.y) - 2,
-        6, static_cast<int>(rect.height) + 4, style.text);
+    float kx = m_rect.x + m_rect.width * t;
+    DrawRectangle(static_cast<int>(kx - 3), static_cast<int>(m_rect.y) - 2,
+        6, static_cast<int>(m_rect.height) + 4, style.m_text);
 }
 
 // --- Toggle ---
 
 void Toggle::Update(Vector2 mouse, bool pressed) {
     m_clicked = false;
-    if (CheckCollisionPointRec(mouse, rect) && pressed) {
-        value = !value;
+    if (CheckCollisionPointRec(mouse, m_rect) && pressed) {
+        m_value = !m_value;
         m_clicked = true;
     }
 }
 
 void Toggle::Draw(const WidgetStyle& style) const {
-    Color bg = value ? style.bgActive : style.bgNormal;
-    DrawRectangleRec(rect, bg);
-    DrawRectangleLinesEx(rect, style.borderWidth, style.border);
+    Color bg = m_value ? style.m_bgActive : style.m_bgNormal;
+    DrawRectangleRec(m_rect, bg);
+    DrawRectangleLinesEx(m_rect, style.m_borderWidth, style.m_border);
 
-    if (!label.empty()) {
-        int fontSize = static_cast<int>(rect.height * 0.65f);
-        DrawText(label.c_str(),
-            static_cast<int>(rect.x + rect.width + 6.0f),
-            static_cast<int>(rect.y + (rect.height - fontSize) / 2.0f),
-            fontSize, style.text);
+    if (!m_label.empty()) {
+        int fontSize = static_cast<int>(m_rect.height * 0.65f);
+        DrawText(m_label.c_str(),
+            static_cast<int>(m_rect.x + m_rect.width + 6.0f),
+            static_cast<int>(m_rect.y + (m_rect.height - fontSize) / 2.0f),
+            fontSize, style.m_text);
     }
 }
 
@@ -82,19 +82,19 @@ void Toggle::Draw(const WidgetStyle& style) const {
 
 void TextInput::Update(Vector2 mouse, bool pressed) {
     if (pressed)
-        m_focused = CheckCollisionPointRec(mouse, rect);
+        m_focused = CheckCollisionPointRec(mouse, m_rect);
 
     if (!m_focused) return;
 
     int ch = GetCharPressed();
     while (ch > 0) {
-        if (ch >= 32 && static_cast<int>(text.size()) < maxLength)
-            text += static_cast<char>(ch);
+        if (ch >= 32 && static_cast<int>(m_text.size()) < m_maxLength)
+            m_text += static_cast<char>(ch);
         ch = GetCharPressed();
     }
 
-    if (IsKeyPressed(KEY_BACKSPACE) && !text.empty())
-        text.pop_back();
+    if (IsKeyPressed(KEY_BACKSPACE) && !m_text.empty())
+        m_text.pop_back();
 
     if (IsKeyPressed(KEY_ENTER))
         m_focused = false;
@@ -103,28 +103,28 @@ void TextInput::Update(Vector2 mouse, bool pressed) {
 // --- ProgressBar ---
 
 void ProgressBar::Draw(const WidgetStyle& style) const {
-    DrawRectangleRec(rect, style.bgNormal);
-    DrawRectangleLinesEx(rect, style.borderWidth, style.border);
+    DrawRectangleRec(m_rect, style.m_bgNormal);
+    DrawRectangleLinesEx(m_rect, style.m_borderWidth, style.m_border);
 
-    if (max > 0.0f && value > 0.0f) {
-        float t = std::clamp(value / max, 0.0f, 1.0f);
-        Rectangle filled = { rect.x, rect.y, rect.width * t, rect.height };
-        DrawRectangleRec(filled, style.accent);
+    if (m_max > 0.0f && m_value > 0.0f) {
+        float t = std::clamp(m_value / m_max, 0.0f, 1.0f);
+        Rectangle filled = { m_rect.x, m_rect.y, m_rect.width * t, m_rect.height };
+        DrawRectangleRec(filled, style.m_accent);
     }
 }
 
 // --- TextInput ---
 
 void TextInput::Draw(const WidgetStyle& style) const {
-    DrawRectangleRec(rect, style.bgInput);
-    Color border = m_focused ? style.accent : style.border;
-    DrawRectangleLinesEx(rect, m_focused ? style.borderWidthActive : style.borderWidth, border);
+    DrawRectangleRec(m_rect, style.m_bgInput);
+    Color border = m_focused ? style.m_accent : style.m_border;
+    DrawRectangleLinesEx(m_rect, m_focused ? style.m_borderWidthActive : style.m_borderWidth, border);
 
-    int fontSize = static_cast<int>(rect.height * 0.6f);
-    float padding = rect.height * 0.2f;
-    std::string display = text + (m_focused ? "_" : "");
+    int fontSize = static_cast<int>(m_rect.height * 0.6f);
+    float padding = m_rect.height * 0.2f;
+    std::string display = m_text + (m_focused ? "_" : "");
     DrawText(display.c_str(),
-        static_cast<int>(rect.x + padding),
-        static_cast<int>(rect.y + (rect.height - fontSize) / 2.0f),
-        fontSize, style.text);
+        static_cast<int>(m_rect.x + padding),
+        static_cast<int>(m_rect.y + (m_rect.height - fontSize) / 2.0f),
+        fontSize, style.m_text);
 }

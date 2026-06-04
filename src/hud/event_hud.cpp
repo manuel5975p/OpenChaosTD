@@ -10,7 +10,7 @@ void EventHUD::Add(const std::string& message, float duration) {
     }
 
     // Drop oldest entry when at capacity
-    if (static_cast<int>(m_entries.size()) >= MAX_ENTRIES)
+    if (static_cast<int>(m_entries.size()) >= kMaxEntries)
         m_entries.erase(m_entries.begin());
 
     m_entries.push_back({message, duration});

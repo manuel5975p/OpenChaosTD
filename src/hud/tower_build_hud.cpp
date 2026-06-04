@@ -80,7 +80,7 @@ void TowerBuildHUD::OnDraw(Game& game) {
 
         int cost = game.GetTowerFactory().GetCost(name);
         const char* costStr = TextFormat("$%d", cost);
-        Color costColor = (game.GetGameData().gold >= cost) ? GREEN : RED;
+        Color costColor = (game.GetGameData().m_gold >= cost) ? GREEN : RED;
         DrawTextCenteredX(costStr, centerX,
             static_cast<int>(btn.m_rect.y + btn.m_rect.height - Scaled(9.0f)),
             fontSize, costColor);

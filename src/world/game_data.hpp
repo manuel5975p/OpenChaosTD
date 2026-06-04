@@ -12,23 +12,23 @@ class JsonStore;
 
 struct GameData {
     // Gameplay config — loaded from gameplay.json, not reset between games
-    int startingLives = 20;
-    int startingGold = 150;
-    float sellRefundRate = 0.5f;
-    int totalWaves = 0;          // 0 = endless, >0 = victory after this many waves
-    float autoSpawnDelay = 3.0f; // seconds between waves when auto-spawn is on
+    int m_startingLives = 20;
+    int m_startingGold = 150;
+    float m_sellRefundRate = 0.5f;
+    int m_totalWaves = 0;          // 0 = endless, >0 = victory after this many waves
+    float m_autoSpawnDelay = 3.0f; // seconds between waves when auto-spawn is on
 
-    int lives = 20;
-    int gold = 150;
-    bool victory = false;
+    int m_lives = 20;
+    int m_gold = 150;
+    bool m_victory = false;
 
     // Wave state
-    int   waveNumber = 0;
-    bool  waveActive = false;
-    float waveTimer  = 0.0f;  // seconds elapsed since wave started
-    Map map;
-    DenseSlotMap<Tower> towers;
-    DenseSlotMap<Enemy> enemies;
+    int   m_waveNumber = 0;
+    bool  m_waveActive = false;
+    float m_waveTimer = 0.0f;  // seconds elapsed since wave started
+    Map m_map;
+    DenseSlotMap<Tower> m_towers;
+    DenseSlotMap<Enemy> m_enemies;
     std::vector<AttackPayload> m_payloads;
     std::vector<VfxEffect> m_vfx;
 

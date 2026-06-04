@@ -151,7 +151,7 @@ SlowStartModule::SlowStartModule(float bonusPerStack, int maxStacks, float idleT
     : m_bonusPerStack(bonusPerStack), m_idleTime(idleTime), m_maxStacks(maxStacks) {}
 
 void SlowStartModule::ContributeTower(TowerStats& stats) const {
-    stats.shotsPerMinute += m_stacks * m_bonusPerStack;
+    stats.m_shotsPerMinute += m_stacks * m_bonusPerStack;
 }
 
 void SlowStartModule::Tick(float dt) {

@@ -47,11 +47,11 @@ static std::string FormatStatDelta(const std::string& key, float v, bool mul) {
 // Human-readable delta lines for one upgrade level.
 static std::vector<std::string> BuildUpgradePreview(const TowerUpgrade& up) {
     std::vector<std::string> lines;
-    for (const auto& [k, v] : up.adds)
+    for (const auto& [k, v] : up.m_adds)
         lines.push_back(FormatStatDelta(k, v, false));
-    for (const auto& [k, v] : up.muls)
+    for (const auto& [k, v] : up.m_muls)
         lines.push_back(FormatStatDelta(k, v, true));
-    for (const auto& mod : up.addModules) {
+    for (const auto& mod : up.m_addModules) {
         std::string type = mod.value("type", "");
         if (!type.empty()) lines.push_back("Adds " + type);
     }
@@ -77,7 +77,7 @@ static std::vector<std::string> WrapText(const std::string& text, float maxWidth
 
 void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, bool interactive) {
     m_target = &tower;
-    m_showSell      = interactive && !game.GetGameData().waveActive;     // selling stays between waves
+    m_showSell      = interactive && !game.GetGameData().m_waveActive;     // selling stays between waves
     m_showTargeting = interactive && tower.m_role == TowerRole::Shooter; // retarget any time
     m_showUpgrade   = interactive && tower.m_role == TowerRole::Shooter
                       && tower.m_upgrades && !tower.m_upgrades->empty();
@@ -92,7 +92,7 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
     m_descLines = WrapText(tower.m_description, m_panelW - m_margin * 2.0f, m_fontDesc);
 
     // Walls have no combat stats to display. Shooters: Damage/Range/Rate/Targets (+ optional Pierce) + effect modules (incl. Crit)
-    int extraRows = (tower.m_base.armorPierce > 0.0f ? 1 : 0);
+    int extraRows = (tower.m_base.m_armorPierce > 0.0f ? 1 : 0);
     int statRows = (tower.m_role == TowerRole::Shooter) ? 4 + extraRows + moduleRows : 0;
     float panelH = m_margin + m_headerH
         + static_cast<float>(m_descLines.size()) * m_descLineH
@@ -110,13 +110,13 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
     float btnW = m_panelW - m_margin * 2.0f;
     float btnY = m_panelRect.y + panelH - m_margin - m_sellH;
     if (m_showSell) {
-        int refund = static_cast<int>(tower.m_cost * game.GetGameData().sellRefundRate);
+        int refund = static_cast<int>(tower.m_cost * game.GetGameData().m_sellRefundRate);
         m_sellBtn.m_label = TextFormat("Sell: $%d", refund);
         m_sellBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
         btnY -= m_sellGap + m_sellH;
     }
     if (m_showTargeting) {
-        m_targetBtn.m_label = TextFormat("Target: %s", TargetingModeName(tower.m_base.targetingMode));
+        m_targetBtn.m_label = TextFormat("Target: %s", TargetingModeName(tower.m_base.m_targetingMode));
         m_targetBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
         btnY -= m_sellGap + m_sellH;
     }
@@ -130,8 +130,8 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
             m_upgradeBtn.m_label = "Max Level";
         } else {
             const TowerUpgrade& up = (*tower.m_upgrades)[lvl];
-            m_upgradeBtn.m_label = TextFormat("Upgrade $%d", up.cost);
-            m_upgradeReady = game.GetGameData().gold >= up.cost;
+            m_upgradeBtn.m_label = TextFormat("Upgrade $%d", up.m_cost);
+            m_upgradeReady = game.GetGameData().m_gold >= up.m_cost;
             m_hasNextUpgrade = true;
             m_upgradePreview = BuildUpgradePreview(up);
         }
@@ -196,13 +196,13 @@ void TowerInfoHUD::OnDraw(Game& game) {
 
     // Core stats — skipped for walls, which have no combat function
     if (tower.m_role == TowerRole::Shooter) {
-        DrawText(TextFormat("Damage:  %g",     tower.m_stats.damage),                          static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-        DrawText(TextFormat("Range:   %.0f",   tower.m_stats.range),                           static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-        DrawText(TextFormat("Rate:    %d/min", static_cast<int>(tower.m_stats.shotsPerMinute + 0.5f)), static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
-        DrawText(TextFormat("Targets: %d",     tower.m_stats.targetCount),                     static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+        DrawText(TextFormat("Damage:  %g",     tower.m_stats.m_damage),                          static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+        DrawText(TextFormat("Range:   %.0f",   tower.m_stats.m_range),                           static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+        DrawText(TextFormat("Rate:    %d/min", static_cast<int>(tower.m_stats.m_shotsPerMinute + 0.5f)), static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
+        DrawText(TextFormat("Targets: %d",     tower.m_stats.m_targetCount),                     static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE); y += m_lineH;
 
-        if (tower.m_stats.armorPierce > 0.0f) {
-            DrawText(TextFormat("Pierce:  %g", tower.m_stats.armorPierce),
+        if (tower.m_stats.m_armorPierce > 0.0f) {
+            DrawText(TextFormat("Pierce:  %g", tower.m_stats.m_armorPierce),
                      static_cast<int>(x), static_cast<int>(y), m_fontSm, GOLD); y += m_lineH;
         }
 

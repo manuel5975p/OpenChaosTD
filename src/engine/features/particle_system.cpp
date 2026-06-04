@@ -3,13 +3,13 @@
 #include <raymath.h>
 
 void ParticleSystem::Emit(Vector2 origin, const EmitterDesc& desc, Vector2 baseVelocity) {
-    if (desc.count <= 0) return;
+    if (desc.m_count <= 0) return;
 
     // Convert once per burst — angle and spread are per-emitter, not per-particle
-    float baseAngle = desc.angle * DEG2RAD;
-    float halfArc   = desc.spread * 0.5f * DEG2RAD;
+    float baseAngle = desc.m_angle * DEG2RAD;
+    float halfArc   = desc.m_spread * 0.5f * DEG2RAD;
 
-    for (int i = 0; i < desc.count; i++) {
+    for (int i = 0; i < desc.m_count; i++) {
         Particle* p = m_particles.Acquire();
         if (!p) break; // pool at capacity — drop remaining particles silently
 
@@ -17,18 +17,18 @@ void ParticleSystem::Emit(Vector2 origin, const EmitterDesc& desc, Vector2 baseV
 
         // Randomise direction within spread cone around base angle
         float dirAngle = baseAngle + ((float)GetRandomValue(-10000, 10000) / 10000.0f) * halfArc;
-        float speed    = desc.speed + ((float)GetRandomValue(-10000, 10000) / 10000.0f) * desc.speedVariance;
+        float speed    = desc.m_speed + ((float)GetRandomValue(-10000, 10000) / 10000.0f) * desc.m_speedVariance;
         speed = std::max(0.0f, speed);
 
-        float life = std::max(0.01f, desc.lifetime);
+        float life = std::max(0.01f, desc.m_lifetime);
 
         p->velocity = {std::cosf(dirAngle) * speed + baseVelocity.x, std::sinf(dirAngle) * speed + baseVelocity.y};
         p->lifetime = life;
         p->maxLifetime = life;
-        p->color = desc.color;
-        p->endColor = desc.endColor;
-        p->size = desc.size;
-        p->endSize = desc.endSize;
+        p->color = desc.m_color;
+        p->endColor = desc.m_endColor;
+        p->size = desc.m_size;
+        p->endSize = desc.m_endSize;
 
     }
 }

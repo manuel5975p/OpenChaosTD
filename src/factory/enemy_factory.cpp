@@ -61,7 +61,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     enemy.m_texture      = tmpl.texture;
     enemy.m_maxHealth     = tmpl.health;
     enemy.m_currentHealth = tmpl.health;
-    enemy.m_base.speed    = tmpl.speed;
+    enemy.m_base.m_speed  = tmpl.speed;
     enemy.m_stats         = enemy.m_base;
     enemy.m_reward       = tmpl.reward;
     enemy.m_livesOnReach = tmpl.livesOnReach;

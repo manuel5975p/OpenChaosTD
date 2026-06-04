@@ -4,19 +4,19 @@
 #include <algorithm>
 
 void EnemySystem::FollowPath(float dt, GameData& gameData){
-    for (auto& enemy : gameData.enemies) {
-        if (enemy.m_stats.speed <= 0.0f) continue;
+    for (auto& enemy : gameData.m_enemies) {
+        if (enemy.m_stats.m_speed <= 0.0f) continue;
 
         float remainingTime = dt;
 
         while (remainingTime > 0.0f && enemy.m_waypointIndex >= 0) {
-            Vector2 toTarget = Vector2Subtract(gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex], enemy.m_position);
+            Vector2 toTarget = Vector2Subtract(gameData.m_map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex], enemy.m_position);
             float distToTarget = Vector2Length(toTarget);
-            float moveDistance = enemy.m_stats.speed * remainingTime;
+            float moveDistance = enemy.m_stats.m_speed * remainingTime;
 
             if (moveDistance >= distToTarget) {
-                remainingTime -= distToTarget / enemy.m_stats.speed;
-                enemy.m_position = gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex];
+                remainingTime -= distToTarget / enemy.m_stats.m_speed;
+                enemy.m_position = gameData.m_map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex];
                 enemy.m_waypointIndex--;
                 enemy.m_progress = static_cast<float>(enemy.m_waypointIndex + 1);
             } else {
@@ -24,14 +24,14 @@ void EnemySystem::FollowPath(float dt, GameData& gameData){
                 enemy.m_position = Vector2Add(enemy.m_position, Vector2Scale(direction, moveDistance));
                 remainingTime = 0.0f;
                 float remainingDist = distToTarget - moveDistance;
-                enemy.m_progress = enemy.m_waypointIndex + remainingDist / gameData.map.GetTileSize();
+                enemy.m_progress = enemy.m_waypointIndex + remainingDist / gameData.m_map.GetTileSize();
             }
         }
     }
 }
 
 void EnemySystem::TickEnemies(float dt, GameData& gameData, ParticleSystem& particles){
-    for (auto& enemy : gameData.enemies) {
+    for (auto& enemy : gameData.m_enemies) {
         // Recompute live stats from base, then let modules contribute
         enemy.m_stats = enemy.m_base;
         for (auto& mod : enemy.m_modules)
@@ -44,12 +44,12 @@ void EnemySystem::TickEnemies(float dt, GameData& gameData, ParticleSystem& part
         Vector2 baseVel = {0, 0};
         if (enemy.m_waypointIndex >= 0) {
             Vector2 toWaypoint = Vector2Subtract(
-                gameData.map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex],
+                gameData.m_map.GetPaths()[enemy.m_spawnedNest][enemy.m_waypointIndex],
                 enemy.m_position
             );
             float dist = Vector2Length(toWaypoint);
             if (dist > 0.001f)
-                baseVel = Vector2Scale(Vector2Normalize(toWaypoint), enemy.m_stats.speed);
+                baseVel = Vector2Scale(Vector2Normalize(toWaypoint), enemy.m_stats.m_speed);
         }
 
         for (auto& effect : enemy.m_effects) {
@@ -68,14 +68,14 @@ void EnemySystem::TickEnemies(float dt, GameData& gameData, ParticleSystem& part
                     break;
                 case EffectType::Slow:
                     // m_value is slow strength as a percent (90 = 90% slower)
-                    enemy.m_stats.speed *= 1.0f - effect.m_value / 100.0f;
+                    enemy.m_stats.m_speed *= 1.0f - effect.m_value / 100.0f;
                     break;
                 case EffectType::ArmorShred:
                     // Flat armor reduction; floored at 0
-                    enemy.m_stats.armor = std::max(0.0f, enemy.m_stats.armor - effect.m_value);
+                    enemy.m_stats.m_armor = std::max(0.0f, enemy.m_stats.m_armor - effect.m_value);
                     break;
                 case EffectType::Stun:
-                    enemy.m_stats.speed = 0.0f; // FollowPath skips enemies with speed <= 0
+                    enemy.m_stats.m_speed = 0.0f; // FollowPath skips enemies with speed <= 0
                     break;
                 case EffectType::Weakness:
                     break; // consumed on hit in TowerSystem::TickPayloads

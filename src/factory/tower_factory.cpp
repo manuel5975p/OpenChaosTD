@@ -35,35 +35,35 @@ static VfxStyle ParseVfxStyle(const std::string& s) {
 
 static TowerStats ParseCombat(const json& j) {
     TowerStats s;
-    s.damage         = j.value("damage", 0.0f);
-    s.shotsPerMinute = j.value("shotsPerMinute", 0.0f);
-    s.range          = j.value("range", 0.0f);
-    s.targetCount    = j.value("targetCount", 0);
-    s.targetingMode  = ParseTargetingMode(j.value("targeting", "First"));
-    s.armorPierce    = j.value("armorPierce", 0.0f);
+    s.m_damage         = j.value("damage", 0.0f);
+    s.m_shotsPerMinute = j.value("shotsPerMinute", 0.0f);
+    s.m_range          = j.value("range", 0.0f);
+    s.m_targetCount    = j.value("targetCount", 0);
+    s.m_targetingMode  = ParseTargetingMode(j.value("targeting", "First"));
+    s.m_armorPierce    = j.value("armorPierce", 0.0f);
     return s;
 }
 
 static TowerVisual ParseVisual(const json& j, const EmitterPresets& presets) {
     TowerVisual v;
-    v.style = ParseVfxStyle(j.value("style", "Line"));
-    v.attackDuration = j.value("attackDuration", 0.0f);
-    if (j.contains("color"))      v.color          = ParseColor(j["color"]);
-    if (j.contains("muzzle"))     v.muzzleDesc     = presets.Get(j["muzzle"].get<std::string>());
-    if (j.contains("impact"))     v.impactDesc     = presets.Get(j["impact"].get<std::string>());
-    if (j.contains("critImpact")) v.critImpactDesc = presets.Get(j["critImpact"].get<std::string>());
+    v.m_style = ParseVfxStyle(j.value("style", "Line"));
+    v.m_attackDuration = j.value("attackDuration", 0.0f);
+    if (j.contains("color"))      v.m_color          = ParseColor(j["color"]);
+    if (j.contains("muzzle"))     v.m_muzzleDesc     = presets.Get(j["muzzle"].get<std::string>());
+    if (j.contains("impact"))     v.m_impactDesc     = presets.Get(j["impact"].get<std::string>());
+    if (j.contains("critImpact")) v.m_critImpactDesc = presets.Get(j["critImpact"].get<std::string>());
     return v;
 }
 
 static TowerUpgrade ParseUpgrade(const json& j) {
     TowerUpgrade up;
-    up.cost = j.value("cost", 0);
+    up.m_cost = j.value("cost", 0);
     if (j.contains("add"))
-        for (auto& [k, v] : j["add"].items()) up.adds.push_back({k, v.get<float>()});
+        for (auto& [k, v] : j["add"].items()) up.m_adds.push_back({k, v.get<float>()});
     if (j.contains("mul"))
-        for (auto& [k, v] : j["mul"].items()) up.muls.push_back({k, v.get<float>()});
+        for (auto& [k, v] : j["mul"].items()) up.m_muls.push_back({k, v.get<float>()});
     if (j.contains("effects"))
-        for (auto& m : j["effects"]) up.addModules.push_back(m);
+        for (auto& m : j["effects"]) up.m_addModules.push_back(m);
     return up;
 }
 
@@ -174,7 +174,7 @@ int TowerFactory::GetCost(const std::string& name) const {
 
 float TowerFactory::GetRange(const std::string& name) const {
     auto it = m_templates.find(name);
-    return (it != m_templates.end()) ? it->second.stats.range : 0.0f;
+    return (it != m_templates.end()) ? it->second.stats.m_range : 0.0f;
 }
 
 const std::string& TowerFactory::GetTexture(const std::string& name) const {

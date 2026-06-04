@@ -7,9 +7,9 @@
 bool WorldSystem::PlaceTower(int x, int y, Tower& tower, GameData& gameData){
     if(!ValidateTowerPlacement(x, y, gameData)) return false;
 
-    Tile& tile = gameData.map.Get(x, y);
-    tower.m_position = Vector2Add(gameData.map.TileToWorld(x, y), {gameData.map.GetTileSize() /2.f, gameData.map.GetTileSize() /2.f});
-    DenseSlotMap<Tower>::Key towerKey = gameData.towers.Insert(std::move(tower));
+    Tile& tile = gameData.m_map.Get(x, y);
+    tower.m_position = Vector2Add(gameData.m_map.TileToWorld(x, y), {gameData.m_map.GetTileSize() /2.f, gameData.m_map.GetTileSize() /2.f});
+    DenseSlotMap<Tower>::Key towerKey = gameData.m_towers.Insert(std::move(tower));
 
     tile.m_walkable = false;
     tile.m_buildable = false;
@@ -18,22 +18,22 @@ bool WorldSystem::PlaceTower(int x, int y, Tower& tower, GameData& gameData){
 }
 
 void WorldSystem::RemoveTower(int x, int y, GameData& gameData){
-    Tile& tile = gameData.map.Get(x, y);
+    Tile& tile = gameData.m_map.Get(x, y);
 
     if(tile.m_towerKey != DenseSlotMap<Tower>::INVALID_KEY){
         // Remove tower
-        gameData.towers.Erase(tile.m_towerKey);
+        gameData.m_towers.Erase(tile.m_towerKey);
 
         tile.m_walkable = true;
         tile.m_buildable = true;
         tile.m_towerKey = DenseSlotMap<Tower>::INVALID_KEY;
 
-        gameData.map.BuildPathMesh();
+        gameData.m_map.BuildPathMesh();
     }
 }
 
 bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
-    Tile& tile = gameData.map.Get(x, y);
+    Tile& tile = gameData.m_map.Get(x, y);
 
     // Return if tile not buildable
     if(!tile.m_buildable)
@@ -41,10 +41,10 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
 
     // Check if paths are still valid after tower placement
     tile.m_walkable = false;
-    gameData.map.BuildPathMesh();
-    if(!gameData.map.ValidatePathMesh()){
+    gameData.m_map.BuildPathMesh();
+    if(!gameData.m_map.ValidatePathMesh()){
         tile.m_walkable = true;
-        gameData.map.BuildPathMesh();
+        gameData.m_map.BuildPathMesh();
         return false;
     }
 
@@ -54,44 +54,44 @@ bool WorldSystem::ValidateTowerPlacement(int x, int y, GameData& gameData){
 
 void WorldSystem::SpawnEnemy(int nest, Enemy&& enemy, GameData& gameData){
     enemy.m_position = {
-        static_cast<float>(gameData.map.GetNests()[nest].first * gameData.map.GetTileSize() + static_cast<float>(gameData.map.GetTileSize()) /2), 
-        static_cast<float>(gameData.map.GetNests()[nest].second * gameData.map.GetTileSize()+ static_cast<float>(gameData.map.GetTileSize()) /2)
+        static_cast<float>(gameData.m_map.GetNests()[nest].first * gameData.m_map.GetTileSize() + static_cast<float>(gameData.m_map.GetTileSize()) /2),
+        static_cast<float>(gameData.m_map.GetNests()[nest].second * gameData.m_map.GetTileSize()+ static_cast<float>(gameData.m_map.GetTileSize()) /2)
     };
 
     enemy.m_spawnedNest = nest;
-    enemy.m_waypointIndex = gameData.map.GetPaths()[nest].size() -2;
+    enemy.m_waypointIndex = gameData.m_map.GetPaths()[nest].size() -2;
 
-    gameData.enemies.Insert(std::move(enemy));
+    gameData.m_enemies.Insert(std::move(enemy));
 }
 
 void WorldSystem::RemoveEnemy(DenseSlotMap<Enemy>::Key key, GameData& gameData){
-    gameData.enemies.Erase(key);
+    gameData.m_enemies.Erase(key);
 }
 
 void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
     std::vector<DenseSlotMap<Enemy>::Key> enemyErase;
-    for (auto& enemy: gameData.enemies) {
+    for (auto& enemy: gameData.m_enemies) {
         // Enemy reached core
         if(enemy.m_waypointIndex == -1){
-            enemyErase.push_back(gameData.enemies.KeyOf(&enemy));
-        }   
+            enemyErase.push_back(gameData.m_enemies.KeyOf(&enemy));
+        }
     }
 
     for(auto& erase : enemyErase){
-        gameData.lives -= gameData.enemies.Get(erase)->m_livesOnReach;
+        gameData.m_lives -= gameData.m_enemies.Get(erase)->m_livesOnReach;
         RemoveEnemy(erase, gameData);
     }
 }
 
 void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory, ParticleSystem& particles){
     std::vector<DenseSlotMap<Enemy>::Key> toRemove;
-    for (auto& enemy : gameData.enemies) {
+    for (auto& enemy : gameData.m_enemies) {
         if (enemy.m_currentHealth <= 0.0f)
-            toRemove.push_back(gameData.enemies.KeyOf(&enemy));
+            toRemove.push_back(gameData.m_enemies.KeyOf(&enemy));
     }
     for (auto& key : toRemove) {
-        Enemy* enemy = gameData.enemies.Get(key);
-        gameData.gold += enemy->m_reward;
+        Enemy* enemy = gameData.m_enemies.Get(key);
+        gameData.m_gold += enemy->m_reward;
 
         // Copy parent path state and collect spawn requests before mutating the slotmap
         Vector2 pos          = enemy->m_position;
@@ -120,7 +120,7 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory,
                 child.m_spawnedNest  = nest;
                 child.m_waypointIndex = waypoint;
                 child.m_progress     = progress;
-                gameData.enemies.Insert(std::move(child));
+                gameData.m_enemies.Insert(std::move(child));
             }
         }
     }
@@ -129,7 +129,7 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory,
 
 void WorldSystem::CheckGameOver(bool& gameOver, GameData& gameData){
     // Core live reaches zero
-    if(gameData.lives <= 0){
+    if(gameData.m_lives <= 0){
         gameOver = true;
     }
 }

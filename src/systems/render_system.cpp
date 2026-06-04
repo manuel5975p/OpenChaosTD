@@ -84,7 +84,7 @@ void RenderSystem::DrawTowerRange(Vector2 position, float radius, Color color) {
 void RenderSystem::DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, const Map& map, const DenseSlotMap<Tower>& towers, Vector2 mouseWorld) {
     if (selectedKey != DenseSlotMap<Tower>::INVALID_KEY) {
         if (const Tower* t = towers.Get(selectedKey))
-            DrawTowerRange(t->m_position, t->m_stats.range, {255, 200, 50, 220});
+            DrawTowerRange(t->m_position, t->m_stats.m_range, {255, 200, 50, 220});
         return;
     }
 
@@ -94,7 +94,7 @@ void RenderSystem::DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, cons
         const Tile& tile = map.Get(hx, hy);
         if (tile.m_towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
             if (const Tower* t = towers.Get(tile.m_towerKey))
-                DrawTowerRange(t->m_position, t->m_stats.range, {255, 255, 255, 80});
+                DrawTowerRange(t->m_position, t->m_stats.m_range, {255, 255, 255, 80});
         }
     }
 }

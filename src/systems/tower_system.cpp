@@ -12,7 +12,7 @@ constexpr float kInactiveCooldown  = 999.0f; // shotsPerMinute == 0: effectively
 constexpr float kSecondsPerMinute  = 60.0f;  // shot interval = 60 / shotsPerMinute
 
 void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles){
-    for (Tower& tower : gameData.towers) {
+    for (Tower& tower : gameData.m_towers) {
         RecomputeStats(tower, dt); // runs for walls too (no-op without modules)
 
         if (tower.m_role == TowerRole::Wall) continue;
@@ -22,7 +22,7 @@ void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles
 
         if (tower.m_cooldown > 0.0f) continue; // not ready to fire yet
 
-        std::vector<DenseSlotMap<Enemy>::Key> targetKeys = FindTargets(tower, gameData.enemies, tower.m_stats.targetCount);
+        std::vector<DenseSlotMap<Enemy>::Key> targetKeys = FindTargets(tower, gameData.m_enemies, tower.m_stats.m_targetCount);
         if (targetKeys.empty()) {
             tower.m_cooldown = kIdleRetryCooldown;
             continue;
@@ -41,17 +41,17 @@ void TowerSystem::RecomputeStats(Tower& tower, float dt) {
     }
 }
 
-// Decay the attack flash over the visual's attackDuration; guard against a zero duration.
+// Decay the attack flash over the visual's m_attackDuration; guard against a zero duration.
 void TowerSystem::DecayAttackFlash(Tower& tower, float dt) {
-    if (tower.m_visual.attackDuration > 0.0f)
-        tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_visual.attackDuration);
+    if (tower.m_visual.m_attackDuration > 0.0f)
+        tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_visual.m_attackDuration);
     else
         tower.m_attackFlashRatio = 0.0f;
 }
 
 // Execute one shot: reset cooldown/flash, notify modules, and enqueue the damage payload + VFX.
 void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>& targetKeys, GameData& gameData, ParticleSystem& particles) {
-    tower.m_cooldown         = (tower.m_stats.shotsPerMinute > 0.0f) ? kSecondsPerMinute / tower.m_stats.shotsPerMinute : kInactiveCooldown;
+    tower.m_cooldown         = (tower.m_stats.m_shotsPerMinute > 0.0f) ? kSecondsPerMinute / tower.m_stats.m_shotsPerMinute : kInactiveCooldown;
     tower.m_attackFlashRatio = 1.0f;
     for (auto& mod : tower.m_modules) // note: after the cooldown reset, so a new stack affects the next-but-one shot
         mod->OnFire();
@@ -59,7 +59,7 @@ void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>
     std::vector<Vector2> targetPositions;
     targetPositions.reserve(targetKeys.size());
     for (auto& key : targetKeys) {
-        if (Enemy* e = gameData.enemies.Get(key))
+        if (Enemy* e = gameData.m_enemies.Get(key))
             targetPositions.push_back(e->m_position);
     }
 
@@ -69,8 +69,8 @@ void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>
 
     VfxEffect vfx = BuildVfx(tower, std::move(targetPositions));
 
-    if (tower.m_visual.muzzleDesc.count > 0) // muzzle burst
-        particles.Emit(tower.m_position, tower.m_visual.muzzleDesc);
+    if (tower.m_visual.m_muzzleDesc.m_count > 0) // muzzle burst
+        particles.Emit(tower.m_position, tower.m_visual.m_muzzleDesc);
 
     gameData.m_payloads.push_back(std::move(payload));
     gameData.m_vfx.push_back(std::move(vfx));
@@ -80,11 +80,11 @@ VfxEffect TowerSystem::BuildVfx(const Tower& tower, std::vector<Vector2> targetP
     VfxEffect vfx;
     vfx.m_origin = tower.m_position;
     vfx.m_targetPositions = std::move(targetPositions);
-    vfx.m_duration = tower.m_visual.attackDuration;
-    vfx.m_maxDuration = tower.m_visual.attackDuration;
-    vfx.m_radius = tower.m_stats.range;
-    vfx.m_color = tower.m_visual.color;
-    vfx.m_style = tower.m_visual.style;
+    vfx.m_duration = tower.m_visual.m_attackDuration;
+    vfx.m_maxDuration = tower.m_visual.m_attackDuration;
+    vfx.m_radius = tower.m_stats.m_range;
+    vfx.m_color = tower.m_visual.m_color;
+    vfx.m_style = tower.m_visual.m_style;
     return vfx;
 }
 
@@ -92,7 +92,7 @@ std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(const Tower& towe
     std::vector<Enemy*> inRange = FindEnemiesInRange(tower, enemies);
 
     std::sort(inRange.begin(), inRange.end(), [&](const Enemy* a, const Enemy* b) {
-        return CompareTarget(*a, *b, tower.m_stats.targetingMode);
+        return CompareTarget(*a, *b, tower.m_stats.m_targetingMode);
     });
 
     int size = static_cast<int>(inRange.size());
@@ -110,7 +110,7 @@ std::vector<Enemy*> TowerSystem::FindEnemiesInRange(const Tower& tower, DenseSlo
     std::vector<Enemy*> result;
     for (auto& enemy : enemies) {
         if (enemy.m_currentHealth <= 0.0f) continue;
-        if (tower.m_stats.range >= Vector2Distance(enemy.m_position, tower.m_position))
+        if (tower.m_stats.m_range >= Vector2Distance(enemy.m_position, tower.m_position))
             result.push_back(&enemy);
     }
     return result;
@@ -118,12 +118,12 @@ std::vector<Enemy*> TowerSystem::FindEnemiesInRange(const Tower& tower, DenseSlo
 
 void TowerSystem::BuildPayload(const Tower& tower, AttackPayload& payload) {
     // Scalar combat values come from stats; behavioural effects come from modules
-    payload.m_damage = tower.m_stats.damage;
-    payload.m_armorPierce = tower.m_stats.armorPierce;
-    if (tower.m_visual.impactDesc.count > 0)
-        payload.m_impactDescs.push_back(tower.m_visual.impactDesc);
-    if (tower.m_visual.critImpactDesc.count > 0)
-        payload.m_critImpactDescs.push_back(tower.m_visual.critImpactDesc);
+    payload.m_damage = tower.m_stats.m_damage;
+    payload.m_armorPierce = tower.m_stats.m_armorPierce;
+    if (tower.m_visual.m_impactDesc.m_count > 0)
+        payload.m_impactDescs.push_back(tower.m_visual.m_impactDesc);
+    if (tower.m_visual.m_critImpactDesc.m_count > 0)
+        payload.m_critImpactDescs.push_back(tower.m_visual.m_critImpactDesc);
     for (auto& mod : tower.m_modules)
         mod->Contribute(payload);
 }
@@ -131,7 +131,7 @@ void TowerSystem::BuildPayload(const Tower& tower, AttackPayload& payload) {
 // Base damage for one hit: effective armor reduction plus a single crit roll.
 // outCrit reports whether this hit crit (used for crit-only impact particles).
 static float ResolveDamage(const AttackPayload& payload, const Enemy& enemy, bool& outCrit) {
-    float armor = std::max(0.0f, enemy.m_stats.armor - payload.m_armorPierce);
+    float armor = std::max(0.0f, enemy.m_stats.m_armor - payload.m_armorPierce);
     float dmg = payload.m_damage;
     outCrit = payload.m_critChance > 0.0f
         && GetRandomValue(0, 99) < (int)(payload.m_critChance * 100.0f);
@@ -173,7 +173,7 @@ void TowerSystem::TickPayloads(GameData& gameData, ParticleSystem& particles) {
         if (payload.m_resolved) continue;
 
         for (auto& key : payload.m_targetKeys) {
-            Enemy* enemy = gameData.enemies.Get(key);
+            Enemy* enemy = gameData.m_enemies.Get(key);
             if (!enemy) continue;
 
             bool crit = false;
@@ -209,9 +209,9 @@ bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mo
         case TargetingMode::Last:           return a.m_progress > b.m_progress;
         case TargetingMode::MostHealth:     return a.m_currentHealth > b.m_currentHealth;
         case TargetingMode::LowestHealth:   return a.m_currentHealth < b.m_currentHealth;
-        case TargetingMode::Fastest:        return a.m_stats.speed < b.m_stats.speed;
-        case TargetingMode::Slowest:        return a.m_stats.speed > b.m_stats.speed;
-        case TargetingMode::MostArmor:      return a.m_stats.armor > b.m_stats.armor;
+        case TargetingMode::Fastest:        return a.m_stats.m_speed < b.m_stats.m_speed;
+        case TargetingMode::Slowest:        return a.m_stats.m_speed > b.m_stats.m_speed;
+        case TargetingMode::MostArmor:      return a.m_stats.m_armor > b.m_stats.m_armor;
         case TargetingMode::MostShield:     return TotalShield(a) > TotalShield(b);
     }
     return false;

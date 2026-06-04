@@ -34,12 +34,12 @@ inline const char* TargetingModeName(TargetingMode m) {
 }
 
 struct TowerStats {
-    float damage = 0.0f;
-    float shotsPerMinute = 0.0f; // cooldown between shots = 60 / shotsPerMinute
-    float range = 0.0f;
-    int targetCount = 0;
-    TargetingMode targetingMode = TargetingMode::First;
-    float armorPierce = 0.0f;
+    float m_damage = 0.0f;
+    float m_shotsPerMinute = 0.0f; // cooldown between shots = 60 / m_shotsPerMinute
+    float m_range = 0.0f;
+    int m_targetCount = 0;
+    TargetingMode m_targetingMode = TargetingMode::First;
+    float m_armorPierce = 0.0f;
 };
 
 // Apply an additive (mul=false) or multiplicative (mul=true) delta to one numeric field.
@@ -50,13 +50,13 @@ inline void ApplyDelta(float& field, float v, bool mul) {
 
 // Apply an upgrade delta to a named stat field (additive, or multiplicative when mul=true).
 inline void ApplyStat(TowerStats& s, const std::string& key, float v, bool mul) {
-    if      (key == "damage")         ApplyDelta(s.damage, v, mul);
-    else if (key == "shotsPerMinute") ApplyDelta(s.shotsPerMinute, v, mul);
-    else if (key == "range")          ApplyDelta(s.range, v, mul);
-    else if (key == "armorPierce")    ApplyDelta(s.armorPierce, v, mul);
+    if      (key == "damage")         ApplyDelta(s.m_damage, v, mul);
+    else if (key == "shotsPerMinute") ApplyDelta(s.m_shotsPerMinute, v, mul);
+    else if (key == "range")          ApplyDelta(s.m_range, v, mul);
+    else if (key == "armorPierce")    ApplyDelta(s.m_armorPierce, v, mul);
     else if (key == "targetCount") {
-        float t = static_cast<float>(s.targetCount);
+        float t = static_cast<float>(s.m_targetCount);
         ApplyDelta(t, v, mul);
-        s.targetCount = static_cast<int>(t + 0.5f);
+        s.m_targetCount = static_cast<int>(t + 0.5f);
     }
 }

@@ -54,8 +54,8 @@ void WaveManager::BuildSpawnQueue(const WaveDef& def, int nestCount, int countMu
 }
 
 void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, EnemyFactory& enemyFactory) {
-    if (data.waveActive) {
-        data.waveTimer += dt;
+    if (data.m_waveActive) {
+        data.m_waveTimer += dt;
         m_elapsed += dt;
 
         // Fire any spawns whose scheduled time has arrived
@@ -68,39 +68,39 @@ void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, Ene
 
         // Wave ends once the spawn queue is exhausted and all enemies are cleared
         bool queueDone = m_nextSpawn >= static_cast<int>(m_pendingSpawns.size());
-        if (queueDone && data.enemies.Size() == 0) {
-            data.waveActive = false;
+        if (queueDone && data.m_enemies.Size() == 0) {
+            data.m_waveActive = false;
             m_autoSpawnTimer = 0.0f;
 
-            if (data.totalWaves > 0 && data.waveNumber >= data.totalWaves)
-                data.victory = true;
+            if (data.m_totalWaves > 0 && data.m_waveNumber >= data.m_totalWaves)
+                data.m_victory = true;
         }
         return;
     }
 
     // Auto-spawn: start the next wave after the configured delay
-    if (m_autoSpawn && data.waveNumber > 0 && !data.victory) {
+    if (m_autoSpawn && data.m_waveNumber > 0 && !data.m_victory) {
         m_autoSpawnTimer += dt;
-        if (m_autoSpawnTimer >= data.autoSpawnDelay)
+        if (m_autoSpawnTimer >= data.m_autoSpawnDelay)
             StartWave(data);
     }
 }
 
 void WaveManager::StartWave(GameData& data) {
-    if (data.waveActive) return;
+    if (data.m_waveActive) return;
 
-    data.waveNumber++;
-    data.waveActive = true;
-    data.waveTimer = 0.0f;
+    data.m_waveNumber++;
+    data.m_waveActive = true;
+    data.m_waveTimer = 0.0f;
 
     if (m_waveDefs.empty()) return;
 
-    int waveIdx = data.waveNumber - 1;
+    int waveIdx = data.m_waveNumber - 1;
     int defCount = static_cast<int>(m_waveDefs.size());
     // Clamp to last defined wave; scale counts for waves beyond the defined set
     int clampedIdx = std::min(waveIdx, defCount - 1);
     int multiplier = (waveIdx >= defCount) ? (waveIdx / defCount) + 1 : 1;
-    int nestCount = static_cast<int>(data.map.GetNests().size());
+    int nestCount = static_cast<int>(data.m_map.GetNests().size());
 
     BuildSpawnQueue(m_waveDefs[clampedIdx], nestCount, multiplier);
 }

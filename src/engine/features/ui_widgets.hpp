@@ -3,44 +3,44 @@
 #include <string>
 
 struct WidgetStyle {
-    Color bgNormal; // default background
-    Color bgHovered; // button hover
-    Color bgInput; // text input background
-    Color bgActive; // toggle on state
-    Color border; // normal border
-    Color borderSel; // button selected border
-    Color accent; // slider fill, focused input border
-    Color text; // toggle label, input text
-    float borderWidth;
-    float borderWidthActive; // selected button, focused input
+    Color m_bgNormal; // default background
+    Color m_bgHovered; // button hover
+    Color m_bgInput; // text input background
+    Color m_bgActive; // toggle on state
+    Color m_border; // normal border
+    Color m_borderSel; // button selected border
+    Color m_accent; // slider fill, focused input border
+    Color m_text; // toggle label, input text
+    float m_borderWidth;
+    float m_borderWidthActive; // selected button, focused input
 };
 
 // Default palette for widgets.
 inline const WidgetStyle kDefaultStyle{
-    .bgNormal   = {40,  40,  40,  255},
-    .bgHovered  = {65,  65,  65,  255},
-    .bgInput    = {30,  30,  30,  255},
-    .bgActive   = {80,  180, 80,  255},
-    .border     = {80,  80,  80,  255},
-    .borderSel  = {255, 180, 0,   255},
-    .accent     = {100, 149, 237, 255},
-    .text       = {255, 255, 255, 255},
-    .borderWidth       = 1.0f,
-    .borderWidthActive = 2.0f,
+    .m_bgNormal   = {40,  40,  40,  255},
+    .m_bgHovered  = {65,  65,  65,  255},
+    .m_bgInput    = {30,  30,  30,  255},
+    .m_bgActive   = {80,  180, 80,  255},
+    .m_border     = {80,  80,  80,  255},
+    .m_borderSel  = {255, 180, 0,   255},
+    .m_accent     = {100, 149, 237, 255},
+    .m_text       = {255, 255, 255, 255},
+    .m_borderWidth       = 1.0f,
+    .m_borderWidthActive = 2.0f,
 };
 
 // Muted palette for non-interactive / unavailable widgets.
 inline const WidgetStyle kDisabledStyle {
-    .bgNormal   = {30,  30,  30,  200},
-    .bgHovered  = {30,  30,  30,  200},
-    .bgInput    = {20,  20,  20,  200},
-    .bgActive   = {40,  40,  40,  200},
-    .border     = {60,  60,  60,  255},
-    .borderSel  = {60,  60,  60,  255},
-    .accent     = {60,  60,  60,  255},
-    .text       = {100, 100, 100, 255},
-    .borderWidth       = 1.0f,
-    .borderWidthActive = 1.0f,
+    .m_bgNormal   = {30,  30,  30,  200},
+    .m_bgHovered  = {30,  30,  30,  200},
+    .m_bgInput    = {20,  20,  20,  200},
+    .m_bgActive   = {40,  40,  40,  200},
+    .m_border     = {60,  60,  60,  255},
+    .m_borderSel  = {60,  60,  60,  255},
+    .m_accent     = {60,  60,  60,  255},
+    .m_text       = {100, 100, 100, 255},
+    .m_borderWidth       = 1.0f,
+    .m_borderWidthActive = 1.0f,
 };
 
 struct Button {
@@ -59,10 +59,10 @@ private:
 };
 
 struct Slider {
-    Rectangle rect = {};
-    float value = 0.0f;
-    float min = 0.0f;
-    float max = 1.0f;
+    Rectangle m_rect = {};
+    float m_value = 0.0f;
+    float m_min = 0.0f;
+    float m_max = 1.0f;
 
     void Update(Vector2 mouse, bool held);
     bool IsDragging() const { return m_dragging; }
@@ -73,9 +73,9 @@ private:
 };
 
 struct Toggle {
-    Rectangle rect = {};
-    std::string label;
-    bool value = false;
+    Rectangle m_rect = {};
+    std::string m_label;
+    bool m_value = false;
 
     void Update(Vector2 mouse, bool pressed);
     bool IsClicked() const { return m_clicked; }
@@ -86,9 +86,9 @@ private:
 };
 
 struct TextInput {
-    Rectangle rect = {};
-    std::string text;
-    int maxLength = 64;
+    Rectangle m_rect = {};
+    std::string m_text;
+    int m_maxLength = 64;
 
     void Update(Vector2 mouse, bool pressed);
     bool IsFocused() const { return m_focused; }
@@ -99,9 +99,9 @@ private:
 };
 
 struct ProgressBar {
-    Rectangle rect = {};
-    float value = 0.0f;
-    float max = 1.0f;
+    Rectangle m_rect = {};
+    float m_value = 0.0f;
+    float m_max = 1.0f;
 
     void Draw(const WidgetStyle& style = kDefaultStyle) const;
 };

@@ -13,16 +13,16 @@ static Color ParseColor(const json& j) {
 
 static EmitterDesc ParseEmitterDesc(const json& j) {
     EmitterDesc d;
-    if (j.contains("color"))    d.color    = ParseColor(j["color"]);
-    if (j.contains("endColor")) d.endColor = ParseColor(j["endColor"]);
-    d.count            = j.value("count", 0);
-    d.speed            = j.value("speed", 50.0f);
-    d.speedVariance    = j.value("speedVariance", 20.0f);
-    d.spread           = j.value("spread", 360.0f);
-    d.angle            = j.value("angle", 0.0f);
-    d.lifetime         = j.value("lifetime", 0.2f);
-    d.size             = j.value("size", 3.0f);
-    d.endSize          = j.value("endSize", 0.0f);
+    if (j.contains("color"))    d.m_color    = ParseColor(j["color"]);
+    if (j.contains("endColor")) d.m_endColor = ParseColor(j["endColor"]);
+    d.m_count         = j.value("count", 0);
+    d.m_speed         = j.value("speed", 50.0f);
+    d.m_speedVariance = j.value("speedVariance", 20.0f);
+    d.m_spread        = j.value("spread", 360.0f);
+    d.m_angle         = j.value("angle", 0.0f);
+    d.m_lifetime      = j.value("lifetime", 0.2f);
+    d.m_size          = j.value("size", 3.0f);
+    d.m_endSize       = j.value("endSize", 0.0f);
 
     return d;
 }

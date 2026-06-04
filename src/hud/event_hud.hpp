@@ -16,7 +16,7 @@ protected:
     void OnDraw(Game& game) override;
 
 private:
-    static constexpr int   MAX_ENTRIES = 5;
+    static constexpr int   kMaxEntries = 5;
     static constexpr float FADE_TIME   = 1.0f; // seconds over which entries fade out
 
     struct Entry {

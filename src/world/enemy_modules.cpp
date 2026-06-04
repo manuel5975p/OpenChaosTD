@@ -19,7 +19,7 @@ void RegenerationModule::Describe(std::string& text, Color& color) const {
 // --- ArmorModule ---
 
 void ArmorModule::ContributeStats(EnemyStats& stats) const {
-    stats.armor += m_amount;
+    stats.m_armor += m_amount;
 }
 
 void ArmorModule::Describe(std::string& text, Color& color) const {
