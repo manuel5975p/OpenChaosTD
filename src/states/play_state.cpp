@@ -163,7 +163,7 @@ void PlayingState::UpgradeSelectedTower(Game& game) {
     // Each key is broadcast to every module; each consumer applies only the keys it recognizes
     // (the AttackModule handles core combat stats, effect modules handle their own params).
     auto applyDelta = [&](const std::string& k, float v, bool mul) {
-        for (auto& mod : tower->m_modules) mod->PatchStat(k, v, mul);
+        for (auto& mod : tower->m_modules) mod->PatchStats(k, v, mul);
     };
     for (auto& [k, v] : up.m_adds) applyDelta(k, v, false);
     for (auto& [k, v] : up.m_muls) applyDelta(k, v, true);

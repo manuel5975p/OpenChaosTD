@@ -12,7 +12,7 @@ void AttackModule::ResetLive() {
     m_liveTargetCount = m_targetCount;
 }
 
-void AttackModule::PatchStat(const std::string& key, float v, bool mul) {
+void AttackModule::PatchStats(const std::string& key, float v, bool mul) {
     if      (key == "damage")         ApplyDelta(m_damage, v, mul);
     else if (key == "shotsPerMinute") ApplyDelta(m_shotsPerMinute, v, mul);
     else if (key == "range")          ApplyDelta(m_range, v, mul);
@@ -50,7 +50,7 @@ void ArmorPierceModule::DescribeStats(std::vector<DescLine>& out) const {
     out.push_back({buf, GOLD});
 }
 
-void ArmorPierceModule::PatchStat(const std::string& key, float v, bool mul) {
+void ArmorPierceModule::PatchStats(const std::string& key, float v, bool mul) {
     if (key == "armorPierce") ApplyDelta(m_amount, v, mul);
 }
 
@@ -72,7 +72,7 @@ void SlowModule::DescribeStats(std::vector<DescLine>& out) const {
     out.push_back({buf, SKYBLUE});
 }
 
-void SlowModule::PatchStat(const std::string& key, float v, bool mul) {
+void SlowModule::PatchStats(const std::string& key, float v, bool mul) {
     if      (key == "slowPercent")  ApplyDelta(m_slowPercent, v, mul);
     else if (key == "slowDuration") ApplyDelta(m_duration, v, mul);
 }
@@ -95,7 +95,7 @@ void BurnModule::DescribeStats(std::vector<DescLine>& out) const {
     out.push_back({buf, ORANGE});
 }
 
-void BurnModule::PatchStat(const std::string& key, float v, bool mul) {
+void BurnModule::PatchStats(const std::string& key, float v, bool mul) {
     if      (key == "burnDamage")   ApplyDelta(m_damage, v, mul);
     else if (key == "burnDuration") ApplyDelta(m_duration, v, mul);
 }
@@ -118,7 +118,7 @@ void ArmorShredModule::DescribeStats(std::vector<DescLine>& out) const {
     out.push_back({buf, GRAY});
 }
 
-void ArmorShredModule::PatchStat(const std::string& key, float v, bool mul) {
+void ArmorShredModule::PatchStats(const std::string& key, float v, bool mul) {
     if      (key == "shredAmount")   ApplyDelta(m_amount, v, mul);
     else if (key == "shredDuration") ApplyDelta(m_duration, v, mul);
 }
@@ -141,7 +141,7 @@ void WeaknessModule::DescribeStats(std::vector<DescLine>& out) const {
     out.push_back({buf, PURPLE});
 }
 
-void WeaknessModule::PatchStat(const std::string& key, float v, bool mul) {
+void WeaknessModule::PatchStats(const std::string& key, float v, bool mul) {
     if      (key == "weaknessAmount")   ApplyDelta(m_amount, v, mul);
     else if (key == "weaknessDuration") ApplyDelta(m_duration, v, mul);
 }
@@ -165,7 +165,7 @@ void StunModule::DescribeStats(std::vector<DescLine>& out) const {
     out.push_back({buf, YELLOW});
 }
 
-void StunModule::PatchStat(const std::string& key, float v, bool mul) {
+void StunModule::PatchStats(const std::string& key, float v, bool mul) {
     if (key == "stunDuration") ApplyDelta(m_duration, v, mul);
 }
 
@@ -185,7 +185,7 @@ void CritModule::DescribeStats(std::vector<DescLine>& out) const {
     out.push_back({buf, YELLOW});
 }
 
-void CritModule::PatchStat(const std::string& key, float v, bool mul) {
+void CritModule::PatchStats(const std::string& key, float v, bool mul) {
     if      (key == "critChance")     ApplyDelta(m_critChance, v, mul);
     else if (key == "critMultiplier") ApplyDelta(m_critMultiplier, v, mul);
 }
@@ -219,7 +219,7 @@ void RampUpModule::DescribeStats(std::vector<DescLine>& out) const {
     out.push_back({buf, GREEN});
 }
 
-void RampUpModule::PatchStat(const std::string& key, float v, bool mul) {
+void RampUpModule::PatchStats(const std::string& key, float v, bool mul) {
     if      (key == "bonusPerStack") ApplyDelta(m_bonusPerStack, v, mul);
     else if (key == "idleTime")      ApplyDelta(m_idleTime, v, mul);
     else if (key == "maxStacks")     m_maxStacks = mul ? static_cast<int>(m_maxStacks * v + 0.5f) : m_maxStacks + static_cast<int>(v + 0.5f);

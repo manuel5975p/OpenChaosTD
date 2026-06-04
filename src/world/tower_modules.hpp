@@ -63,7 +63,7 @@ public:
     // Append this module's display lines to the tower info panel (zero or more rows).
     virtual void DescribeStats(std::vector<DescLine>&) const {}
     // Called by the upgrade system to patch module-owned parameters (e.g. slowPercent, burnDamage).
-    virtual void PatchStat(const std::string& /*key*/, float /*v*/, bool /*mul*/) {}
+    virtual void PatchStats(const std::string& /*key*/, float /*v*/, bool /*mul*/) {}
     // Stateful hooks: Tick runs every frame (idle decay), OnFire runs the frame the tower fires.
     virtual void Tick(float /*dt*/) {}
     virtual void OnFire() {}
@@ -90,7 +90,7 @@ public:
     int m_liveTargetCount = 0;
 
     void ResetLive(); // copy base -> live, called at the start of each recompute
-    void PatchStat(const std::string& key, float v, bool mul) override;
+    void PatchStats(const std::string& key, float v, bool mul) override;
     // Core stat rows (Damage/Range/Rate/Targets), reading the live values.
     void DescribeStats(std::vector<DescLine>& out) const override;
 };
@@ -109,7 +109,7 @@ public:
     explicit ArmorPierceModule(float amount);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
-    void PatchStat(const std::string& key, float v, bool mul) override;
+    void PatchStats(const std::string& key, float v, bool mul) override;
 };
 
 class SlowModule : public TowerModule {
@@ -120,7 +120,7 @@ public:
     SlowModule(float slowPercent, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
-    void PatchStat(const std::string& key, float v, bool mul) override;
+    void PatchStats(const std::string& key, float v, bool mul) override;
 };
 
 class BurnModule : public TowerModule {
@@ -131,7 +131,7 @@ public:
     BurnModule(float value, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
-    void PatchStat(const std::string& key, float v, bool mul) override;
+    void PatchStats(const std::string& key, float v, bool mul) override;
 };
 
 class ArmorShredModule : public TowerModule {
@@ -142,7 +142,7 @@ public:
     ArmorShredModule(float amount, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
-    void PatchStat(const std::string& key, float v, bool mul) override;
+    void PatchStats(const std::string& key, float v, bool mul) override;
 };
 
 class WeaknessModule : public TowerModule {
@@ -153,7 +153,7 @@ public:
     WeaknessModule(float amount, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
-    void PatchStat(const std::string& key, float v, bool mul) override;
+    void PatchStats(const std::string& key, float v, bool mul) override;
 };
 
 class StunModule : public TowerModule {
@@ -164,7 +164,7 @@ public:
     StunModule(float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
-    void PatchStat(const std::string& key, float v, bool mul) override;
+    void PatchStats(const std::string& key, float v, bool mul) override;
 };
 
 // Supplies the attack's critical-hit chance and multiplier (the roll happens in damage resolution)
@@ -174,7 +174,7 @@ public:
     CritModule(float critChance, float critMultiplier);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
-    void PatchStat(const std::string& key, float v, bool mul) override;
+    void PatchStats(const std::string& key, float v, bool mul) override;
 };
 
 // Self-buff: each shot adds a stack (capped) that raises fire rate; stacks clear after idle time
@@ -189,5 +189,5 @@ public:
     void Tick(float dt) override;
     void OnFire() override;
     void DescribeStats(std::vector<DescLine>& out) const override;
-    void PatchStat(const std::string& key, float v, bool mul) override;
+    void PatchStats(const std::string& key, float v, bool mul) override;
 };
