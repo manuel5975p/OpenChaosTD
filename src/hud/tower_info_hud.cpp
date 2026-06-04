@@ -38,29 +38,21 @@ static std::vector<std::string> WrapText(const std::string& text, float maxWidth
 
 void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, bool interactive) {
     m_target = &tower;
-    m_showSell      = interactive && !game.GetGameData().m_waveActive;     // selling stays between waves
-    m_showTargeting = interactive && tower.m_role == TowerRole::Shooter; // retarget any time
-    m_showUpgrade   = interactive && tower.m_role == TowerRole::Shooter
+    const AttackModule* attack = tower.GetAttack(); // null = a wall (no combat UI)
+    m_showSell      = interactive;                                    // always shown for a selected tower
+    m_sellEnabled   = !game.GetGameData().m_waveActive;              // but only sellable between waves
+    m_showTargeting = interactive && attack;                          // retarget any time
+    m_showUpgrade   = interactive && attack
                       && tower.m_upgrades && !tower.m_upgrades->empty();
-
-    int moduleRows = 0;
-    for (const auto& mod : tower.m_modules) {
-        std::string text; Color color;
-        mod->Describe(text, color);
-        if (!text.empty()) moduleRows++;
-    }
 
     m_descLines = WrapText(tower.m_description, m_panelW - m_margin * 2.0f, m_fontDesc);
 
-    // Walls have no combat stats to display. Shooters: the core stat lines (incl. optional
-    // Pierce) from TowerStats::Describe, plus one line per effect module (incl. Crit).
-    int coreStatRows = 0;
-    if (tower.m_role == TowerRole::Shooter) {
-        std::vector<DescLine> statLines;
-        tower.m_stats.Describe(statLines);
-        coreStatRows = static_cast<int>(statLines.size());
-    }
-    int statRows = (tower.m_role == TowerRole::Shooter) ? coreStatRows + moduleRows : 0;
+    // Every module appends its rows: AttackModule's core stats, then each effect module's lines
+    // (incl. Pierce/Crit). Walls carry only a PassiveModule, which adds nothing.
+    std::vector<DescLine> statLines;
+    for (const auto& mod : tower.m_modules)
+        mod->DescribeStats(statLines);
+    int statRows = static_cast<int>(statLines.size());
     float panelH = m_margin + m_headerH
         + static_cast<float>(m_descLines.size()) * m_descLineH
         + statRows * m_lineH
@@ -73,18 +65,13 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
                     m_panelW, panelH };
     ClampPanelToScreen(game.GetScreen().GetGameWidth(), game.GetScreen().GetGameHeight());
 
-    // Lay config buttons bottom-up: Sell at the bottom, then Targeting, then Upgrade on top
+    // Lay config buttons bottom-up: Sell at the bottom, then Upgrade, then Targeting on top
     float btnW = m_panelW - m_margin * 2.0f;
     float btnY = m_panelRect.y + panelH - m_margin - m_sellH;
     if (m_showSell) {
         int refund = static_cast<int>(tower.m_cost * game.GetGameData().m_sellRefundRate);
         m_sellBtn.m_label = TextFormat("Sell: $%d", refund);
         m_sellBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
-        btnY -= m_sellGap + m_sellH;
-    }
-    if (m_showTargeting) {
-        m_targetBtn.m_label = TextFormat("Target: %s", TargetingModeName(tower.m_base.m_targetingMode));
-        m_targetBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
         btnY -= m_sellGap + m_sellH;
     }
     m_upgradeReady = false;
@@ -103,6 +90,11 @@ void TowerInfoHUD::SetTarget(Game& game, const Tower& tower, Vector2 screenPos, 
             up.Describe(m_upgradePreview);
         }
         m_upgradeBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
+        btnY -= m_sellGap + m_sellH;
+    }
+    if (m_showTargeting) {
+        m_targetBtn.m_label = TextFormat("Target: %s", TargetingModeName(attack->m_targetingMode));
+        m_targetBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
     }
 
     Show();
@@ -125,7 +117,8 @@ void TowerInfoHUD::OnProcessInput(Game& game) {
         if (m_targetBtn.IsClicked())
             m_targetSignal.Raise();
     }
-    if (m_showSell) {
+    // Sell is shown while disabled during waves, but only a wave-free (enabled) button reacts.
+    if (m_showSell && m_sellEnabled) {
         m_sellBtn.Update(mousePos, pressed);
         if (m_sellBtn.IsClicked())
             m_sellSignal.Raise();
@@ -141,9 +134,11 @@ void TowerInfoHUD::OnDraw(Game& game) {
     float x = m_panelRect.x + m_margin;
     float y = m_panelRect.y + m_margin;
 
+    const AttackModule* attack = tower.GetAttack(); // null = a wall (no combat UI)
+
     // Tower name as header, with level indicator right-aligned
     DrawText(tower.m_name.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
-    if (tower.m_role == TowerRole::Shooter && tower.m_upgrades && !tower.m_upgrades->empty()) {
+    if (attack && tower.m_upgrades && !tower.m_upgrades->empty()) {
         int maxLvl = static_cast<int>(tower.m_upgrades->size());
         bool isMax = tower.m_level >= maxLvl;
         const char* lvlText = isMax ? "MAX" : TextFormat("Lv %d", tower.m_level + 1);
@@ -161,22 +156,13 @@ void TowerInfoHUD::OnDraw(Game& game) {
         y += m_descLineH;
     }
 
-    // Core stats — skipped for walls, which have no combat function
-    if (tower.m_role == TowerRole::Shooter) {
-        std::vector<DescLine> statLines;
-        tower.m_stats.Describe(statLines);
-        for (const auto& line : statLines) {
-            DrawText(line.m_text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, line.m_color);
-            y += m_lineH;
-        }
-
-        for (const auto& mod : tower.m_modules) {
-            std::string text; Color color;
-            mod->Describe(text, color);
-            if (text.empty()) continue;
-            DrawText(text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, color);
-            y += m_lineH;
-        }
+    // Stat rows from every module (AttackModule core stats + effect lines). Walls add nothing.
+    std::vector<DescLine> statLines;
+    for (const auto& mod : tower.m_modules)
+        mod->DescribeStats(statLines);
+    for (const auto& line : statLines) {
+        DrawText(line.m_text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, line.m_color);
+        y += m_lineH;
     }
 
     if (m_showUpgrade) {
@@ -193,8 +179,9 @@ void TowerInfoHUD::OnDraw(Game& game) {
     }
 
     if (m_showSell) {
-        m_sellBtn.Draw();
-        m_sellBtn.DrawLabel(m_fontSm, GREEN);
+        const WidgetStyle& style = m_sellEnabled ? kDefaultStyle : kDisabledStyle;
+        m_sellBtn.Draw(false, style);
+        m_sellBtn.DrawLabel(m_fontSm, m_sellEnabled ? GREEN : DARKGRAY);
     }
 }
 

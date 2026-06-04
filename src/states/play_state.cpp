@@ -133,7 +133,8 @@ void PlayingState::HandleHudSignals(Game& game) {
 
     if (m_towerInfoHUD.WasTargetingCycleRequested())
         if (Tower* tower = game.GetGameData().m_towers.Get(m_selection.towerKey))
-            tower->m_base.m_targetingMode = NextTargetingMode(tower->m_base.m_targetingMode);
+            if (AttackModule* attack = tower->GetAttack())
+                attack->m_targetingMode = NextTargetingMode(attack->m_targetingMode);
 
     if (m_towerInfoHUD.WasUpgradeRequested())
         UpgradeSelectedTower(game);
@@ -159,10 +160,9 @@ void PlayingState::UpgradeSelectedTower(Game& game) {
     if (game.GetGameData().m_gold < up.m_cost) return;
 
     game.GetGameData().m_gold -= up.m_cost;
-    // Each key is broadcast to the tower's base stats and every module; each consumer
-    // applies only the keys it recognizes (TowerStats keys vs. module-owned params).
+    // Each key is broadcast to every module; each consumer applies only the keys it recognizes
+    // (the AttackModule handles core combat stats, effect modules handle their own params).
     auto applyDelta = [&](const std::string& k, float v, bool mul) {
-        ApplyStat(tower->m_base, k, v, mul);
         for (auto& mod : tower->m_modules) mod->PatchStat(k, v, mul);
     };
     for (auto& [k, v] : up.m_adds) applyDelta(k, v, false);

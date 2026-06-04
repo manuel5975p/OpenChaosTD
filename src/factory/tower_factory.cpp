@@ -5,11 +5,6 @@
 
 using json = nlohmann::json;
 
-static TowerRole ParseTowerRole(const std::string& s) {
-    if (s == "Wall") return TowerRole::Wall;
-    return TowerRole::Shooter;
-}
-
 static TargetingMode ParseTargetingMode(const std::string& s) {
     if (s == "Last") return TargetingMode::Last;
     if (s == "MostHealth") return TargetingMode::MostHealth;
@@ -33,15 +28,16 @@ static VfxStyle ParseVfxStyle(const std::string& s) {
     return VfxStyle::Line;
 }
 
-static TowerStats ParseCombat(const json& j) {
-    TowerStats s;
-    s.m_damage         = j.value("damage", 0.0f);
-    s.m_shotsPerMinute = j.value("shotsPerMinute", 0.0f);
-    s.m_range          = j.value("range", 0.0f);
-    s.m_targetCount    = j.value("targetCount", 0);
-    s.m_targetingMode  = ParseTargetingMode(j.value("targeting", "First"));
-    s.m_armorPierce    = j.value("armorPierce", 0.0f);
-    return s;
+// Build the combat "Attack" module (formerly the `combat` block / TowerStats).
+static std::unique_ptr<TowerModule> BuildAttackModule(const json& j) {
+    auto a = std::make_unique<AttackModule>();
+    a->m_damage         = j.value("damage", 0.0f);
+    a->m_shotsPerMinute = j.value("shotsPerMinute", 0.0f);
+    a->m_range          = j.value("range", 0.0f);
+    a->m_targetCount    = j.value("targetCount", 0);
+    a->m_targetingMode  = ParseTargetingMode(j.value("targeting", "First"));
+    a->ResetLive(); // live==base until the first RecomputeStats tick (HUD may read it sooner)
+    return a;
 }
 
 static TowerVisual ParseVisual(const json& j, const EmitterPresets& presets) {
@@ -70,6 +66,15 @@ static TowerUpgrade ParseUpgrade(const json& j) {
 void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     m_presets = &presets;
 
+    m_builders["Attack"] = [](const json& j){
+        return BuildAttackModule(j);
+    };
+    m_builders["Passive"] = [](const json&){
+        return std::make_unique<PassiveModule>();
+    };
+    m_builders["ArmorPierce"] = [](const json& j){
+        return std::make_unique<ArmorPierceModule>(j.value("amount", 0.0f));
+    };
     m_builders["Slow"] = [this](const json& j){
         return std::make_unique<SlowModule>(j.value("slowPercent", 0.0f), j.value("duration", 0.0f), ResolveEmitter(j));
     };
@@ -85,8 +90,8 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     m_builders["Stun"] = [this](const json& j){
         return std::make_unique<StunModule>(j.value("duration", 0.0f), ResolveEmitter(j));
     };
-    m_builders["SlowStart"] = [](const json& j){
-        return std::make_unique<SlowStartModule>(j.value("bonusPerStack", 0.0f), j.value("maxStacks", 0), j.value("idleTime", 1.0f));
+    m_builders["RampUp"] = [](const json& j){
+        return std::make_unique<RampUpModule>(j.value("bonusPerStack", 0.0f), j.value("maxStacks", 0), j.value("idleTime", 1.0f));
     };
     m_builders["Crit"] = [](const json& j){
         return std::make_unique<CritModule>(j.value("critChance", 0.0f), j.value("critMultiplier", 1.0f));
@@ -104,14 +109,16 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         tmpl.description = entry.value("description", "");
         tmpl.texture     = entry.value("texture", "");
         tmpl.cost        = entry.value("cost", 100);
-        tmpl.role        = ParseTowerRole(entry.value("role", "Shooter"));
 
-        if (entry.contains("combat")) tmpl.stats  = ParseCombat(entry["combat"]);
         if (entry.contains("visual")) tmpl.visual = ParseVisual(entry["visual"], presets);
 
-        if (entry.contains("effects"))
-            for (auto& mod : entry["effects"])
+        // Every behaviour is a module now: Attack (combat), Passive (wall marker), or an effect.
+        if (entry.contains("modules"))
+            for (auto& mod : entry["modules"]) {
+                if (mod.value("type", "") == "Attack")
+                    tmpl.range = mod.value("range", 0.0f); // cached for GetRange
                 tmpl.modules.push_back(mod);
+            }
 
         if (entry.contains("upgrades"))
             for (auto& up : entry["upgrades"])
@@ -150,12 +157,10 @@ Tower TowerFactory::Create(const std::string& name) const {
     tower.m_description = tmpl.description;
     tower.m_texture     = tmpl.texture;
     tower.m_cost        = tmpl.cost;
-    tower.m_role        = tmpl.role;
-    tower.m_base   = tmpl.stats;
-    tower.m_stats  = tower.m_base;
     tower.m_visual = tmpl.visual;
     tower.m_upgrades = &tmpl.upgrades; // stable: templates are fixed after Load
 
+    // Build every module (incl. the Attack/Passive marker); AddModule caches the AttackModule.
     for (auto& mod : tmpl.modules)
         if (auto m = BuildModule(mod))
             tower.AddModule(std::move(m));
@@ -174,7 +179,7 @@ int TowerFactory::GetCost(const std::string& name) const {
 
 float TowerFactory::GetRange(const std::string& name) const {
     auto it = m_templates.find(name);
-    return (it != m_templates.end()) ? it->second.stats.m_range : 0.0f;
+    return (it != m_templates.end()) ? it->second.range : 0.0f;
 }
 
 const std::string& TowerFactory::GetTexture(const std::string& name) const {

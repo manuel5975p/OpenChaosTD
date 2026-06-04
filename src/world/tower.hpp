@@ -8,11 +8,8 @@
 #include <engine/lib/dense_slotmap.hpp>
 #include <world/enemy.hpp>
 #include <world/tower_modules.hpp>
-#include <world/tower_stats.hpp>
 #include <world/tower_visual.hpp>
 #include <world/tower_upgrade.hpp>
-
-enum class TowerRole { Shooter, Wall };
 
 class Tower {
 public:
@@ -20,12 +17,8 @@ public:
     std::string m_description;
     std::string m_texture;
     Vector2 m_position;
-    TowerRole m_role = TowerRole::Shooter;
 
     int m_cost = 0;
-
-    TowerStats m_base;   // set from JSON, never modified at runtime
-    TowerStats m_stats;  // recomputed each tick from base + ContributeTower modules
 
     TowerVisual m_visual; // set by factory, never modified at runtime
 
@@ -37,6 +30,16 @@ public:
     const std::vector<TowerUpgrade>* m_upgrades = nullptr; // stable pointer into the factory template
 
     void AddModule(std::unique_ptr<TowerModule> mod) {
+        // Cache the AttackModule (if any) so systems can cheaply tell shooters from walls and
+        // read combat stats without scanning the module list every frame.
+        if (auto* attack = dynamic_cast<AttackModule*>(mod.get()))
+            m_attack = attack;
         m_modules.push_back(std::move(mod));
     }
+
+    // Non-null iff this tower can attack; null marks a wall/passive tower.
+    AttackModule* GetAttack() const { return m_attack; }
+
+private:
+    AttackModule* m_attack = nullptr; // points into m_modules; set in AddModule
 };

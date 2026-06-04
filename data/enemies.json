@@ -54,7 +54,8 @@
             "modules": [
                 { "type": "Regeneration", "rate": 5.0 },
                 { "type": "Armor",        "amount": 2.0 },
-                { "type": "Split", "child": "golem", "count": 2 }
+                { "type": "Split", "child": "golem", "count": 2 },
+                { "type": "Immune", "effect": "Stun" }
             ]
         },
         {

@@ -13,16 +13,17 @@ constexpr float kSecondsPerMinute  = 60.0f;  // shot interval = 60 / shotsPerMin
 
 void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles){
     for (Tower& tower : gameData.m_towers) {
-        RecomputeStats(tower, dt); // runs for walls too (no-op without modules)
+        RecomputeStats(tower, dt); // runs for walls too (ticks their modules)
 
-        if (tower.m_role == TowerRole::Wall) continue;
+        AttackModule* attack = tower.GetAttack();
+        if (!attack) continue; // no AttackModule -> a wall, never fires
 
         tower.m_cooldown -= dt;
         DecayAttackFlash(tower, dt);
 
         if (tower.m_cooldown > 0.0f) continue; // not ready to fire yet
 
-        std::vector<DenseSlotMap<Enemy>::Key> targetKeys = FindTargets(tower, gameData.m_enemies, tower.m_stats.m_targetCount);
+        std::vector<DenseSlotMap<Enemy>::Key> targetKeys = FindTargets(tower, gameData.m_enemies, attack->m_liveTargetCount);
         if (targetKeys.empty()) {
             tower.m_cooldown = kIdleRetryCooldown;
             continue;
@@ -32,12 +33,13 @@ void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles
     }
 }
 
-// Recompute live stats from base, then let modules update their state and augment stats.
+// Reset the AttackModule's live stats from base, then let modules tick and augment them.
 void TowerSystem::RecomputeStats(Tower& tower, float dt) {
-    tower.m_stats = tower.m_base;
+    AttackModule* attack = tower.GetAttack();
+    if (attack) attack->ResetLive();
     for (auto& mod : tower.m_modules) {
         mod->Tick(dt);
-        mod->ContributeTower(tower.m_stats);
+        if (attack) mod->ContributeTower(*attack); // AttackModule's own override is a no-op
     }
 }
 
@@ -51,7 +53,8 @@ void TowerSystem::DecayAttackFlash(Tower& tower, float dt) {
 
 // Execute one shot: reset cooldown/flash, notify modules, and enqueue the damage payload + VFX.
 void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>& targetKeys, GameData& gameData, ParticleSystem& particles) {
-    tower.m_cooldown         = (tower.m_stats.m_shotsPerMinute > 0.0f) ? kSecondsPerMinute / tower.m_stats.m_shotsPerMinute : kInactiveCooldown;
+    float shotsPerMinute     = tower.GetAttack()->m_liveShotsPerMinute;
+    tower.m_cooldown         = (shotsPerMinute > 0.0f) ? kSecondsPerMinute / shotsPerMinute : kInactiveCooldown;
     tower.m_attackFlashRatio = 1.0f;
     for (auto& mod : tower.m_modules) // note: after the cooldown reset, so a new stack affects the next-but-one shot
         mod->OnFire();
@@ -82,7 +85,7 @@ VfxEffect TowerSystem::BuildVfx(const Tower& tower, std::vector<Vector2> targetP
     vfx.m_targetPositions = std::move(targetPositions);
     vfx.m_duration = tower.m_visual.m_attackDuration;
     vfx.m_maxDuration = tower.m_visual.m_attackDuration;
-    vfx.m_radius = tower.m_stats.m_range;
+    vfx.m_radius = tower.GetAttack()->m_liveRange;
     vfx.m_color = tower.m_visual.m_color;
     vfx.m_style = tower.m_visual.m_style;
     return vfx;
@@ -92,7 +95,7 @@ std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(const Tower& towe
     std::vector<Enemy*> inRange = FindEnemiesInRange(tower, enemies);
 
     std::sort(inRange.begin(), inRange.end(), [&](const Enemy* a, const Enemy* b) {
-        return CompareTarget(*a, *b, tower.m_stats.m_targetingMode);
+        return CompareTarget(*a, *b, tower.GetAttack()->m_targetingMode);
     });
 
     int size = static_cast<int>(inRange.size());
@@ -107,19 +110,19 @@ std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(const Tower& towe
 }
 
 std::vector<Enemy*> TowerSystem::FindEnemiesInRange(const Tower& tower, DenseSlotMap<Enemy>& enemies) {
+    float range = tower.GetAttack()->m_liveRange;
     std::vector<Enemy*> result;
     for (auto& enemy : enemies) {
         if (enemy.m_currentHealth <= 0.0f) continue;
-        if (tower.m_stats.m_range >= Vector2Distance(enemy.m_position, tower.m_position))
+        if (range >= Vector2Distance(enemy.m_position, tower.m_position))
             result.push_back(&enemy);
     }
     return result;
 }
 
 void TowerSystem::BuildPayload(const Tower& tower, AttackPayload& payload) {
-    // Scalar combat values come from stats; behavioural effects come from modules
-    payload.m_damage = tower.m_stats.m_damage;
-    payload.m_armorPierce = tower.m_stats.m_armorPierce;
+    // Damage comes from the AttackModule; armor pierce and behavioural effects come from modules
+    payload.m_damage = tower.GetAttack()->m_liveDamage;
     if (tower.m_visual.m_impactDesc.m_count > 0)
         payload.m_impactDescs.push_back(tower.m_visual.m_impactDesc);
     if (tower.m_visual.m_critImpactDesc.m_count > 0)

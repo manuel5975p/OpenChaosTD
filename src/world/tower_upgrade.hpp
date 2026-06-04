@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <unordered_map>
 #include <nlohmann/json.hpp>
-#include <world/tower_stats.hpp>
+#include <world/tower_modules.hpp>
 
 // Readable name for an upgrade key (combat stats and module parameters); falls back to the raw key.
 inline const char* StatLabel(const std::string& key) {
@@ -50,7 +50,7 @@ inline std::string FormatMulDelta(const std::string& key, float v) {
     return buf;
 }
 
-// One purchasable upgrade level for a tower: scalar deltas applied to TowerStats
+// One purchasable upgrade level for a tower: scalar deltas broadcast to its modules
 // (additive + multiplicative) plus any new effect modules to append.
 struct TowerUpgrade {
     int m_cost = 0;

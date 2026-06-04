@@ -35,10 +35,9 @@ private:
         std::string description;
         std::string texture;
         int cost = 100;
-        TowerRole role = TowerRole::Shooter;
-        TowerStats stats;
+        float range = 0.0f; // cached from the Attack module def for GetRange (build preview/ghost)
         TowerVisual visual;
-        std::vector<nlohmann::json> modules;
+        std::vector<nlohmann::json> modules; // all module defs (Attack/Passive/effects), built per Create
         std::vector<TowerUpgrade> upgrades;
     };
 

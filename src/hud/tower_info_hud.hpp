@@ -46,6 +46,7 @@ private:
     HudSignal m_targetSignal;
     HudSignal m_upgradeSignal;
     bool m_showSell = true;
+    bool m_sellEnabled = true;       // sellable only between waves; greyed out during a wave
     bool m_showTargeting = false;
     bool m_showUpgrade = false;
     bool m_upgradeReady = false;    // affordable and not yet max level

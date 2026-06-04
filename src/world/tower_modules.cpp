@@ -3,6 +3,57 @@
 #include <world/effect.hpp>
 #include <cstdio>
 
+// --- AttackModule ---
+
+void AttackModule::ResetLive() {
+    m_liveDamage = m_damage;
+    m_liveShotsPerMinute = m_shotsPerMinute;
+    m_liveRange = m_range;
+    m_liveTargetCount = m_targetCount;
+}
+
+void AttackModule::PatchStat(const std::string& key, float v, bool mul) {
+    if      (key == "damage")         ApplyDelta(m_damage, v, mul);
+    else if (key == "shotsPerMinute") ApplyDelta(m_shotsPerMinute, v, mul);
+    else if (key == "range")          ApplyDelta(m_range, v, mul);
+    else if (key == "targetCount") {
+        float t = static_cast<float>(m_targetCount);
+        ApplyDelta(t, v, mul);
+        m_targetCount = static_cast<int>(t + 0.5f);
+    }
+}
+
+void AttackModule::DescribeStats(std::vector<DescLine>& out) const {
+    char buf[40];
+    snprintf(buf, sizeof(buf), "Damage:  %g", m_liveDamage);
+    out.push_back({buf, RAYWHITE});
+    snprintf(buf, sizeof(buf), "Range:   %.0f", m_liveRange);
+    out.push_back({buf, RAYWHITE});
+    snprintf(buf, sizeof(buf), "Rate:    %d/min", static_cast<int>(m_liveShotsPerMinute + 0.5f));
+    out.push_back({buf, RAYWHITE});
+    snprintf(buf, sizeof(buf), "Targets: %d", m_liveTargetCount);
+    out.push_back({buf, RAYWHITE});
+}
+
+// --- ArmorPierceModule ---
+
+ArmorPierceModule::ArmorPierceModule(float amount)
+    : m_amount(amount) {}
+
+void ArmorPierceModule::Contribute(AttackPayload& attack) const {
+    attack.m_armorPierce += m_amount;
+}
+
+void ArmorPierceModule::DescribeStats(std::vector<DescLine>& out) const {
+    char buf[40];
+    snprintf(buf, sizeof(buf), "Pierce:  %g", m_amount);
+    out.push_back({buf, GOLD});
+}
+
+void ArmorPierceModule::PatchStat(const std::string& key, float v, bool mul) {
+    if (key == "armorPierce") ApplyDelta(m_amount, v, mul);
+}
+
 // --- SlowModule ---
 
 SlowModule::SlowModule(float slowPercent, float duration, EmitterDesc particleDesc)
@@ -15,11 +66,10 @@ void SlowModule::Contribute(AttackPayload& attack) const {
     attack.m_effects.push_back(std::move(e));
 }
 
-void SlowModule::Describe(std::string& text, Color& color) const {
+void SlowModule::DescribeStats(std::vector<DescLine>& out) const {
     char buf[40];
     snprintf(buf, sizeof(buf), "Slow:    %.0f%%  %.1fs", m_slowPercent, m_duration);
-    text = buf;
-    color = SKYBLUE;
+    out.push_back({buf, SKYBLUE});
 }
 
 void SlowModule::PatchStat(const std::string& key, float v, bool mul) {
@@ -39,11 +89,10 @@ void BurnModule::Contribute(AttackPayload& attack) const {
     attack.m_effects.push_back(std::move(e));
 }
 
-void BurnModule::Describe(std::string& text, Color& color) const {
+void BurnModule::DescribeStats(std::vector<DescLine>& out) const {
     char buf[40];
     snprintf(buf, sizeof(buf), "Burn:    %g/s  %.1fs", m_damage, m_duration);
-    text = buf;
-    color = ORANGE;
+    out.push_back({buf, ORANGE});
 }
 
 void BurnModule::PatchStat(const std::string& key, float v, bool mul) {
@@ -63,11 +112,10 @@ void ArmorShredModule::Contribute(AttackPayload& attack) const {
     attack.m_effects.push_back(std::move(e));
 }
 
-void ArmorShredModule::Describe(std::string& text, Color& color) const {
+void ArmorShredModule::DescribeStats(std::vector<DescLine>& out) const {
     char buf[40];
     snprintf(buf, sizeof(buf), "Shred:   %g  %.1fs", m_amount, m_duration);
-    text = buf;
-    color = GRAY;
+    out.push_back({buf, GRAY});
 }
 
 void ArmorShredModule::PatchStat(const std::string& key, float v, bool mul) {
@@ -87,11 +135,10 @@ void WeaknessModule::Contribute(AttackPayload& attack) const {
     attack.m_effects.push_back(std::move(e));
 }
 
-void WeaknessModule::Describe(std::string& text, Color& color) const {
+void WeaknessModule::DescribeStats(std::vector<DescLine>& out) const {
     char buf[40];
     snprintf(buf, sizeof(buf), "Weak:    +%g  %.1fs", m_amount, m_duration);
-    text = buf;
-    color = PURPLE;
+    out.push_back({buf, PURPLE});
 }
 
 void WeaknessModule::PatchStat(const std::string& key, float v, bool mul) {
@@ -112,11 +159,10 @@ void StunModule::Contribute(AttackPayload& attack) const {
     attack.m_effects.push_back(std::move(e));
 }
 
-void StunModule::Describe(std::string& text, Color& color) const {
+void StunModule::DescribeStats(std::vector<DescLine>& out) const {
     char buf[40];
     snprintf(buf, sizeof(buf), "Stun:    %.1fs", m_duration);
-    text = buf;
-    color = YELLOW;
+    out.push_back({buf, YELLOW});
 }
 
 void StunModule::PatchStat(const std::string& key, float v, bool mul) {
@@ -133,11 +179,10 @@ void CritModule::Contribute(AttackPayload& attack) const {
     attack.m_critMultiplier = m_critMultiplier;
 }
 
-void CritModule::Describe(std::string& text, Color& color) const {
+void CritModule::DescribeStats(std::vector<DescLine>& out) const {
     char buf[40];
     snprintf(buf, sizeof(buf), "Crit:    %.0f%%  x%.1f", m_critChance * 100.0f, m_critMultiplier);
-    text = buf;
-    color = YELLOW;
+    out.push_back({buf, YELLOW});
 }
 
 void CritModule::PatchStat(const std::string& key, float v, bool mul) {
@@ -145,16 +190,16 @@ void CritModule::PatchStat(const std::string& key, float v, bool mul) {
     else if (key == "critMultiplier") ApplyDelta(m_critMultiplier, v, mul);
 }
 
-// --- SlowStartModule ---
+// --- RampUpModule ---
 
-SlowStartModule::SlowStartModule(float bonusPerStack, int maxStacks, float idleTime)
+RampUpModule::RampUpModule(float bonusPerStack, int maxStacks, float idleTime)
     : m_bonusPerStack(bonusPerStack), m_idleTime(idleTime), m_maxStacks(maxStacks) {}
 
-void SlowStartModule::ContributeTower(TowerStats& stats) const {
-    stats.m_shotsPerMinute += m_stacks * m_bonusPerStack;
+void RampUpModule::ContributeTower(AttackModule& attack) const {
+    attack.m_liveShotsPerMinute += m_stacks * m_bonusPerStack;
 }
 
-void SlowStartModule::Tick(float dt) {
+void RampUpModule::Tick(float dt) {
     if (m_stacks <= 0) return;
     m_idleTimer += dt;
     if (m_idleTimer >= m_idleTime) { // idle too long — lose the ramp
@@ -163,19 +208,18 @@ void SlowStartModule::Tick(float dt) {
     }
 }
 
-void SlowStartModule::OnFire() {
+void RampUpModule::OnFire() {
     if (m_stacks < m_maxStacks) m_stacks++;
     m_idleTimer = 0.0f;
 }
 
-void SlowStartModule::Describe(std::string& text, Color& color) const {
+void RampUpModule::DescribeStats(std::vector<DescLine>& out) const {
     char buf[40];
     snprintf(buf, sizeof(buf), "Ramp:    %d/%d", m_stacks, m_maxStacks);
-    text = buf;
-    color = GREEN;
+    out.push_back({buf, GREEN});
 }
 
-void SlowStartModule::PatchStat(const std::string& key, float v, bool mul) {
+void RampUpModule::PatchStat(const std::string& key, float v, bool mul) {
     if      (key == "bonusPerStack") ApplyDelta(m_bonusPerStack, v, mul);
     else if (key == "idleTime")      ApplyDelta(m_idleTime, v, mul);
     else if (key == "maxStacks")     m_maxStacks = mul ? static_cast<int>(m_maxStacks * v + 0.5f) : m_maxStacks + static_cast<int>(v + 0.5f);

@@ -10,15 +10,27 @@ All towers are defined in `data/towers.json` as an array under the `"towers"` ke
 | `description` | string | yes      | Shown in the info panel |
 | `texture`     | string | yes      | Resource key for the tower sprite |
 | `cost`        | int    | yes      | Gold cost to place |
-| `role`        | string | no       | `"Wall"` or `"Shooter"` (default: `"Shooter"`) |
+| `modules`     | array  | yes      | The tower's behavior modules — see below |
 
-A `"Wall"` tower has no `combat`, `effects`, `visual`, or `upgrades` blocks.
+There is no role field. A tower's behavior is defined entirely by its `modules`: a tower with an
+`Attack` module shoots; one with only a `Passive` module is a non-attacking wall (and typically
+has no `visual` or `upgrades` block).
 
 ---
 
-## `combat` block
+## `modules` array
 
-Populates `TowerStats`. All fields are optional and default to 0 / `"First"` / 1.0.
+Each entry is one module, identified by its `"type"`. The combat-defining modules are `Attack`
+and `Passive`; the rest are status-effect modules. All fields inside an entry are module-specific.
+
+### Attack
+
+```json
+{ "type": "Attack", "damage": 2, "shotsPerMinute": 180, "range": 64, "targetCount": 1, "targeting": "First" }
+```
+
+The "shooter" module — owns the tower's core combat stats. A tower needs exactly one to attack.
+All fields are optional and default to 0 / `"First"`.
 
 | Field           | Type   | Description |
 |-----------------|--------|-------------|
@@ -27,17 +39,38 @@ Populates `TowerStats`. All fields are optional and default to 0 / `"First"` / 1
 | `range`         | float  | Radius in world units |
 | `targetCount`   | int    | Max simultaneous targets; 0 = all in range |
 | `targeting`     | string | Priority rule — see targeting modes below |
-| `armorPierce`   | float  | Armor value ignored before damage reduction |
 
 **Targeting modes:** `First`, `Last`, `MostHealth`, `LowestHealth`, `Fastest`, `Slowest`,
 `MostArmor`, `MostShield`
 
+### Passive
+
+```json
+{ "type": "Passive" }
+```
+
+Marks the tower as a non-attacking blocker (a wall). Carries no fields.
+
+### ArmorPierce
+
+```json
+{ "type": "ArmorPierce", "amount": 5.0 }
+```
+
+Flat armor penetration — ignores up to `amount` of the target's armor before damage reduction.
+Composes onto any `Attack` tower.
+
+| Field    | Type  | Description |
+|----------|-------|-------------|
+| `amount` | float | Flat armor value ignored before damage reduction |
+
 ---
 
-## `effects` array
+## Status-effect modules
 
-Each entry adds a behavior module to the tower (`Slow`, `Burn`, `ArmorShred`, `Weakness`,
-`Stun`, `SlowStart`, or `Crit`). All fields inside each entry are module-specific.
+The remaining module types (`Slow`, `Burn`, `ArmorShred`, `Weakness`, `Stun`, `RampUp`, or
+`Crit`) sit alongside the `Attack` module in the same `modules` array. All fields inside each
+entry are module-specific.
 
 **Effect rules** (apply to every status effect a module inflicts):
 - Effects never stack. Reapplying refreshes the timer (and value) only when the new effect is
@@ -95,9 +128,9 @@ Each entry adds a behavior module to the tower (`Slow`, `Burn`, `ArmorShred`, `W
 | `duration` | float  | Seconds the enemy can't move; also cleared the moment it's next hit |
 | `effect`   | string | Emitter preset name for the on-enemy particle effect |
 
-### SlowStart
+### RampUp
 ```json
-{ "type": "SlowStart", "bonusPerStack": 18, "maxStacks": 8, "idleTime": 1.2 }
+{ "type": "RampUp", "bonusPerStack": 18, "maxStacks": 8, "idleTime": 1.2 }
 ```
 A self-buff on the tower (no enemy effect). Each shot adds a stack up to `maxStacks`; each stack
 raises `shotsPerMinute` by `bonusPerStack`. All stacks clear after `idleTime` seconds of not firing.
@@ -151,13 +184,15 @@ Each entry is one purchasable upgrade level, applied in order (L1 first, then L2
 | `cost`    | int    | Gold required to purchase |
 | `add`     | object | Additive deltas — key→value pairs |
 | `mul`     | object | Multiplicative factors — key→value pairs |
-| `effects` | array  | New modules to append (same schema as the top-level `effects` array) |
+| `effects` | array  | New status-effect modules to append (same schema as entries in the top-level `modules` array) |
 
 All three optional fields are independent and can appear together in one upgrade level.
 
 ### `add` / `mul` keys
 
-**TowerStats fields** (applied to the tower's base stats):
+Every key is broadcast to all of the tower's modules; each applies only the keys it recognizes.
+
+**Attack module fields** (the tower's core combat stats):
 
 | Key             | Affects |
 |-----------------|---------|
@@ -165,12 +200,12 @@ All three optional fields are independent and can appear together in one upgrade
 | `shotsPerMinute`| Attack cadence |
 | `range`         | Attack radius |
 | `targetCount`   | Max simultaneous targets |
-| `armorPierce`   | Armor penetration |
 
-**Module parameters** (broadcast to all installed modules; ignored by modules that don't handle the key):
+**Module parameters** (handled by the matching module; ignored by modules that don't handle the key):
 
 | Key                | Module           | Affects |
 |--------------------|------------------|---------|
+| `armorPierce`      | ArmorPierceModule | Flat armor ignored before damage reduction |
 | `slowPercent`      | SlowModule       | Slow strength % (higher = stronger slow) |
 | `slowDuration`     | SlowModule       | Seconds the slow lasts |
 | `burnDamage`       | BurnModule       | Damage per second while burning |
@@ -180,8 +215,8 @@ All three optional fields are independent and can appear together in one upgrade
 | `weaknessAmount`   | WeaknessModule   | Flat bonus damage on the next hit |
 | `weaknessDuration` | WeaknessModule   | Seconds the weakness lasts |
 | `stunDuration`     | StunModule       | Seconds the stun lasts |
-| `bonusPerStack`    | SlowStartModule  | shotsPerMinute added per stack |
-| `maxStacks`        | SlowStartModule  | Stack cap |
-| `idleTime`         | SlowStartModule  | Seconds idle before stacks clear |
+| `bonusPerStack`    | RampUpModule     | shotsPerMinute added per stack |
+| `maxStacks`        | RampUpModule     | Stack cap |
+| `idleTime`         | RampUpModule     | Seconds idle before stacks clear |
 | `critChance`       | CritModule       | Critical hit probability (requires a Crit module on the tower) |
 | `critMultiplier`   | CritModule       | Critical damage multiplier (requires a Crit module on the tower) |
