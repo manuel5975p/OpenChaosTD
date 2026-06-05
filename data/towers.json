@@ -95,7 +95,7 @@
             "upgrades": [
                 { "cost": 250, "add": { "damage": 10, "range": 30 } },
                 { "cost": 350, "add": { "critChance": 0.3, "range": 30 } },
-                { "cost": 450, "effects": [ { "type": "Stun", "stunDuration": 1.0, "effect": "stun_effect" } ] }
+                { "cost": 450, "add": { "range": 30 }, "effects": [ { "type": "Stun", "stunDuration": 1.0, "effect": "stun_effect" } ] }
             ]
         },
         {

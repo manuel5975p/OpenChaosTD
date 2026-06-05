@@ -1,9 +1,9 @@
 {
-    "budget":   { "base_budget": 20, "growth_exponent": 1.2, "victory_wave": 0 },
+    "budget":   { "base_budget": 20, "growth_exponent": 0.5, "victory_wave": 0 },
     "boss":     { "interval": 10, "boss_enemies": ["sovereign"] },
-    "upgrade_interval": 5,
+    "upgrade_interval": 11,
     "enemy_pool": [
-        { "enemy": "shade",     "cost": 3,  "min_wave": 1,   "interval": 1.0 },
+        { "enemy": "shade",     "cost": 3,  "min_wave": 1,   "interval": 0.8 },
         { "enemy": "flicker",   "cost": 4,  "min_wave": 3,   "interval": 0.5 },
         { "enemy": "cinder",    "cost": 6,  "min_wave": 7,   "interval": 1.2 },
         { "enemy": "glacius",   "cost": 5,  "min_wave": 11,  "interval": 1.2 },
