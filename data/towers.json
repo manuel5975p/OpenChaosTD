@@ -3,7 +3,7 @@
         {
             "name": "wall",
             "description": "Blocks enemy paths. Cannot attack.",
-            "cost": 25,
+            "cost": 20,
             "modules": [
                 { "type": "Passive" }
             ],
