@@ -28,7 +28,7 @@
             "deathEmitter": "death_medium",
             "modules": [
                 { "type": "Regeneration", "rate": 2.0 },
-                { "type": "Armor",        "amount": 1.0 }
+                { "type": "Armor",        "amount": 2.0 }
             ]
         },
         {
