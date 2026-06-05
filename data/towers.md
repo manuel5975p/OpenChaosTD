@@ -8,13 +8,15 @@ All towers are defined in `data/towers.json` as an array under the `"towers"` ke
 |---------------|--------|----------|-------------|
 | `name`        | string | yes      | Unique identifier used in code and factory lookup |
 | `description` | string | yes      | Shown in the info panel |
-| `texture`     | string | yes      | Resource key for the tower sprite |
 | `cost`        | int    | yes      | Gold cost to place |
 | `modules`     | array  | yes      | The tower's behavior modules — see below |
+| `visual`      | object | yes      | Sprite + attack presentation (incl. `texture`) — see below |
+
+The sprite key lives inside the `visual` block (mirroring `enemies.md`), not as a top-level field.
 
 There is no role field. A tower's behavior is defined entirely by its `modules`: a tower with an
-`Attack` module shoots; one with only a `Passive` module is a non-attacking wall (and typically
-has no `visual` or `upgrades` block).
+`Attack` module shoots; one with only a `Passive` module is a non-attacking wall (its `visual`
+block then carries only a `texture`, and it has no `upgrades`).
 
 ---
 
@@ -26,7 +28,7 @@ and `Passive`; the rest are status-effect modules. All fields inside an entry ar
 ### Attack
 
 ```json
-{ "type": "Attack", "damage": 2, "shotsPerMinute": 180, "range": 64, "targetCount": 1, "targeting": "First" }
+{ "type": "Attack", "damage": 2, "shotsPerMinute": 180, "range": 64, "targetCount": 1, "targetingMode": "First" }
 ```
 
 The "shooter" module — owns the tower's core combat stats. A tower needs exactly one to attack.
@@ -38,7 +40,7 @@ All fields are optional and default to 0 / `"First"`.
 | `shotsPerMinute`| float  | Attack cadence; cooldown = 60 / shotsPerMinute |
 | `range`         | float  | Radius in world units |
 | `targetCount`   | int    | Max simultaneous targets; 0 = all in range |
-| `targeting`     | string | Priority rule — see targeting modes below |
+| `targetingMode` | string | Priority rule — see targeting modes below |
 
 **Targeting modes:** `First`, `Last`, `MostHealth`, `LowestHealth`, `Fastest`, `Slowest`,
 `MostArmor`, `MostShield`
@@ -54,15 +56,15 @@ Marks the tower as a non-attacking blocker (a wall). Carries no fields.
 ### ArmorPierce
 
 ```json
-{ "type": "ArmorPierce", "amount": 5.0 }
+{ "type": "ArmorPierce", "armorPierce": 5.0 }
 ```
 
-Flat armor penetration — ignores up to `amount` of the target's armor before damage reduction.
+Flat armor penetration — ignores up to `armorPierce` of the target's armor before damage reduction.
 Composes onto any `Attack` tower.
 
-| Field    | Type  | Description |
-|----------|-------|-------------|
-| `amount` | float | Flat armor value ignored before damage reduction |
+| Field         | Type  | Description |
+|---------------|-------|-------------|
+| `armorPierce` | float | Flat armor value ignored before damage reduction |
 
 ---
 
@@ -70,7 +72,8 @@ Composes onto any `Attack` tower.
 
 The remaining module types (`Slow`, `Burn`, `ArmorShred`, `Weakness`, `Stun`, `RampUp`, or
 `Crit`) sit alongside the `Attack` module in the same `modules` array. All fields inside each
-entry are module-specific.
+entry are module-specific. Each numeric build key is the same name as the `add`/`mul` upgrade key
+for that stat (e.g. `burnDamage`, `slowDuration`) — one canonical name per stat.
 
 **Effect rules** (apply to every status effect a module inflicts):
 - Effects never stack. Reapplying refreshes the timer (and value) only when the new effect is
@@ -81,52 +84,52 @@ entry are module-specific.
 
 ### Slow
 ```json
-{ "type": "Slow", "slowPercent": 50, "duration": 2.0, "effect": "slow_effect" }
+{ "type": "Slow", "slowPercent": 50, "slowDuration": 2.0, "effect": "slow_effect" }
 ```
-| Field      | Type   | Description |
-|------------|--------|-------------|
-| `slowPercent` | float | Slow strength as a percent (90 = 90% slower) |
-| `duration` | float  | Seconds the slow lasts |
-| `effect`   | string | Emitter preset name for the on-enemy particle effect |
+| Field          | Type   | Description |
+|----------------|--------|-------------|
+| `slowPercent`  | float  | Slow strength as a percent (90 = 90% slower) |
+| `slowDuration` | float  | Seconds the slow lasts |
+| `effect`       | string | Emitter preset name for the on-enemy particle effect |
 
 ### Burn
 ```json
-{ "type": "Burn", "damage": 0.5, "duration": 8.0, "effect": "burn_effect" }
+{ "type": "Burn", "burnDamage": 0.5, "burnDuration": 8.0, "effect": "burn_effect" }
 ```
-| Field      | Type   | Description |
-|------------|--------|-------------|
-| `damage`   | float  | Damage per second while burning |
-| `duration` | float  | Seconds the burn lasts |
-| `effect`   | string | Emitter preset name for the on-enemy particle effect |
+| Field          | Type   | Description |
+|----------------|--------|-------------|
+| `burnDamage`   | float  | Damage per second while burning |
+| `burnDuration` | float  | Seconds the burn lasts |
+| `effect`       | string | Emitter preset name for the on-enemy particle effect |
 
 ### ArmorShred
 ```json
-{ "type": "ArmorShred", "amount": 2, "duration": 4.0, "effect": "shred_effect" }
+{ "type": "ArmorShred", "shredAmount": 2, "shredDuration": 4.0, "effect": "shred_effect" }
 ```
-| Field      | Type   | Description |
-|------------|--------|-------------|
-| `amount`   | float  | Flat armor removed while active (enemy armor floored at 0) |
-| `duration` | float  | Seconds the shred lasts |
-| `effect`   | string | Emitter preset name for the on-enemy particle effect |
+| Field           | Type   | Description |
+|-----------------|--------|-------------|
+| `shredAmount`   | float  | Flat armor removed while active (enemy armor floored at 0) |
+| `shredDuration` | float  | Seconds the shred lasts |
+| `effect`        | string | Emitter preset name for the on-enemy particle effect |
 
 ### Weakness
 ```json
-{ "type": "Weakness", "amount": 8, "duration": 5.0, "effect": "weakness_effect" }
+{ "type": "Weakness", "weaknessAmount": 8, "weaknessDuration": 5.0, "effect": "weakness_effect" }
 ```
-| Field      | Type   | Description |
-|------------|--------|-------------|
-| `amount`   | float  | Flat bonus damage the next hit deals; consumed on that hit |
-| `duration` | float  | Seconds the weakness lasts if not consumed |
-| `effect`   | string | Emitter preset name for the on-enemy particle effect |
+| Field              | Type   | Description |
+|--------------------|--------|-------------|
+| `weaknessAmount`   | float  | Flat bonus damage the next hit deals; consumed on that hit |
+| `weaknessDuration` | float  | Seconds the weakness lasts if not consumed |
+| `effect`           | string | Emitter preset name for the on-enemy particle effect |
 
 ### Stun
 ```json
-{ "type": "Stun", "duration": 1.0, "effect": "stun_effect" }
+{ "type": "Stun", "stunDuration": 1.0, "effect": "stun_effect" }
 ```
-| Field      | Type   | Description |
-|------------|--------|-------------|
-| `duration` | float  | Seconds the enemy can't move; also cleared the moment it's next hit |
-| `effect`   | string | Emitter preset name for the on-enemy particle effect |
+| Field          | Type   | Description |
+|----------------|--------|-------------|
+| `stunDuration` | float  | Seconds the enemy can't move; also cleared the moment it's next hit |
+| `effect`       | string | Emitter preset name for the on-enemy particle effect |
 
 ### RampUp
 ```json
@@ -158,10 +161,12 @@ No enemy effect. Pair with a `critImpact` visual for an on-crit particle burst.
 
 ## `visual` block
 
-Controls beam/ring appearance and particle bursts. Does not affect gameplay.
+Holds the sprite key plus beam/ring appearance and particle bursts. Only `texture` affects what is
+drawn; the rest is presentation and does not affect gameplay.
 
 | Field           | Type        | Description |
 |-----------------|-------------|-------------|
+| `texture`       | string      | Resource key for the tower sprite (required) |
 | `style`         | string      | `"Line"` (beam to each target) or `"Ring"` (area pulse) |
 | `attackDuration`| float       | Seconds the beam/ring is visible; also controls muzzle-flash fade |
 | `color`         | [R,G,B,A]   | RGBA color of the beam or ring (0–255 per channel) |

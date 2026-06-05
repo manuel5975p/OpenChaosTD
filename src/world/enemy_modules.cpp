@@ -3,10 +3,40 @@
 #include <algorithm>
 #include <cstdio>
 
+// --- BaseStatsModule ---
+
+void BaseStatsModule::ResetLive() {
+    m_liveSpeed = m_speed;
+    m_liveArmor = 0.0f; // no innate armor; ArmorModule contributes it via ContributeStats
+}
+
+void BaseStatsModule::PatchStats(const std::string& key, float v, bool mul) {
+    if      (key == "maxHealth") ApplyDelta(m_maxHealth, v, mul);
+    else if (key == "speed")     ApplyDelta(m_speed, v, mul);
+    else if (key == "reward") {
+        float r = static_cast<float>(m_reward);
+        ApplyDelta(r, v, mul);
+        m_reward = static_cast<int>(r + 0.5f);
+    } else if (key == "livesOnReach") {
+        float l = static_cast<float>(m_livesOnReach);
+        ApplyDelta(l, v, mul);
+        m_livesOnReach = static_cast<int>(l + 0.5f);
+    }
+}
+
+void BaseStatsModule::DescribeStats(std::vector<DescLine>& out) const {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "Health:  %g", m_maxHealth);
+    out.push_back({buf, RAYWHITE});
+    snprintf(buf, sizeof(buf), "Speed:   %g", m_liveSpeed);
+    out.push_back({buf, RAYWHITE});
+}
+
 // --- RegenerationModule ---
 
 void RegenerationModule::Tick(float dt, Enemy& enemy) {
-    enemy.m_currentHealth = std::min(enemy.m_maxHealth, enemy.m_currentHealth + m_rate * dt);
+    float maxHealth = enemy.GetBaseStats()->m_maxHealth;
+    enemy.m_currentHealth = std::min(maxHealth, enemy.m_currentHealth + m_rate * dt);
 }
 
 void RegenerationModule::DescribeStats(std::vector<DescLine>& out) const {
@@ -21,8 +51,8 @@ void RegenerationModule::PatchStats(const std::string& key, float v, bool mul) {
 
 // --- ArmorModule ---
 
-void ArmorModule::ContributeStats(EnemyStats& stats) const {
-    stats.m_armor += m_amount;
+void ArmorModule::ContributeStats(BaseStatsModule& base) const {
+    base.m_liveArmor += m_amount;
 }
 
 void ArmorModule::DescribeStats(std::vector<DescLine>& out) const {

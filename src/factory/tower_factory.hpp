@@ -33,7 +33,6 @@ private:
     struct TowerTemplate {
         std::string name;
         std::string description;
-        std::string texture;
         int cost = 100;
         float range = 0.0f; // cached from the Attack module def for GetRange (build preview/ghost)
         TowerVisual visual;

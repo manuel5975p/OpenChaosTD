@@ -3,16 +3,17 @@
         {
             "name": "wall",
             "description": "Blocks enemy paths. Cannot attack.",
-            "texture": "tower_wall",
             "cost": 25,
             "modules": [
                 { "type": "Passive" }
-            ]
+            ],
+            "visual": {
+                "texture": "tower_wall"
+            }
         },
         {
             "name": "zapper",
-            "description": "Fast attack, low damage. Good against swarms.",
-            "texture": "tower_zapper",
+            "description": "Fast, low-damage shots. Strong against swarms.",
             "cost": 150,
             "modules": [
                 {
@@ -21,10 +22,11 @@
                     "shotsPerMinute": 120,
                     "range": 60,
                     "targetCount": 1,
-                    "targeting": "First"
+                    "targetingMode": "First"
                 }
             ],
             "visual": {
+                "texture": "tower_zapper",
                 "style": "Line",
                 "attackDuration": 0.08,
                 "color": [120, 200, 255, 255],
@@ -33,14 +35,13 @@
             },
             "upgrades": [
                 { "cost": 200, "add": { "targetCount": 1, "range": 20} },
-                { "cost": 300, "add": { "damage": 1, "range": 20} }, 
+                { "cost": 300, "add": { "damage": 1, "range": 20} },
                 { "cost": 400, "effects": [ { "type": "RampUp", "bonusPerStack": 2, "maxStacks": 60, "idleTime": 1.0 } ] }
             ]
         },
         {
             "name": "freezer",
-            "description": "Slows all nearby enemies. Pairs well with high-damage towers.",
-            "texture": "tower_freezer",
+            "description": "Slows nearby enemies. Pairs well with high-damage towers.",
             "cost": 100,
             "modules": [
                 {
@@ -49,11 +50,12 @@
                     "shotsPerMinute": 30,
                     "range": 60,
                     "targetCount": 0,
-                    "targeting": "First"
+                    "targetingMode": "First"
                 },
-                { "type": "Slow", "slowPercent": 20, "duration": 1.0, "effect": "slow_effect" }
+                { "type": "Slow", "slowPercent": 20, "slowDuration": 1.0, "effect": "slow_effect" }
             ],
             "visual": {
+                "texture": "tower_freezer",
                 "style": "Ring",
                 "attackDuration": 0.3,
                 "color": [80, 190, 255, 255],
@@ -63,13 +65,12 @@
             "upgrades": [
                 { "cost": 200, "add": { "slowPercent": 20, "range": 10 } },
                 { "cost": 300, "add": { "slowPercent": 20, "slowDuration": 1.0, "range": 10  } },
-                { "cost": 400, "effects": [ { "type": "Weakness", "amount": 1, "duration": 1.0, "effect": "weakness_effect" } ] }
+                { "cost": 400, "effects": [ { "type": "Weakness", "weaknessAmount": 1, "weaknessDuration": 1.0, "effect": "weakness_effect" } ] }
             ]
         },
         {
             "name": "sniper",
-            "description": "Extreme range, high burst damage. Targets the toughest enemy.",
-            "texture": "tower_sniper",
+            "description": "Long range, high burst. Targets the toughest enemy.",
             "cost": 200,
             "modules": [
                 {
@@ -78,11 +79,12 @@
                     "shotsPerMinute": 25,
                     "range": 120,
                     "targetCount": 1,
-                    "targeting": "MostHealth"
+                    "targetingMode": "MostHealth"
                 },
                 { "type": "Crit", "critChance": 0.2, "critMultiplier": 2.0 }
             ],
             "visual": {
+                "texture": "tower_sniper",
                 "style": "Line",
                 "attackDuration": 0.4,
                 "color": [240, 240, 255, 255],
@@ -93,13 +95,12 @@
             "upgrades": [
                 { "cost": 250, "add": { "damage": 10, "range": 30 } },
                 { "cost": 350, "add": { "critChance": 0.3, "range": 30 } },
-                { "cost": 450, "effects": [ { "type": "Stun", "duration": 1.0, "effect": "stun_effect" } ] }
+                { "cost": 450, "effects": [ { "type": "Stun", "stunDuration": 1.0, "effect": "stun_effect" } ] }
             ]
         },
         {
             "name": "flamer",
-            "description": "Short range. Ignites all nearby enemies, dealing damage over time.",
-            "texture": "tower_flamer",
+            "description": "Short range. Ignites nearby enemies for damage over time.",
             "cost": 200,
             "modules": [
                 {
@@ -108,11 +109,12 @@
                     "shotsPerMinute": 60,
                     "range": 50,
                     "targetCount": 0,
-                    "targeting": "First"
+                    "targetingMode": "First"
                 },
-                { "type": "Burn", "damage": 0.5, "duration": 6.0, "effect": "burn_effect" }
+                { "type": "Burn", "burnDamage": 0.5, "burnDuration": 6.0, "effect": "burn_effect" }
             ],
             "visual": {
+                "texture": "tower_flamer",
                 "style": "Ring",
                 "attackDuration": 0.25,
                 "color": [255, 100, 20, 255],
@@ -127,8 +129,7 @@
         },
         {
             "name": "piercer",
-            "description": "Punches through armor. Seeks out the most armored enemy.",
-            "texture": "tower_piercer",
+            "description": "Pierces armor. Targets the most armored enemy.",
             "cost": 175,
             "modules": [
                 {
@@ -137,12 +138,13 @@
                     "shotsPerMinute": 90,
                     "range": 60,
                     "targetCount": 1,
-                    "targeting": "MostArmor"
+                    "targetingMode": "MostArmor"
                 },
-                { "type": "ArmorPierce", "amount": 2.0 },
-                { "type": "ArmorShred", "amount": 2, "duration": 1.0, "effect": "shred_effect" }
+                { "type": "ArmorPierce", "armorPierce": 2.0 },
+                { "type": "ArmorShred", "shredAmount": 2, "shredDuration": 1.0, "effect": "shred_effect" }
             ],
             "visual": {
+                "texture": "tower_piercer",
                 "style": "Line",
                 "attackDuration": 0.15,
                 "color": [210, 220, 230, 255],

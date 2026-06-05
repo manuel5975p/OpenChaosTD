@@ -29,7 +29,7 @@ private:
     struct EnemyTemplate {
         std::string name;
         std::string description;
-        float health = 10.0f;
+        float maxHealth = 10.0f;
         float speed = 50.0f;
         int reward = 5;
         int livesOnReach = 1;

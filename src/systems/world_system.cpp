@@ -78,7 +78,7 @@ void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
     }
 
     for(auto& erase : enemyErase){
-        gameData.m_lives -= gameData.m_enemies.Get(erase)->m_livesOnReach;
+        gameData.m_lives -= gameData.m_enemies.Get(erase)->GetBaseStats()->m_livesOnReach;
         RemoveEnemy(erase, gameData);
     }
 }
@@ -91,7 +91,7 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory,
     }
     for (auto& key : toRemove) {
         Enemy* enemy = gameData.m_enemies.Get(key);
-        gameData.m_gold += enemy->m_reward;
+        gameData.m_gold += enemy->GetBaseStats()->m_reward;
 
         // Copy parent path state and collect spawn requests before mutating the slotmap
         Vector2 pos          = enemy->m_position;

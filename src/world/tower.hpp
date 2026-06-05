@@ -15,7 +15,6 @@ class Tower {
 public:
     std::string m_name;
     std::string m_description;
-    std::string m_texture;
     Vector2 m_position;
 
     int m_cost = 0;

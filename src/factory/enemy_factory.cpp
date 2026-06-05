@@ -33,11 +33,11 @@ static EnemyUpgrade ParseUpgrade(const json& j) {
 }
 
 void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
-    m_builders["Regeneration"] = [](const json& j){ return std::make_unique<RegenerationModule>(j.value("rate", 0.0f)); };
-    m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("amount", 0.0f)); };
+    m_builders["Regeneration"] = [](const json& j){ return std::make_unique<RegenerationModule>(j.value("regenRate", 0.0f)); };
+    m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("armor", 0.0f)); };
     m_builders["Immune"]       = [](const json& j){ return std::make_unique<ImmuneModule>(ParseEffectType(j.value("effect", ""))); };
-    m_builders["Shield"]       = [](const json& j){ return std::make_unique<ShieldModule>(j.value("amount", 0.0f)); };
-    m_builders["Split"]        = [](const json& j){ return std::make_unique<SplitModule>(j.value("child", ""), j.value("count", 0)); };
+    m_builders["Shield"]       = [](const json& j){ return std::make_unique<ShieldModule>(j.value("shield", 0.0f)); };
+    m_builders["Split"]        = [](const json& j){ return std::make_unique<SplitModule>(j.value("child", ""), j.value("splitCount", 0)); };
 
     auto data = jsonio.Load("data/enemies.json");
     if (data.is_null() || !data.contains("enemies")) {
@@ -49,7 +49,7 @@ void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         EnemyTemplate tmpl;
         tmpl.name        = entry["name"];
         tmpl.description = entry.value("description", "");
-        tmpl.health      = entry.value("health", 10.0f);
+        tmpl.maxHealth   = entry.value("maxHealth", 10.0f);
         tmpl.speed       = entry.value("speed", 50.0f);
         tmpl.reward      = entry.value("reward", 5);
         tmpl.livesOnReach = entry.value("livesOnReach", 1);
@@ -77,21 +77,32 @@ Enemy EnemyFactory::Create(const std::string& name) const {
 
     const EnemyTemplate& tmpl = it->second;
     Enemy enemy;
-    enemy.m_name         = tmpl.name;
-    enemy.m_description  = tmpl.description;
-    enemy.m_visual       = tmpl.visual;
-    enemy.m_maxHealth     = tmpl.health;
-    enemy.m_currentHealth = tmpl.health;
-    enemy.m_base.m_speed  = tmpl.speed;
-    enemy.m_stats         = enemy.m_base;
-    enemy.m_reward       = tmpl.reward;
-    enemy.m_livesOnReach = tmpl.livesOnReach;
-    enemy.m_upgrades     = &tmpl.upgrades; // stable: templates are fixed after Load
+    enemy.m_name        = tmpl.name;
+    enemy.m_description = tmpl.description;
+    enemy.m_visual      = tmpl.visual;
+    enemy.m_upgrades    = &tmpl.upgrades; // stable: templates are fixed after Load
 
-    // Build every module; AddModule caches the ShieldModule.
+    // The core stats module is always present and added first, so it is cached (GetBaseStats) and
+    // contributes its base speed before any other module. The analogue of the tower's AttackModule.
+    auto base = std::make_unique<BaseStatsModule>();
+    base->m_maxHealth    = tmpl.maxHealth;
+    base->m_speed        = tmpl.speed;
+    base->m_reward       = tmpl.reward;
+    base->m_livesOnReach = tmpl.livesOnReach;
+    enemy.AddModule(std::move(base));
+    enemy.m_currentHealth = enemy.GetBaseStats()->m_maxHealth;
+
+    // Build every other module; AddModule caches the ShieldModule.
     for (auto& mod : tmpl.modules)
         if (auto m = BuildModule(mod))
             enemy.AddModule(std::move(m));
+
+    // Initial live-stat pass so the HUD/targeting read valid values before the first tick
+    // (mirrors TowerFactory calling AttackModule::ResetLive at build time).
+    BaseStatsModule* baseStats = enemy.GetBaseStats();
+    baseStats->ResetLive();
+    for (auto& mod : enemy.m_modules)
+        mod->ContributeStats(*baseStats);
 
     return enemy;
 }

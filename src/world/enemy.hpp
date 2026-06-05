@@ -6,7 +6,6 @@
 #include <memory>
 #include <world/effect.hpp>
 #include <world/enemy_modules.hpp>
-#include <world/enemy_stats.hpp>
 #include <world/enemy_upgrade.hpp>
 #include <world/enemy_visual.hpp>
 #include <engine/features/particle_system.hpp>
@@ -19,13 +18,9 @@ public:
 
     EnemyVisual m_visual; // set by factory, never modified at runtime
 
-    float m_maxHealth     = 0.0f;
+    // Runtime hit points. Max/speed/reward/livesOnReach live in the BaseStatsModule (see GetBaseStats);
+    // current health is the live counterpart that damage and regen mutate, like the tower's m_cooldown.
     float m_currentHealth = 0.0f;
-    int   m_reward        = 0;
-    int   m_livesOnReach  = 1;
-
-    EnemyStats m_base;   // set from JSON, never modified at runtime
-    EnemyStats m_stats;  // recomputed each tick from base + ContributeStats modules
 
     float m_progress = 0.0f;
     int   m_spawnedNest   = 0;
@@ -37,32 +32,30 @@ public:
     int m_level = 0;
     const std::vector<EnemyUpgrade>* m_upgrades = nullptr; // stable pointer into the factory template
 
-    // Patch a stat by key: base stats route to the Enemy's own fields, everything else is
-    // forwarded to the modules (shield, armor, regenRate, splitCount, ...). Mirrors the
-    // generic PatchStats pipeline; ApplyDelta is shared from tower_modules.hpp.
+    // Patch a stat by key: broadcast to every module (the BaseStatsModule handles the core stats,
+    // the rest handle shield, armor, regenRate, splitCount, ...). Mirrors the generic PatchStats
+    // pipeline; ApplyDelta is shared from tower_modules.hpp.
     void PatchStats(const std::string& key, float v, bool mul) {
-        if (key == "maxHealth") {
-            ApplyDelta(m_maxHealth, v, mul);
-            m_currentHealth = m_maxHealth; // a scaled/elite enemy spawns at full HP
-        } else if (key == "speed") {
-            ApplyDelta(m_base.m_speed, v, mul); // live m_stats is recomputed from base next tick
-        } else if (key == "reward") {
-            float r = static_cast<float>(m_reward);
-            ApplyDelta(r, v, mul);
-            m_reward = static_cast<int>(r + 0.5f);
-        } else {
-            for (auto& mod : m_modules)
-                mod->PatchStats(key, v, mul);
-        }
+        for (auto& mod : m_modules)
+            mod->PatchStats(key, v, mul);
+        // A scaled/elite enemy spawns at full HP, so re-sync current health after maxHealth changes.
+        if (key == "maxHealth" && m_baseStats)
+            m_currentHealth = m_baseStats->m_maxHealth;
     }
 
     void AddModule(std::unique_ptr<EnemyModule> mod) {
-        // Cache the ShieldModule (if any) so the damage and targeting hot paths can read the
-        // shield without scanning the module list or dynamic-casting every frame.
+        // Cache the BaseStatsModule and ShieldModule (if present) so the damage and targeting hot
+        // paths can read core/shield stats without scanning the module list every frame.
+        if (auto* base = dynamic_cast<BaseStatsModule*>(mod.get()))
+            m_baseStats = base;
         if (auto* shield = dynamic_cast<ShieldModule*>(mod.get()))
             m_shield = shield;
         m_modules.push_back(std::move(mod));
     }
+
+    // Always non-null for a factory-built enemy; points into m_modules, set in AddModule. Owns the
+    // core stats (maxHealth/speed/reward/livesOnReach) and the live speed/armor mirror.
+    BaseStatsModule* GetBaseStats() const { return m_baseStats; }
 
     // Non-null iff this enemy carries a shield; points into m_modules, set in AddModule.
     ShieldModule* GetShield() const { return m_shield; }
@@ -91,5 +84,6 @@ public:
     }
 
 private:
-    ShieldModule* m_shield = nullptr; // points into m_modules; set in AddModule
+    BaseStatsModule* m_baseStats = nullptr; // points into m_modules; set in AddModule
+    ShieldModule* m_shield = nullptr;       // points into m_modules; set in AddModule
 };

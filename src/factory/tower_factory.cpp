@@ -35,13 +35,14 @@ static std::unique_ptr<TowerModule> BuildAttackModule(const json& j) {
     a->m_shotsPerMinute = j.value("shotsPerMinute", 0.0f);
     a->m_range          = j.value("range", 0.0f);
     a->m_targetCount    = j.value("targetCount", 0);
-    a->m_targetingMode  = ParseTargetingMode(j.value("targeting", "First"));
+    a->m_targetingMode  = ParseTargetingMode(j.value("targetingMode", "First"));
     a->ResetLive(); // live==base until the first RecomputeStats tick (HUD may read it sooner)
     return a;
 }
 
 static TowerVisual ParseVisual(const json& j, const EmitterPresets& presets) {
     TowerVisual v;
+    v.m_texture = j.value("texture", "");
     v.m_style = ParseAttackStyle(j.value("style", "Line"));
     v.m_attackDuration = j.value("attackDuration", 0.0f);
     if (j.contains("color"))      v.m_color          = ParseColor(j["color"]);
@@ -73,22 +74,22 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         return std::make_unique<PassiveModule>();
     };
     m_builders["ArmorPierce"] = [](const json& j){
-        return std::make_unique<ArmorPierceModule>(j.value("amount", 0.0f));
+        return std::make_unique<ArmorPierceModule>(j.value("armorPierce", 0.0f));
     };
     m_builders["Slow"] = [this](const json& j){
-        return std::make_unique<SlowModule>(j.value("slowPercent", 0.0f), j.value("duration", 0.0f), ResolveEmitter(j));
+        return std::make_unique<SlowModule>(j.value("slowPercent", 0.0f), j.value("slowDuration", 0.0f), ResolveEmitter(j));
     };
     m_builders["Burn"] = [this](const json& j){
-        return std::make_unique<BurnModule>(j.value("damage", 0.0f), j.value("duration", 0.0f), ResolveEmitter(j));
+        return std::make_unique<BurnModule>(j.value("burnDamage", 0.0f), j.value("burnDuration", 0.0f), ResolveEmitter(j));
     };
     m_builders["ArmorShred"] = [this](const json& j){
-        return std::make_unique<ArmorShredModule>(j.value("amount", 0.0f), j.value("duration", 0.0f), ResolveEmitter(j));
+        return std::make_unique<ArmorShredModule>(j.value("shredAmount", 0.0f), j.value("shredDuration", 0.0f), ResolveEmitter(j));
     };
     m_builders["Weakness"] = [this](const json& j){
-        return std::make_unique<WeaknessModule>(j.value("amount", 0.0f), j.value("duration", 0.0f), ResolveEmitter(j));
+        return std::make_unique<WeaknessModule>(j.value("weaknessAmount", 0.0f), j.value("weaknessDuration", 0.0f), ResolveEmitter(j));
     };
     m_builders["Stun"] = [this](const json& j){
-        return std::make_unique<StunModule>(j.value("duration", 0.0f), ResolveEmitter(j));
+        return std::make_unique<StunModule>(j.value("stunDuration", 0.0f), ResolveEmitter(j));
     };
     m_builders["RampUp"] = [](const json& j){
         return std::make_unique<RampUpModule>(j.value("bonusPerStack", 0.0f), j.value("maxStacks", 0), j.value("idleTime", 1.0f));
@@ -107,9 +108,9 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         TowerTemplate tmpl;
         tmpl.name        = entry["name"];
         tmpl.description = entry.value("description", "");
-        tmpl.texture     = entry.value("texture", "");
         tmpl.cost        = entry.value("cost", 100);
 
+        // Texture now lives inside the visual block (mirroring EnemyVisual); ParseVisual reads it.
         if (entry.contains("visual")) tmpl.visual = ParseVisual(entry["visual"], presets);
 
         // Every behaviour is a module now: Attack (combat), Passive (wall marker), or an effect.
@@ -155,9 +156,8 @@ Tower TowerFactory::Create(const std::string& name) const {
     Tower tower;
     tower.m_name        = tmpl.name;
     tower.m_description = tmpl.description;
-    tower.m_texture     = tmpl.texture;
     tower.m_cost        = tmpl.cost;
-    tower.m_visual = tmpl.visual;
+    tower.m_visual      = tmpl.visual; // includes the texture key
     tower.m_upgrades = &tmpl.upgrades; // stable: templates are fixed after Load
 
     // Build every module (incl. the Attack/Passive marker); AddModule caches the AttackModule.
@@ -185,5 +185,5 @@ float TowerFactory::GetRange(const std::string& name) const {
 const std::string& TowerFactory::GetTexture(const std::string& name) const {
     static const std::string empty;
     auto it = m_templates.find(name);
-    return (it != m_templates.end()) ? it->second.texture : empty;
+    return (it != m_templates.end()) ? it->second.visual.m_texture : empty;
 }

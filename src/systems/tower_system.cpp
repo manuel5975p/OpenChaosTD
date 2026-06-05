@@ -131,7 +131,7 @@ void TowerSystem::BuildPayload(const Tower& tower, AttackPayload& payload) {
 // Base damage for one hit: effective armor reduction plus a single crit roll.
 // outCrit reports whether this hit crit (used for crit-only impact particles).
 static float ResolveDamage(const AttackPayload& payload, const Enemy& enemy, bool& outCrit) {
-    float armor = std::max(0.0f, enemy.m_stats.m_armor - payload.m_armorPierce);
+    float armor = std::max(0.0f, enemy.GetBaseStats()->m_liveArmor - payload.m_armorPierce);
     float dmg = payload.m_damage;
     outCrit = payload.m_critChance > 0.0f
         && GetRandomValue(0, 99) < (int)(payload.m_critChance * 100.0f);
@@ -208,9 +208,9 @@ bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mo
         case TargetingMode::Last:           return a.m_progress > b.m_progress;
         case TargetingMode::MostHealth:     return a.m_currentHealth > b.m_currentHealth;
         case TargetingMode::LowestHealth:   return a.m_currentHealth < b.m_currentHealth;
-        case TargetingMode::Fastest:        return a.m_stats.m_speed < b.m_stats.m_speed;
-        case TargetingMode::Slowest:        return a.m_stats.m_speed > b.m_stats.m_speed;
-        case TargetingMode::MostArmor:      return a.m_stats.m_armor > b.m_stats.m_armor;
+        case TargetingMode::Fastest:        return a.GetBaseStats()->m_liveSpeed < b.GetBaseStats()->m_liveSpeed;
+        case TargetingMode::Slowest:        return a.GetBaseStats()->m_liveSpeed > b.GetBaseStats()->m_liveSpeed;
+        case TargetingMode::MostArmor:      return a.GetBaseStats()->m_liveArmor > b.GetBaseStats()->m_liveArmor;
         case TargetingMode::MostShield:     return TotalShield(a) > TotalShield(b);
     }
     return false;

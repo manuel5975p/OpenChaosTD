@@ -4,18 +4,23 @@ All enemies are defined in `data/enemies.json` as an array under the `"enemies"`
 
 ## Top-level fields
 
-| Field         | Type   | Required | Description |
-|---------------|--------|----------|-------------|
-| `name`        | string | yes      | Unique identifier used in code and factory lookup |
-| `description` | string | yes      | Shown in the info panel |
-| `health`      | float  | yes      | Starting and maximum hit points |
-| `speed`       | float  | yes      | Movement speed in world units per second |
-| `reward`      | int    | yes      | Gold granted to the player when the enemy is killed |
-| `visual`      | object | yes      | Presentation-only data (sprite, death effect) — see below |
-| `modules`     | array  | no       | The enemy's defensive and mechanical traits — see below |
-| `upgrades`    | array  | no       | Stat-scaling levels applied on top of the base stats — see below |
+| Field          | Type   | Required | Description |
+|----------------|--------|----------|-------------|
+| `name`         | string | yes      | Unique identifier used in code and factory lookup |
+| `description`  | string | yes      | Shown in the info panel |
+| `maxHealth`    | float  | yes      | Starting and maximum hit points |
+| `speed`        | float  | yes      | Movement speed in world units per second |
+| `reward`       | int    | yes      | Gold granted to the player when the enemy is killed |
+| `livesOnReach` | int    | no       | Lives lost if the enemy reaches the core (default 1) |
+| `visual`       | object | yes      | Presentation-only data (sprite, death effect) — see below |
+| `modules`      | array  | no       | The enemy's defensive and mechanical traits — see below |
+| `upgrades`     | array  | no       | Stat-scaling levels applied on top of the base stats — see below |
 
-An enemy with no `modules` is a plain target defined entirely by its base stats (`shade` and
+The core stats above (`maxHealth`, `speed`, `reward`, `livesOnReach`) stay top-level in JSON but are
+parsed into an internal core stats module at build time — the runtime analogue of the tower's
+`Attack` module — so their names match the `upgrades` keys exactly.
+
+An enemy with no `modules` is a plain target defined entirely by its core stats (`shade` and
 `flicker` are examples). All special behavior — armor, regeneration, shields, splitting, and
 status immunities — comes from the `modules` array.
 
@@ -49,34 +54,34 @@ and `Immune`. An enemy may combine any number of them (the `sovereign` stacks fo
 ### Armor
 
 ```json
-{ "type": "Armor", "amount": 3.0 }
+{ "type": "Armor", "armor": 3.0 }
 ```
 
 Reduces every incoming hit by a flat amount. The reduction is applied after any tower armor
 pierce, and the resulting damage is floored at 0 — so an enemy can never be healed by an
 attack that is fully absorbed by armor.
 
-| Field    | Type  | Description |
-|----------|-------|-------------|
-| `amount` | float | Flat damage subtracted from each incoming hit |
+| Field   | Type  | Description |
+|---------|-------|-------------|
+| `armor` | float | Flat damage subtracted from each incoming hit |
 
 ### Regeneration
 
 ```json
-{ "type": "Regeneration", "rate": 2.0 }
+{ "type": "Regeneration", "regenRate": 2.0 }
 ```
 
 Restores health every frame while the enemy is alive. Healing is capped at the enemy's
 maximum health.
 
-| Field  | Type  | Description |
-|--------|-------|-------------|
-| `rate` | float | Health restored per second |
+| Field       | Type  | Description |
+|-------------|-------|-------------|
+| `regenRate` | float | Health restored per second |
 
 ### Shield
 
 ```json
-{ "type": "Shield", "amount": 15.0 }
+{ "type": "Shield", "shield": 15.0 }
 ```
 
 A depletable damage pool that absorbs incoming damage before any is dealt to health. Each hit
@@ -85,21 +90,21 @@ shield does not recharge on its own.
 
 | Field    | Type  | Description |
 |----------|-------|-------------|
-| `amount` | float | Starting and maximum shield pool |
+| `shield` | float | Starting and maximum shield pool |
 
 ### Split
 
 ```json
-{ "type": "Split", "child": "golem", "count": 2 }
+{ "type": "Split", "child": "golem", "splitCount": 2 }
 ```
 
-On death, spawns `count` child enemies of type `child` at the dying enemy's position. The
+On death, spawns `splitCount` child enemies of type `child` at the dying enemy's position. The
 `child` value must be the `name` of another enemy defined in `enemies.json`.
 
-| Field   | Type   | Description |
-|---------|--------|-------------|
-| `child` | string | `name` of the enemy type to spawn on death |
-| `count` | int    | Number of children to spawn |
+| Field        | Type   | Description |
+|--------------|--------|-------------|
+| `child`      | string | `name` of the enemy type to spawn on death |
+| `splitCount` | int    | Number of children to spawn |
 
 ### Immune
 
@@ -142,17 +147,19 @@ tower `"upgrades"` block (`data/towers.md`).
 `add` and `mul` accept the same keys, routed to either the enemy's base stats or the matching
 module:
 
-| Key          | Target | Notes |
-|--------------|--------|-------|
-| `maxHealth`  | base   | Also refills current health, so a scaled enemy spawns at full HP |
-| `speed`      | base   | Recomputed into live stats on the next tick |
-| `reward`     | base   | Rounded to the nearest integer |
-| `armor`      | module | Requires an `Armor` module |
-| `regenRate`  | module | Requires a `Regeneration` module |
-| `shield`     | module | Requires a `Shield` module; also tops up the live shield pool |
-| `splitCount` | module | Requires a `Split` module; rounded to the nearest integer |
+| Key            | Target | Notes |
+|----------------|--------|-------|
+| `maxHealth`    | core   | Also refills current health, so a scaled enemy spawns at full HP |
+| `speed`        | core   | Recomputed into the live stat on the next tick |
+| `reward`       | core   | Rounded to the nearest integer |
+| `livesOnReach` | core   | Rounded to the nearest integer |
+| `armor`        | module | Requires an `Armor` module |
+| `regenRate`    | module | Requires a `Regeneration` module |
+| `shield`       | module | Requires a `Shield` module; also tops up the live shield pool |
+| `splitCount`   | module | Requires a `Split` module; rounded to the nearest integer |
 
-A key with no matching base field or module is silently ignored.
+The core stats (`maxHealth`/`speed`/`reward`/`livesOnReach`) route to the enemy's core stats module;
+the rest route to the matching trait module. A key with no matching field or module is silently ignored.
 
 ---
 
@@ -160,7 +167,7 @@ A key with no matching base field or module is silently ignored.
 
 When a tower hits an enemy, damage is resolved in this order:
 
-1. **Armor** subtracts its `amount` (after the attacker's armor pierce); the result is floored at 0.
+1. **Armor** subtracts its `armor` value (after the attacker's armor pierce); the result is floored at 0.
 2. **Shield** absorbs what remains, draining its pool before any damage reaches health.
 3. Whatever is left is deducted from the enemy's health.
 

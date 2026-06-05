@@ -5,10 +5,10 @@
 #include <optional>
 #include <raylib.h>
 #include <world/effect.hpp>
-#include <world/enemy_stats.hpp>
 #include <world/tower_modules.hpp> // DescLine + ApplyDelta shared module utilities
 
 class Enemy;
+class BaseStatsModule;
 
 struct SpawnRequest {
     std::string type;
@@ -20,7 +20,9 @@ public:
     virtual ~EnemyModule() = default;
     // Stateful per-frame hook (e.g. RegenerationModule); non-const so modules mutate cleanly.
     virtual void Tick(float, Enemy&) {}
-    virtual void ContributeStats(EnemyStats&) const {}
+    // Augment the enemy's live combat stats each tick (e.g. ArmorModule feeds m_liveArmor).
+    // The mirror of TowerModule::ContributeTower(AttackModule&).
+    virtual void ContributeStats(BaseStatsModule&) const {}
     // Stateful damage hook (e.g. ShieldModule depletes its pool); non-const for the same reason.
     virtual float InterceptDamage(float incoming) { return incoming; }
     virtual std::optional<SpawnRequest> OnDeath() const { return std::nullopt; }
@@ -30,6 +32,30 @@ public:
     virtual void DescribeStats(std::vector<DescLine>&) const {}
     // Patch module-owned parameters for dynamic scaling (mirrors TowerModule::PatchStats).
     virtual void PatchStats(const std::string& /*key*/, float /*v*/, bool /*mul*/) {}
+};
+
+// The "core" enemy module: owns an enemy's base stats (formerly the Enemy scalars + EnemyStats).
+// The direct analogue of the tower's AttackModule. Base fields are the configured/upgraded values;
+// the m_liveX mirror is reset from base each tick and augmented by other modules' ContributeStats
+// (e.g. ArmorModule feeds m_liveArmor). Every enemy carries exactly one, built by EnemyFactory.
+class BaseStatsModule : public EnemyModule {
+public:
+    // Base config — mutated only by upgrades via PatchStats.
+    float m_maxHealth = 0.0f;
+    float m_speed = 0.0f;
+    int   m_reward = 0;
+    int   m_livesOnReach = 1;
+
+    // Live combat stats for the current tick. Reset from base by ResetLive(); armor has no innate
+    // base (it is contributed entirely by ArmorModule). Current health is persistent runtime state
+    // and lives on Enemy, so it is intentionally not reset here.
+    float m_liveSpeed = 0.0f;
+    float m_liveArmor = 0.0f;
+
+    void ResetLive(); // copy base -> live, called at the start of each recompute
+    void PatchStats(const std::string& key, float v, bool mul) override;
+    // Core stat rows (Health/Speed), reading the live values.
+    void DescribeStats(std::vector<DescLine>& out) const override;
 };
 
 class RegenerationModule : public EnemyModule {
@@ -45,7 +71,7 @@ class ArmorModule : public EnemyModule {
 public:
     float m_amount;
     explicit ArmorModule(float amount) : m_amount(amount) {}
-    void ContributeStats(EnemyStats& stats) const override;
+    void ContributeStats(BaseStatsModule& base) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
     void PatchStats(const std::string& key, float v, bool mul) override;
 };
