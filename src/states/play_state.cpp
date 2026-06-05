@@ -17,8 +17,9 @@ void PlayingState::OnEnter(Game& game) {
     m_renderSystem.CenterCamera(game.GetGameData().m_map, game.GetScreen());
 
     m_towerHUD.Build(game);
-    m_scoreHUD.Build(game);
+    m_scoreHUD.Build(game, m_waveManager);
     m_towerInfoHUD.Build(game);
+    m_waveHUD.Build(game, m_waveManager);
     m_eventLog.Build(game.GetGameConfig().hudScale);
 
     m_waveManager.Load(game.GetJsonStore());
@@ -31,6 +32,7 @@ void PlayingState::OnExit(Game& game) {
 void PlayingState::ProcessInput(Game& game, float dt) {
     if (game.GetInput().IsPressed("Debug")) m_debug = !m_debug;
     if (game.GetInput().IsPressed("Speed")) CycleSpeed();
+    if (game.GetInput().IsPressed("WaveInfo")) m_waveHUD.Toggle();
     m_renderSystem.ControlCamera(dt, game.GetInput());
 
     // HUDs consume mouse input first so clicks don't bleed through to the world.
@@ -38,6 +40,7 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     m_towerHUD.ProcessInput(game);
     m_scoreHUD.ProcessInput(game);
     m_towerInfoHUD.ProcessInput(game);
+    m_waveHUD.ProcessInput(game);
     HandleHudSignals(game);
 
     Vector2 mouseWorld = game.GetInput().GetWorldMousePosition(m_renderSystem.GetCamera());
@@ -112,6 +115,7 @@ void PlayingState::Draw(Game& game) {
     // Draw order: info panel last so it sits on top. Hidden HUDs skip themselves.
     m_towerHUD.Draw(game);
     m_scoreHUD.Draw(game);
+    m_waveHUD.Draw(game);
     m_eventLog.Draw(game);
     m_towerInfoHUD.Draw(game);
 }
@@ -146,6 +150,9 @@ void PlayingState::HandleHudSignals(Game& game) {
 
     if (m_scoreHUD.WasSpeedToggled())
         CycleSpeed();
+
+    if (m_scoreHUD.WasWaveInfoToggled())
+        m_waveHUD.Toggle();
 }
 
 void PlayingState::UpgradeSelectedTower(Game& game) {

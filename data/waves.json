@@ -6,11 +6,11 @@
         { "enemy": "shade",     "cost": 3,  "min_wave": 1,   "interval": 1.0 },
         { "enemy": "flicker",   "cost": 4,  "min_wave": 3,   "interval": 0.5 },
         { "enemy": "cinder",    "cost": 6,  "min_wave": 7,   "interval": 1.2 },
-        { "enemy": "glacius",   "cost": 5,  "min_wave": 11,   "interval": 1.2 },
-        { "enemy": "golem",     "cost": 10, "min_wave": 15,   "interval": 1.8 },
-        { "enemy": "brood",     "cost": 8,  "min_wave": 21,   "interval": 2.5 },
-        { "enemy": "sentinel",  "cost": 9,  "min_wave": 21,   "interval": 1.2 },
-        { "enemy": "titan",     "cost": 14, "min_wave": 31,   "interval": 1.6 },
+        { "enemy": "glacius",   "cost": 5,  "min_wave": 11,  "interval": 1.2 },
+        { "enemy": "golem",     "cost": 10, "min_wave": 15,  "interval": 1.8 },
+        { "enemy": "brood",     "cost": 8,  "min_wave": 21,  "interval": 2.5 },
+        { "enemy": "sentinel",  "cost": 9,  "min_wave": 21,  "interval": 1.2 },
+        { "enemy": "titan",     "cost": 14, "min_wave": 31,  "interval": 1.6 },
         { "enemy": "sovereign", "cost": 40, "min_wave": 999, "interval": 1.0 }
     ]
 }

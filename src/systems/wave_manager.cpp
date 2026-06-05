@@ -48,6 +48,8 @@ void WaveManager::Load(JsonStore& jsonio) {
     // 1-wave lookahead: pre-generate the active wave (1) and its lookahead (2) before the first start.
     m_pendingDef = GenerateWave(1);
     m_lookaheadDef = GenerateWave(2);
+    m_pendingBudget = BudgetForWave(1);
+    m_lookaheadBudget = BudgetForWave(2);
 
     std::cout << "WaveManager: loaded " << m_enemyPool.size() << " pool entries, victory_wave="
               << m_victoryWave << "\n";
@@ -64,11 +66,15 @@ int WaveManager::UpgradeTierFor(int waveNumber) const {
     return waveNumber / m_upgradeInterval;
 }
 
+float WaveManager::BudgetForWave(int waveNumber) const {
+    return m_baseBudget * std::pow(static_cast<float>(waveNumber), m_growthExponent);
+}
+
 WaveManager::WaveDef WaveManager::GenerateWave(int waveNumber) {
     WaveDef def;
     if (m_enemyPool.empty()) return def;
 
-    float budget = m_baseBudget * std::pow(static_cast<float>(waveNumber), m_growthExponent);
+    float budget = BudgetForWave(waveNumber);
 
     // Selection pool: types unlocked by this wave and not reserved as bosses.
     std::vector<const PoolEntry*> pool;
@@ -216,4 +222,6 @@ void WaveManager::StartWave(GameData& data) {
     // Promote the lookahead to pending and pre-generate the new lookahead (keeps one wave ahead).
     m_pendingDef = std::move(m_lookaheadDef);
     m_lookaheadDef = GenerateWave(data.m_waveNumber + 2);
+    m_pendingBudget = m_lookaheadBudget;
+    m_lookaheadBudget = BudgetForWave(data.m_waveNumber + 2);
 }

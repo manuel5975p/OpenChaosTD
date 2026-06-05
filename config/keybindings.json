@@ -6,5 +6,6 @@
     "Confirm": "ENTER",
     "Cancel": "ESCAPE",
     "Debug": "GRAVE",
-    "Speed": "SPACE"
+    "Speed": "SPACE",
+    "WaveInfo": "TAB"
 }

@@ -1,14 +1,17 @@
 #include <hud/status_hud.hpp>
 #include <game.hpp>
+#include <systems/wave_manager.hpp>
 #include <raylib.h>
 
-void StatusHUD::Build(Game& game) {
+void StatusHUD::Build(Game& game, const WaveManager& waveManager) {
     HUD::Build(game.GetGameConfig().hudScale);
-    float panelH   = Scaled(36.0f);
-    float btnH     = Scaled(24.0f);
-    float btnWaveW = Scaled(90.0f);
-    float btnAutoW = Scaled(48.0f);
-    float margin   = Scaled(6.0f);
+    m_waveManager = &waveManager;
+    float panelH    = Scaled(36.0f);
+    float btnH      = Scaled(24.0f);
+    float btnWaveW  = Scaled(90.0f);
+    float btnAutoW  = Scaled(48.0f);
+    float btnWavesW = Scaled(56.0f);
+    float margin    = Scaled(6.0f);
     float w = static_cast<float>(game.GetScreen().GetGameWidth());
 
     m_panelRect = { 0.0f, 0.0f, w, panelH };
@@ -21,6 +24,9 @@ void StatusHUD::Build(Game& game) {
     m_autoBtn.m_rect = { w - btnWaveW - margin - btnAutoW - margin, btnY, btnAutoW, btnH };
     m_speedBtn.m_label = "1x";
     m_speedBtn.m_rect = { w - btnWaveW - margin - (btnAutoW + margin) * 2.0f, btnY, btnAutoW, btnH };
+    m_waveInfoBtn.m_label = "Waves";
+    m_waveInfoBtn.m_rect = { w - btnWaveW - margin - (btnAutoW + margin) * 2.0f - btnWavesW - margin,
+                             btnY, btnWavesW, btnH };
 }
 
 void StatusHUD::OnProcessInput(Game& game) {
@@ -33,6 +39,7 @@ void StatusHUD::OnProcessInput(Game& game) {
     m_autoBtn.Update(mousePos, pressed);
     m_startWaveBtn.Update(mousePos, pressed);
     m_speedBtn.Update(mousePos, pressed);
+    m_waveInfoBtn.Update(mousePos, pressed);
 
     // Auto toggle is always clickable, even mid-wave
     if (m_autoBtn.IsClicked())
@@ -41,6 +48,10 @@ void StatusHUD::OnProcessInput(Game& game) {
     // Speed cycle is always clickable, even mid-wave
     if (m_speedBtn.IsClicked())
         m_speedSignal.Raise();
+
+    // Wave info panel toggle is always clickable
+    if (m_waveInfoBtn.IsClicked())
+        m_waveInfoSignal.Raise();
 
     // Start wave only when no wave is running
     if (!data.m_waveActive && m_startWaveBtn.IsClicked())
@@ -52,14 +63,24 @@ void StatusHUD::OnDraw(Game& game) {
 
     DrawPanelBackground(200);
 
-    int fontMain = ScaledInt(16.0f);
-    int fontBtn  = ScaledInt(12.0f);
-    int marginX  = ScaledInt(6.0f);
-    int goldX    = marginX + ScaledInt(110.0f);
+    int fontMain  = ScaledInt(16.0f);
+    int fontBtn   = ScaledInt(12.0f);
+    int marginX   = ScaledInt(6.0f);
+    int goldX     = marginX + ScaledInt(110.0f);
+    int victoryX  = goldX + ScaledInt(100.0f);
 
     // Left side: lives and gold
     DrawText(TextFormat("Lives: %d", data.m_lives), marginX, m_textY, fontMain, RAYWHITE);
     DrawText(TextFormat("Gold: %d",  data.m_gold),  goldX,   m_textY, fontMain, GOLD);
+
+    // Win condition: the victory target wave, or endless if none (victory_wave == 0)
+    if (m_waveManager) {
+        int victoryWave = m_waveManager->GetVictoryWave();
+        const char* victoryStr = victoryWave == 0
+            ? "Endless Mode"
+            : TextFormat("Victory Wave: %d", victoryWave);
+        DrawText(victoryStr, victoryX, m_textY, fontMain, Color{120, 180, 220, 255});
+    }
 
     // Center: wave number and elapsed time
     const char* waveStr;
@@ -71,6 +92,10 @@ void StatusHUD::OnDraw(Game& game) {
         waveStr = TextFormat("Wave: %d  |  Done", data.m_waveNumber);
 
     DrawTextCenteredX(waveStr, static_cast<int>(m_panelRect.width / 2.0f), m_textY, fontMain, RAYWHITE);
+
+    // Wave info panel toggle
+    m_waveInfoBtn.Draw();
+    m_waveInfoBtn.DrawLabel(fontBtn, RAYWHITE);
 
     // Speed cycle — highlighted when faster than 1x
     m_speedBtn.Draw(m_speed > 1);

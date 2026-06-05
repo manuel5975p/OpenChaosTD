@@ -10,6 +10,7 @@
 #include <hud/tower_build_hud.hpp>
 #include <hud/status_hud.hpp>
 #include <hud/tower_info_hud.hpp>
+#include <hud/wave_hud.hpp>
 #include <hud/event_hud.hpp>
 #include <systems/wave_manager.hpp>
 class PlayingState : public GameState {
@@ -48,6 +49,7 @@ private:
     StatusHUD m_scoreHUD;
     TowerBuildHUD m_towerHUD;
     TowerInfoHUD m_towerInfoHUD;
+    WaveHUD m_waveHUD;
     EventHUD m_eventLog;
 
     SelectionContext m_selection;
