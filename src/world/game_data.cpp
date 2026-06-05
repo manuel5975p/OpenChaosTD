@@ -26,6 +26,5 @@ void GameData::Reset() {
     m_map = Map();
     m_towers = DenseSlotMap<Tower>();
     m_enemies = DenseSlotMap<Enemy>();
-    m_payloads.clear();
-    m_vfx.clear();
+    m_attacks.clear();
 }

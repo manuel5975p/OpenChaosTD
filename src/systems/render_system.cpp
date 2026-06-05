@@ -110,7 +110,7 @@ void RenderSystem::DrawGhostTower(Vector2 position, float radius, Texture2D& tex
 
 void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, Resources& assets) {
     for (auto& enemy : enemies) {
-        Texture2D& texture = assets.GetTexture(enemy.m_texture);
+        Texture2D& texture = assets.GetTexture(enemy.m_visual.m_texture);
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
 
@@ -121,16 +121,17 @@ void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, Resources& as
     }
 }
 
-void RenderSystem::DrawVfx(const std::vector<VfxEffect>& vfx) {
-    for (const auto& v : vfx) {
-        float t = v.Progress();
+void RenderSystem::DrawAttacks(const std::vector<Attack>& attacks) {
+    for (const auto& a : attacks) {
+        const AttackVisual& v = a.m_visual;
+        float t = a.Progress();
 
         switch (v.m_style) {
-            case VfxStyle::Line:
+            case AttackStyle::Line:
                 for (const auto& target : v.m_targetPositions)
                     DrawLineEx(v.m_origin, target, 1.5f, ColorAlpha(v.m_color, t));
                 break;
-            case VfxStyle::Ring:
+            case AttackStyle::Ring:
                 // Ring expands from tower outward to full radius
                 float r = (1.0f - t) * v.m_radius;
                 DrawCircleV(v.m_origin, r, ColorAlpha(v.m_color, t * 0.12f));

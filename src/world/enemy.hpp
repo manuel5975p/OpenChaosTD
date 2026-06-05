@@ -8,20 +8,21 @@
 #include <world/enemy_modules.hpp>
 #include <world/enemy_stats.hpp>
 #include <world/enemy_upgrade.hpp>
+#include <world/enemy_visual.hpp>
 #include <engine/features/particle_system.hpp>
 
 class Enemy {
 public:
     std::string m_name;
     std::string m_description;
-    std::string m_texture;
     Vector2 m_position = {0.0f, 0.0f};
+
+    EnemyVisual m_visual; // set by factory, never modified at runtime
 
     float m_maxHealth     = 0.0f;
     float m_currentHealth = 0.0f;
     int   m_reward        = 0;
     int   m_livesOnReach  = 1;
-    const EmitterDesc* m_deathDescPtr = nullptr; // stable pointer into EmitterPresets; burst emitted on death
 
     EnemyStats m_base;   // set from JSON, never modified at runtime
     EnemyStats m_stats;  // recomputed each tick from base + ContributeStats modules

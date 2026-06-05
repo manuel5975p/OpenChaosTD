@@ -23,9 +23,9 @@ static Color ParseColor(const json& j) {
     };
 }
 
-static VfxStyle ParseVfxStyle(const std::string& s) {
-    if (s == "Ring") return VfxStyle::Ring;
-    return VfxStyle::Line;
+static AttackStyle ParseAttackStyle(const std::string& s) {
+    if (s == "Ring") return AttackStyle::Ring;
+    return AttackStyle::Line;
 }
 
 // Build the combat "Attack" module (formerly the `combat` block / TowerStats).
@@ -42,7 +42,7 @@ static std::unique_ptr<TowerModule> BuildAttackModule(const json& j) {
 
 static TowerVisual ParseVisual(const json& j, const EmitterPresets& presets) {
     TowerVisual v;
-    v.m_style = ParseVfxStyle(j.value("style", "Line"));
+    v.m_style = ParseAttackStyle(j.value("style", "Line"));
     v.m_attackDuration = j.value("attackDuration", 0.0f);
     if (j.contains("color"))      v.m_color          = ParseColor(j["color"]);
     if (j.contains("muzzle"))     v.m_muzzleDesc     = presets.Get(j["muzzle"].get<std::string>());

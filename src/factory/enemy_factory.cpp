@@ -13,6 +13,13 @@ static EffectType ParseEffectType(const std::string& name) {
     return EffectType::Burn;
 }
 
+static EnemyVisual ParseVisual(const json& j, const EmitterPresets& presets) {
+    EnemyVisual v;
+    v.m_texture = j.value("texture", "");
+    if (j.contains("deathEmitter")) v.m_deathDescPtr = presets.GetPtr(j["deathEmitter"]);
+    return v;
+}
+
 static EnemyUpgrade ParseUpgrade(const json& j) {
     EnemyUpgrade up;
     up.m_cost = j.value("cost", 0);
@@ -42,13 +49,11 @@ void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         EnemyTemplate tmpl;
         tmpl.name        = entry["name"];
         tmpl.description = entry.value("description", "");
-        tmpl.texture     = entry.value("texture", "");
         tmpl.health      = entry.value("health", 10.0f);
         tmpl.speed       = entry.value("speed", 50.0f);
         tmpl.reward      = entry.value("reward", 5);
         tmpl.livesOnReach = entry.value("livesOnReach", 1);
-        if (entry.contains("deathEmitter"))
-            tmpl.deathDescPtr = presets.GetPtr(entry["deathEmitter"]);
+        if (entry.contains("visual")) tmpl.visual = ParseVisual(entry["visual"], presets);
 
         if (entry.contains("modules")) {
             for (auto& mod : entry["modules"])
@@ -74,14 +79,13 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     Enemy enemy;
     enemy.m_name         = tmpl.name;
     enemy.m_description  = tmpl.description;
-    enemy.m_texture      = tmpl.texture;
+    enemy.m_visual       = tmpl.visual;
     enemy.m_maxHealth     = tmpl.health;
     enemy.m_currentHealth = tmpl.health;
     enemy.m_base.m_speed  = tmpl.speed;
     enemy.m_stats         = enemy.m_base;
     enemy.m_reward       = tmpl.reward;
     enemy.m_livesOnReach = tmpl.livesOnReach;
-    enemy.m_deathDescPtr = tmpl.deathDescPtr;
     enemy.m_upgrades     = &tmpl.upgrades; // stable: templates are fixed after Load
 
     // Build every module; AddModule caches the ShieldModule.

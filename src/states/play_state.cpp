@@ -71,8 +71,7 @@ void PlayingState::StepSimulation(Game& game, float dt) {
     m_enemySystem.FollowPath(dt, game.GetGameData());
 
     m_towerSystem.Update(dt, game.GetGameData(), game.GetParticles());
-    m_towerSystem.TickPayloads(game.GetGameData(), game.GetParticles());
-    m_towerSystem.TickVfx(dt, game.GetGameData());
+    m_towerSystem.TickAttacks(dt, game.GetGameData(), game.GetParticles());
     game.GetParticles().Tick(dt);
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
@@ -106,7 +105,7 @@ void PlayingState::Draw(Game& game) {
         }
     }
     m_renderSystem.DrawEnemies(game.GetGameData().m_enemies, game.GetResources());
-    m_renderSystem.DrawVfx(game.GetGameData().m_vfx);
+    m_renderSystem.DrawAttacks(game.GetGameData().m_attacks);
     game.GetParticles().Draw();
     EndMode2D();
 

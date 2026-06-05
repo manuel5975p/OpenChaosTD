@@ -29,12 +29,11 @@ private:
     struct EnemyTemplate {
         std::string name;
         std::string description;
-        std::string texture;
         float health = 10.0f;
         float speed = 50.0f;
         int reward = 5;
         int livesOnReach = 1;
-        const EmitterDesc* deathDescPtr = nullptr; // stable pointer into EmitterPresets
+        EnemyVisual visual;
         std::vector<nlohmann::json> modules;
         std::vector<EnemyUpgrade> upgrades;
     };

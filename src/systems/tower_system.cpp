@@ -66,29 +66,26 @@ void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>
             targetPositions.push_back(e->m_position);
     }
 
-    AttackPayload payload;
-    payload.m_targetKeys = targetKeys;
-    BuildPayload(tower, payload);
-
-    VfxEffect vfx = BuildVfx(tower, std::move(targetPositions));
+    Attack attack;
+    attack.m_combat.m_targetKeys = targetKeys;
+    BuildPayload(tower, attack.m_combat);
+    attack.m_visual = BuildVisual(tower, std::move(targetPositions));
+    attack.m_duration = attack.m_maxDuration = tower.m_visual.m_attackDuration;
 
     if (tower.m_visual.m_muzzleDesc.m_count > 0) // muzzle burst
         particles.Emit(tower.m_position, tower.m_visual.m_muzzleDesc);
 
-    gameData.m_payloads.push_back(std::move(payload));
-    gameData.m_vfx.push_back(std::move(vfx));
+    gameData.m_attacks.push_back(std::move(attack));
 }
 
-VfxEffect TowerSystem::BuildVfx(const Tower& tower, std::vector<Vector2> targetPositions) {
-    VfxEffect vfx;
-    vfx.m_origin = tower.m_position;
-    vfx.m_targetPositions = std::move(targetPositions);
-    vfx.m_duration = tower.m_visual.m_attackDuration;
-    vfx.m_maxDuration = tower.m_visual.m_attackDuration;
-    vfx.m_radius = tower.GetAttack()->m_liveRange;
-    vfx.m_color = tower.m_visual.m_color;
-    vfx.m_style = tower.m_visual.m_style;
-    return vfx;
+AttackVisual TowerSystem::BuildVisual(const Tower& tower, std::vector<Vector2> targetPositions) {
+    AttackVisual visual;
+    visual.m_origin = tower.m_position;
+    visual.m_targetPositions = std::move(targetPositions);
+    visual.m_radius = tower.GetAttack()->m_liveRange;
+    visual.m_color = tower.m_visual.m_color;
+    visual.m_style = tower.m_visual.m_style;
+    return visual;
 }
 
 std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(const Tower& tower, DenseSlotMap<Enemy>& enemies, int max_targets) {
@@ -171,32 +168,33 @@ static void EmitImpact(ParticleSystem& particles, const Enemy& enemy, bool crit,
     }
 }
 
-void TowerSystem::TickPayloads(GameData& gameData, ParticleSystem& particles) {
-    for (auto& payload : gameData.m_payloads) {
-        if (payload.m_resolved) continue;
+// Resolve combat once on the fire frame, then decay the shared lifetime that drives the visual
+// fade. An attack is erased only once it has resolved and its lifetime has fully drained, so an
+// instant (zero-duration) attack still lands its damage before being culled.
+void TowerSystem::TickAttacks(float dt, GameData& gameData, ParticleSystem& particles) {
+    for (auto& attack : gameData.m_attacks) {
+        AttackPayload& payload = attack.m_combat;
+        if (!payload.m_resolved) {
+            for (auto& key : payload.m_targetKeys) {
+                Enemy* enemy = gameData.m_enemies.Get(key);
+                if (!enemy) continue;
 
-        for (auto& key : payload.m_targetKeys) {
-            Enemy* enemy = gameData.m_enemies.Get(key);
-            if (!enemy) continue;
-
-            bool crit = false;
-            float net = ResolveDamage(payload, *enemy, crit);
-            net += ConsumeWeaknessBonus(*enemy); // before interception/health, per effect rules
-            if (auto* shield = enemy->GetShield())
-                net = shield->InterceptDamage(net);
-            enemy->m_currentHealth -= net;
-            ApplyOnHitEffects(payload, *enemy); // stun cleared after damage; new effects applied last
-            EmitImpact(particles, *enemy, crit, payload);
+                bool crit = false;
+                float net = ResolveDamage(payload, *enemy, crit);
+                net += ConsumeWeaknessBonus(*enemy); // before interception/health, per effect rules
+                if (auto* shield = enemy->GetShield())
+                    net = shield->InterceptDamage(net);
+                enemy->m_currentHealth -= net;
+                ApplyOnHitEffects(payload, *enemy); // stun cleared after damage; new effects applied last
+                EmitImpact(particles, *enemy, crit, payload);
+            }
+            payload.m_resolved = true;
         }
-        payload.m_resolved = true;
+        attack.m_duration -= dt;
     }
-    std::erase_if(gameData.m_payloads, [](const AttackPayload& p) { return p.m_resolved; });
-}
-
-void TowerSystem::TickVfx(float dt, GameData& gameData) {
-    for (auto& vfx : gameData.m_vfx)
-        vfx.m_duration -= dt;
-    std::erase_if(gameData.m_vfx, [](const VfxEffect& v) { return v.m_duration <= 0.0f; });
+    std::erase_if(gameData.m_attacks, [](const Attack& a) {
+        return a.m_combat.m_resolved && a.m_duration <= 0.0f;
+    });
 }
 
 static float TotalShield(const Enemy& enemy) {

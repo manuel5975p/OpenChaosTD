@@ -80,7 +80,7 @@ void EnemySystem::TickEnemies(float dt, GameData& gameData, ParticleSystem& part
                     enemy.m_stats.m_speed = 0.0f; // FollowPath skips enemies with speed <= 0
                     break;
                 case EffectType::Weakness:
-                    break; // consumed on hit in TowerSystem::TickPayloads
+                    break; // consumed on hit in TowerSystem::TickAttacks
             }
             effect.m_duration -= dt;
         }

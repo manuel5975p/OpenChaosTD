@@ -107,8 +107,8 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory,
         }
 
         // Death burst — pointer into EmitterPresets, set at enemy creation time
-        if (enemy->m_deathDescPtr)
-            particles.Emit(pos, *enemy->m_deathDescPtr);
+        if (enemy->m_visual.m_deathDescPtr)
+            particles.Emit(pos, *enemy->m_visual.m_deathDescPtr);
 
         RemoveEnemy(key, gameData);
 

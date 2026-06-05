@@ -5,7 +5,6 @@
 #include <world/enemy.hpp>
 #include <world/attack.hpp>
 #include <engine/lib/dense_slotmap.hpp>
-#include <world/vfx_effect.hpp>
 #include <vector>
 
 class JsonStore;
@@ -29,8 +28,7 @@ struct GameData {
     Map m_map;
     DenseSlotMap<Tower> m_towers;
     DenseSlotMap<Enemy> m_enemies;
-    std::vector<AttackPayload> m_payloads;
-    std::vector<VfxEffect> m_vfx;
+    std::vector<Attack> m_attacks;
 
     void Load(JsonStore& jsonio);
     void Reset();

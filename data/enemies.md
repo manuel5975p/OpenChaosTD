@@ -4,20 +4,39 @@ All enemies are defined in `data/enemies.json` as an array under the `"enemies"`
 
 ## Top-level fields
 
-| Field          | Type   | Required | Description |
-|----------------|--------|----------|-------------|
-| `name`         | string | yes      | Unique identifier used in code and factory lookup |
-| `description`  | string | yes      | Shown in the info panel |
-| `texture`      | string | yes      | Resource key for the enemy sprite |
-| `health`       | float  | yes      | Starting and maximum hit points |
-| `speed`        | float  | yes      | Movement speed in world units per second |
-| `reward`       | int    | yes      | Gold granted to the player when the enemy is killed |
-| `deathEmitter` | string | no       | Emitter preset spawned at the enemy's position on death |
-| `modules`      | array  | no       | The enemy's defensive and mechanical traits — see below |
+| Field         | Type   | Required | Description |
+|---------------|--------|----------|-------------|
+| `name`        | string | yes      | Unique identifier used in code and factory lookup |
+| `description` | string | yes      | Shown in the info panel |
+| `health`      | float  | yes      | Starting and maximum hit points |
+| `speed`       | float  | yes      | Movement speed in world units per second |
+| `reward`      | int    | yes      | Gold granted to the player when the enemy is killed |
+| `visual`      | object | yes      | Presentation-only data (sprite, death effect) — see below |
+| `modules`     | array  | no       | The enemy's defensive and mechanical traits — see below |
+| `upgrades`    | array  | no       | Stat-scaling levels applied on top of the base stats — see below |
 
 An enemy with no `modules` is a plain target defined entirely by its base stats (`shade` and
 `flicker` are examples). All special behavior — armor, regeneration, shields, splitting, and
 status immunities — comes from the `modules` array.
+
+---
+
+## `visual` object
+
+All presentation-only data lives in a nested `"visual"` object, separate from the gameplay
+stats. This mirrors the `"visual"` block used by towers (`data/towers.md`).
+
+```json
+"visual": {
+    "texture": "enemy_shade",
+    "deathEmitter": "death_small"
+}
+```
+
+| Field          | Type   | Required | Description |
+|----------------|--------|----------|-------------|
+| `texture`      | string | yes      | Resource key for the enemy sprite |
+| `deathEmitter` | string | no       | Emitter preset spawned at the enemy's position on death |
 
 ---
 
@@ -97,6 +116,43 @@ effect to grant multiple immunities.
 | `effect` | string | Status effect to ignore — see effect types below |
 
 **Effect types:** `Slow`, `Burn`, `ArmorShred`, `Stun`, `Weakness`
+
+---
+
+## `upgrades` array
+
+An optional list of upgrade levels that scale an enemy beyond its base definition (e.g. for
+elite or late-wave variants). Each entry is one level; applying it broadcasts its deltas
+through the enemy's stat-patching pipeline and appends any new modules. This mirrors the
+tower `"upgrades"` block (`data/towers.md`).
+
+```json
+"upgrades": [
+    { "cost": 1, "add": { "armor": 2, "regenRate": 2 }, "mul": { "maxHealth": 1.5 } }
+]
+```
+
+| Field     | Type   | Description |
+|-----------|--------|-------------|
+| `cost`    | int    | Reserved for a future "threat budget"; currently unused by the runtime |
+| `add`     | object | Map of stat key → **flat** delta added to the current value |
+| `mul`     | object | Map of stat key → **multiplier** applied to the current value |
+| `modules` | array  | Additional `modules` entries appended to the enemy at this level |
+
+`add` and `mul` accept the same keys, routed to either the enemy's base stats or the matching
+module:
+
+| Key          | Target | Notes |
+|--------------|--------|-------|
+| `maxHealth`  | base   | Also refills current health, so a scaled enemy spawns at full HP |
+| `speed`      | base   | Recomputed into live stats on the next tick |
+| `reward`     | base   | Rounded to the nearest integer |
+| `armor`      | module | Requires an `Armor` module |
+| `regenRate`  | module | Requires a `Regeneration` module |
+| `shield`     | module | Requires a `Shield` module; also tops up the live shield pool |
+| `splitCount` | module | Requires a `Split` module; rounded to the nearest integer |
+
+A key with no matching base field or module is silently ignored.
 
 ---
 
