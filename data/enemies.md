@@ -1,0 +1,112 @@
+# Enemy JSON Schema
+
+All enemies are defined in `data/enemies.json` as an array under the `"enemies"` key.
+
+## Top-level fields
+
+| Field          | Type   | Required | Description |
+|----------------|--------|----------|-------------|
+| `name`         | string | yes      | Unique identifier used in code and factory lookup |
+| `description`  | string | yes      | Shown in the info panel |
+| `texture`      | string | yes      | Resource key for the enemy sprite |
+| `health`       | float  | yes      | Starting and maximum hit points |
+| `speed`        | float  | yes      | Movement speed in world units per second |
+| `reward`       | int    | yes      | Gold granted to the player when the enemy is killed |
+| `deathEmitter` | string | no       | Emitter preset spawned at the enemy's position on death |
+| `modules`      | array  | no       | The enemy's defensive and mechanical traits — see below |
+
+An enemy with no `modules` is a plain target defined entirely by its base stats (`shade` and
+`flicker` are examples). All special behavior — armor, regeneration, shields, splitting, and
+status immunities — comes from the `modules` array.
+
+---
+
+## `modules` array
+
+Each entry is one module, identified by its `"type"`. All fields inside an entry are
+module-specific. The available module types are `Armor`, `Regeneration`, `Shield`, `Split`,
+and `Immune`. An enemy may combine any number of them (the `sovereign` stacks four).
+
+### Armor
+
+```json
+{ "type": "Armor", "amount": 3.0 }
+```
+
+Reduces every incoming hit by a flat amount. The reduction is applied after any tower armor
+pierce, and the resulting damage is floored at 0 — so an enemy can never be healed by an
+attack that is fully absorbed by armor.
+
+| Field    | Type  | Description |
+|----------|-------|-------------|
+| `amount` | float | Flat damage subtracted from each incoming hit |
+
+### Regeneration
+
+```json
+{ "type": "Regeneration", "rate": 2.0 }
+```
+
+Restores health every frame while the enemy is alive. Healing is capped at the enemy's
+maximum health.
+
+| Field  | Type  | Description |
+|--------|-------|-------------|
+| `rate` | float | Health restored per second |
+
+### Shield
+
+```json
+{ "type": "Shield", "amount": 15.0 }
+```
+
+A depletable damage pool that absorbs incoming damage before any is dealt to health. Each hit
+drains the shield first; once it reaches 0 the remaining damage passes through to health. The
+shield does not recharge on its own.
+
+| Field    | Type  | Description |
+|----------|-------|-------------|
+| `amount` | float | Starting and maximum shield pool |
+
+### Split
+
+```json
+{ "type": "Split", "child": "golem", "count": 2 }
+```
+
+On death, spawns `count` child enemies of type `child` at the dying enemy's position. The
+`child` value must be the `name` of another enemy defined in `enemies.json`.
+
+| Field   | Type   | Description |
+|---------|--------|-------------|
+| `child` | string | `name` of the enemy type to spawn on death |
+| `count` | int    | Number of children to spawn |
+
+### Immune
+
+```json
+{ "type": "Immune", "effect": "Stun" }
+```
+
+Blocks a single status-effect type from ever being applied to the enemy. Towers can still
+hit and damage the enemy normally; only the named effect is ignored. Add one module per
+effect to grant multiple immunities.
+
+| Field    | Type   | Description |
+|----------|--------|-------------|
+| `effect` | string | Status effect to ignore — see effect types below |
+
+**Effect types:** `Slow`, `Burn`, `ArmorShred`, `Stun`, `Weakness`
+
+---
+
+## Damage resolution order
+
+When a tower hits an enemy, damage is resolved in this order:
+
+1. **Armor** subtracts its `amount` (after the attacker's armor pierce); the result is floored at 0.
+2. **Shield** absorbs what remains, draining its pool before any damage reaches health.
+3. Whatever is left is deducted from the enemy's health.
+
+`Regeneration` runs independently each frame, and `Immune` simply prevents matching status
+effects from being applied at all.

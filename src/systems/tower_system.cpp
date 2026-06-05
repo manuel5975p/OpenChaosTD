@@ -182,8 +182,8 @@ void TowerSystem::TickPayloads(GameData& gameData, ParticleSystem& particles) {
             bool crit = false;
             float net = ResolveDamage(payload, *enemy, crit);
             net += ConsumeWeaknessBonus(*enemy); // before interception/health, per effect rules
-            for (auto& mod : enemy->m_modules)
-                net = mod->InterceptDamage(net);
+            if (auto* shield = enemy->GetShield())
+                net = shield->InterceptDamage(net);
             enemy->m_currentHealth -= net;
             ApplyOnHitEffects(payload, *enemy); // stun cleared after damage; new effects applied last
             EmitImpact(particles, *enemy, crit, payload);
@@ -200,10 +200,8 @@ void TowerSystem::TickVfx(float dt, GameData& gameData) {
 }
 
 static float TotalShield(const Enemy& enemy) {
-    float total = 0.0f;
-    for (auto& mod : enemy.m_modules)
-        total += mod->GetShield();
-    return total;
+    ShieldModule* shield = enemy.GetShield();
+    return shield ? shield->m_currentShield : 0.0f;
 }
 
 bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mode) {

@@ -13,6 +13,18 @@ static EffectType ParseEffectType(const std::string& name) {
     return EffectType::Burn;
 }
 
+static EnemyUpgrade ParseUpgrade(const json& j) {
+    EnemyUpgrade up;
+    up.m_cost = j.value("cost", 0);
+    if (j.contains("add"))
+        for (auto& [k, v] : j["add"].items()) up.m_adds.push_back({k, v.get<float>()});
+    if (j.contains("mul"))
+        for (auto& [k, v] : j["mul"].items()) up.m_muls.push_back({k, v.get<float>()});
+    if (j.contains("modules"))
+        for (auto& m : j["modules"]) up.m_addModules.push_back(m);
+    return up;
+}
+
 void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
     m_builders["Regeneration"] = [](const json& j){ return std::make_unique<RegenerationModule>(j.value("rate", 0.0f)); };
     m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("amount", 0.0f)); };
@@ -43,6 +55,10 @@ void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
                 tmpl.modules.push_back(mod);
         }
 
+        if (entry.contains("upgrades"))
+            for (auto& up : entry["upgrades"])
+                tmpl.upgrades.push_back(ParseUpgrade(up));
+
         std::string name = tmpl.name;
         m_templates[name] = std::move(tmpl);
         std::cout << "EnemyFactory: loaded '" << name << "'\n";
@@ -66,17 +82,33 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     enemy.m_reward       = tmpl.reward;
     enemy.m_livesOnReach = tmpl.livesOnReach;
     enemy.m_deathDescPtr = tmpl.deathDescPtr;
+    enemy.m_upgrades     = &tmpl.upgrades; // stable: templates are fixed after Load
 
-    for (auto& mod : tmpl.modules) {
-        std::string type = mod.value("type", "");
-        auto bit = m_builders.find(type);
-        if (bit != m_builders.end())
-            enemy.AddModule(bit->second(mod));
-        else
-            std::cerr << "EnemyFactory: unknown module type '" << type << "'\n";
-    }
+    // Build every module; AddModule caches the ShieldModule.
+    for (auto& mod : tmpl.modules)
+        if (auto m = BuildModule(mod))
+            enemy.AddModule(std::move(m));
 
     return enemy;
+}
+
+std::unique_ptr<EnemyModule> EnemyFactory::BuildModule(const json& mod) const {
+    std::string type = mod.value("type", "");
+    auto bit = m_builders.find(type);
+    if (bit != m_builders.end())
+        return bit->second(mod);
+    std::cerr << "EnemyFactory: unknown module type '" << type << "'\n";
+    return nullptr;
+}
+
+void EnemyFactory::ApplyUpgrade(Enemy& enemy, const EnemyUpgrade& up) const {
+    // Each key routes through Enemy::PatchStats: base stats hit the enemy's own fields,
+    // everything else is forwarded to the modules that recognize it.
+    for (auto& [k, v] : up.m_adds) enemy.PatchStats(k, v, false);
+    for (auto& [k, v] : up.m_muls) enemy.PatchStats(k, v, true);
+    for (auto& mod : up.m_addModules)
+        if (auto m = BuildModule(mod)) enemy.AddModule(std::move(m));
+    enemy.m_level++;
 }
 
 bool EnemyFactory::Has(const std::string& name) const {

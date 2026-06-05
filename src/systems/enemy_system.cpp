@@ -62,6 +62,8 @@ void EnemySystem::TickEnemies(float dt, GameData& gameData, ParticleSystem& part
                 }
             }
 
+            // Status effects mutate the live m_stats directly (reset from m_base each tick), so
+            // they stay outside the persistent PatchStats/EnemyUpgrade pipeline by design.
             switch (effect.m_type) {
                 case EffectType::Burn:
                     enemy.m_currentHealth -= effect.m_value * dt;
