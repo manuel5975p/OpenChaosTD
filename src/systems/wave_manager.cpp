@@ -1,36 +1,149 @@
 #include <systems/wave_manager.hpp>
 #include <algorithm>
+#include <cmath>
+#include <unordered_map>
 #include <iostream>
 
 void WaveManager::Load(JsonStore& jsonio) {
+    m_rng.seed(std::random_device{}());
+
     if (!jsonio.Exists("data/waves.json")) {
         std::cerr << "WaveManager: data/waves.json not found\n";
         return;
     }
 
     auto json = jsonio.Load("data/waves.json");
-    if (!json.contains("waves")) return;
 
-    for (const auto& wave : json["waves"]) {
-        WaveDef def;
-        if (!wave.contains("spawns")) { m_waveDefs.push_back(def); continue; }
-
-        for (const auto& s : wave["spawns"]) {
-            SpawnGroup g;
-            g.enemyType = s["enemy"];
-            g.count = s.value("count", 1);
-            g.nest = s.value("nest", -1);
-            g.interval = s.value("interval", 1.0f);
-            g.delay = s.value("delay", 0.0f);
-            def.groups.push_back(g);
-        }
-        m_waveDefs.push_back(std::move(def));
+    // Budget scaling and win condition
+    if (json.contains("budget")) {
+        const auto& b = json["budget"];
+        m_baseBudget = b.value("base_budget", m_baseBudget);
+        m_growthExponent = b.value("growth_exponent", m_growthExponent);
+        m_victoryWave = b.value("victory_wave", m_victoryWave);
     }
 
-    std::cout << "WaveManager: loaded " << m_waveDefs.size() << " wave definitions\n";
+    // Periodic boss waves
+    if (json.contains("boss")) {
+        const auto& boss = json["boss"];
+        m_bossInterval = boss.value("interval", m_bossInterval);
+        if (boss.contains("boss_enemies"))
+            for (const auto& name : boss["boss_enemies"])
+                m_bossEnemies.push_back(name.get<std::string>());
+    }
+
+    m_upgradeInterval = json.value("upgrade_interval", m_upgradeInterval);
+
+    // Enemy pool the generator draws from
+    if (json.contains("enemy_pool")) {
+        for (const auto& e : json["enemy_pool"]) {
+            PoolEntry entry;
+            entry.enemy = e["enemy"].get<std::string>();
+            entry.cost = e.value("cost", 1);
+            entry.minWave = e.value("min_wave", 1);
+            entry.interval = e.value("interval", 1.0f);
+            m_enemyPool.push_back(std::move(entry));
+        }
+    }
+
+    // 1-wave lookahead: pre-generate the active wave (1) and its lookahead (2) before the first start.
+    m_pendingDef = GenerateWave(1);
+    m_lookaheadDef = GenerateWave(2);
+
+    std::cout << "WaveManager: loaded " << m_enemyPool.size() << " pool entries, victory_wave="
+              << m_victoryWave << "\n";
 }
 
-void WaveManager::BuildSpawnQueue(const WaveDef& def, int nestCount, int countMultiplier) {
+const WaveManager::PoolEntry* WaveManager::FindPoolEntry(const std::string& name) const {
+    for (const auto& e : m_enemyPool)
+        if (e.enemy == name) return &e;
+    return nullptr;
+}
+
+int WaveManager::UpgradeTierFor(int waveNumber) const {
+    if (m_upgradeInterval <= 0) return 0;
+    return waveNumber / m_upgradeInterval;
+}
+
+WaveManager::WaveDef WaveManager::GenerateWave(int waveNumber) {
+    WaveDef def;
+    if (m_enemyPool.empty()) return def;
+
+    float budget = m_baseBudget * std::pow(static_cast<float>(waveNumber), m_growthExponent);
+
+    // Selection pool: types unlocked by this wave and not reserved as bosses.
+    std::vector<const PoolEntry*> pool;
+    for (const auto& e : m_enemyPool) {
+        if (e.minWave > waveNumber) continue;
+        if (std::find(m_bossEnemies.begin(), m_bossEnemies.end(), e.enemy) != m_bossEnemies.end())
+            continue;
+        pool.push_back(&e);
+    }
+
+    // Boss wave: force exactly one boss and bill its cost against the budget; the rest funds escorts.
+    bool isBossWave = m_bossInterval > 0 && (waveNumber % m_bossInterval) == 0 && !m_bossEnemies.empty();
+    if (isBossWave) {
+        std::uniform_int_distribution<std::size_t> pick(0, m_bossEnemies.size() - 1);
+        const std::string& bossName = m_bossEnemies[pick(m_rng)];
+        const PoolEntry* boss = FindPoolEntry(bossName);
+
+        SpawnGroup g;
+        g.enemyType = bossName;
+        g.count = 1;
+        g.nest = -1;
+        g.interval = boss ? boss->interval : 1.5f;
+        def.groups.push_back(std::move(g));
+
+        if (boss) budget -= static_cast<float>(boss->cost);
+        if (budget < 0.0f) budget = 0.0f;
+    }
+
+    if (pool.empty()) return def; // boss-only wave (or nothing unlocked yet)
+
+    // Cheapest unit sets the loop's termination floor.
+    int cheapest = pool.front()->cost;
+    for (const auto* e : pool) cheapest = std::min(cheapest, e->cost);
+
+    // Semi-random selection: draw affordable units until the budget can't afford the cheapest.
+    std::unordered_map<std::string, int> tally;
+    while (budget >= static_cast<float>(cheapest)) {
+        std::vector<const PoolEntry*> affordable;
+        for (const auto* e : pool)
+            if (static_cast<float>(e->cost) <= budget) affordable.push_back(e);
+        if (affordable.empty()) break;
+
+        std::uniform_int_distribution<std::size_t> pick(0, affordable.size() - 1);
+        const PoolEntry* chosen = affordable[pick(m_rng)];
+        tally[chosen->enemy]++;
+        budget -= static_cast<float>(chosen->cost);
+    }
+
+    // Group identical selections into one spawn group each.
+    for (const auto& [name, count] : tally) {
+        const PoolEntry* e = FindPoolEntry(name);
+        SpawnGroup g;
+        g.enemyType = name;
+        g.count = count;
+        g.nest = -1;
+        g.interval = e ? e->interval : 1.0f;
+        g.delay = 0.0f;
+        def.groups.push_back(std::move(g));
+    }
+
+    return def;
+}
+
+void WaveManager::ApplyTierUpgrades(Enemy& enemy, int tier, const EnemyFactory& enemyFactory) const {
+    if (tier <= 0 || !enemy.m_upgrades || enemy.m_upgrades->empty()) return;
+
+    const auto& ups = *enemy.m_upgrades;
+    int last = static_cast<int>(ups.size()) - 1;
+    // Walk any defined upgrade levels, then keep re-applying the last one so scaling continues
+    // indefinitely (endless mode). With a single defined upgrade this re-applies it `tier` times.
+    for (int i = 0; i < tier; i++)
+        enemyFactory.ApplyUpgrade(enemy, ups[std::min(i, last)]);
+}
+
+void WaveManager::BuildSpawnQueue(const WaveDef& def, int nestCount) {
     m_pendingSpawns.clear();
     m_nextSpawn = 0;
     m_elapsed = 0.0f;
@@ -39,8 +152,7 @@ void WaveManager::BuildSpawnQueue(const WaveDef& def, int nestCount, int countMu
 
     int nestIdx = 0;
     for (const auto& grp : def.groups) {
-        int count = grp.count * countMultiplier;
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < grp.count; i++) {
             PendingSpawn ps;
             ps.type = grp.enemyType;
             ps.nest = (grp.nest >= 0) ? grp.nest : (nestIdx++ % nestCount);
@@ -58,12 +170,14 @@ void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, Ene
         data.m_waveTimer += dt;
         m_elapsed += dt;
 
-        // Fire any spawns whose scheduled time has arrived
+        // Fire any spawns whose scheduled time has arrived, applying the active upgrade tier
         while (m_nextSpawn < static_cast<int>(m_pendingSpawns.size())
                && m_pendingSpawns[m_nextSpawn].time <= m_elapsed) {
             const auto& ps = m_pendingSpawns[m_nextSpawn++];
-            if (enemyFactory.Has(ps.type))
-                worldSystem.SpawnEnemy(ps.nest, enemyFactory.Create(ps.type), data);
+            if (!enemyFactory.Has(ps.type)) continue;
+            Enemy enemy = enemyFactory.Create(ps.type);
+            ApplyTierUpgrades(enemy, m_activeTier, enemyFactory);
+            worldSystem.SpawnEnemy(ps.nest, std::move(enemy), data);
         }
 
         // Wave ends once the spawn queue is exhausted and all enemies are cleared
@@ -72,7 +186,8 @@ void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, Ene
             data.m_waveActive = false;
             m_autoSpawnTimer = 0.0f;
 
-            if (data.m_totalWaves > 0 && data.m_waveNumber >= data.m_totalWaves)
+            // Win condition is driven entirely by waves.json (victory_wave); 0 = endless.
+            if (m_victoryWave > 0 && data.m_waveNumber >= m_victoryWave)
                 data.m_victory = true;
         }
         return;
@@ -93,14 +208,12 @@ void WaveManager::StartWave(GameData& data) {
     data.m_waveActive = true;
     data.m_waveTimer = 0.0f;
 
-    if (m_waveDefs.empty()) return;
+    m_activeTier = UpgradeTierFor(data.m_waveNumber);
 
-    int waveIdx = data.m_waveNumber - 1;
-    int defCount = static_cast<int>(m_waveDefs.size());
-    // Clamp to last defined wave; scale counts for waves beyond the defined set
-    int clampedIdx = std::min(waveIdx, defCount - 1);
-    int multiplier = (waveIdx >= defCount) ? (waveIdx / defCount) + 1 : 1;
     int nestCount = static_cast<int>(data.m_map.GetNests().size());
+    BuildSpawnQueue(m_pendingDef, nestCount); // m_pendingDef holds this wave's composition
 
-    BuildSpawnQueue(m_waveDefs[clampedIdx], nestCount, multiplier);
+    // Promote the lookahead to pending and pre-generate the new lookahead (keeps one wave ahead).
+    m_pendingDef = std::move(m_lookaheadDef);
+    m_lookaheadDef = GenerateWave(data.m_waveNumber + 2);
 }

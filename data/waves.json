@@ -1,95 +1,16 @@
 {
-    "waves": [
-        {
-            "comment": "Wave 1 — introduction: three nests, slow trickle",
-            "spawns": [
-                { "enemy": "shade", "count": 5, "nest": -1, "interval": 1.2, "delay": 0.0 }
-            ]
-        },
-        {
-            "comment": "Wave 2 — flickers join",
-            "spawns": [
-                { "enemy": "shade",   "count": 6, "nest": -1, "interval": 1.0, "delay": 0.0 },
-                { "enemy": "flicker", "count": 3, "nest": -1, "interval": 0.6, "delay": 2.0 }
-            ]
-        },
-        {
-            "comment": "Wave 3 — speed pressure increases",
-            "spawns": [
-                { "enemy": "shade",   "count": 5, "nest": -1, "interval": 0.9, "delay": 0.0 },
-                { "enemy": "flicker", "count": 6, "nest": -1, "interval": 0.5, "delay": 1.5 }
-            ]
-        },
-        {
-            "comment": "Wave 4 — first golems appear",
-            "spawns": [
-                { "enemy": "shade",  "count": 5, "nest": -1, "interval": 1.0, "delay": 0.0 },
-                { "enemy": "golem",  "count": 2, "nest": -1, "interval": 2.5, "delay": 2.0 }
-            ]
-        },
-        {
-            "comment": "Wave 5 — glacius debut: slow-immune core",
-            "spawns": [
-                { "enemy": "shade",   "count": 6, "nest": -1, "interval": 0.8, "delay": 0.0 },
-                { "enemy": "flicker", "count": 4, "nest": -1, "interval": 0.5, "delay": 1.0 },
-                { "enemy": "glacius", "count": 3, "nest": -1, "interval": 1.5, "delay": 3.0 }
-            ]
-        },
-        {
-            "comment": "Wave 6 — sentinel debut alongside golem wall",
-            "spawns": [
-                { "enemy": "golem",    "count": 3, "nest": -1, "interval": 1.8, "delay": 0.0 },
-                { "enemy": "sentinel", "count": 3, "nest": -1, "interval": 1.5, "delay": 4.0 },
-                { "enemy": "flicker",  "count": 5, "nest": -1, "interval": 0.4, "delay": 7.5 }
-            ]
-        },
-        {
-            "comment": "Wave 7 — cinder debut (burn-immune) and brood spawners",
-            "spawns": [
-                { "enemy": "shade",   "count": 5, "nest": -1, "interval": 0.8, "delay": 0.0 },
-                { "enemy": "cinder",  "count": 2, "nest": -1, "interval": 2.0, "delay": 1.5 },
-                { "enemy": "glacius", "count": 3, "nest": -1, "interval": 1.2, "delay": 4.0 },
-                { "enemy": "brood",   "count": 2, "nest": -1, "interval": 3.0, "delay": 6.5 }
-            ]
-        },
-        {
-            "comment": "Wave 8 — titans debut; heavy armor absorbs flat damage",
-            "spawns": [
-                { "enemy": "flicker", "count": 8, "nest": -1, "interval": 0.4, "delay": 0.0 },
-                { "enemy": "cinder",  "count": 3, "nest": -1, "interval": 1.5, "delay": 2.0 },
-                { "enemy": "titan",   "count": 3, "nest": -1, "interval": 1.8, "delay": 4.5 },
-                { "enemy": "brood",   "count": 2, "nest": -1, "interval": 2.5, "delay": 8.0 }
-            ]
-        },
-        {
-            "comment": "Wave 9 — mixed elite force",
-            "spawns": [
-                { "enemy": "golem",    "count": 3, "nest": -1, "interval": 1.5, "delay": 0.0 },
-                { "enemy": "sentinel", "count": 3, "nest": -1, "interval": 1.2, "delay": 3.0 },
-                { "enemy": "cinder",   "count": 3, "nest": -1, "interval": 1.2, "delay": 5.5 },
-                { "enemy": "titan",    "count": 2, "nest": -1, "interval": 2.0, "delay": 8.0 },
-                { "enemy": "brood",    "count": 2, "nest": -1, "interval": 2.0, "delay": 10.5 }
-            ]
-        },
-        {
-            "comment": "Wave 10 — sovereign wave; splits into golems on death",
-            "spawns": [
-                { "enemy": "sovereign", "count": 1, "nest":  1, "interval": 1.0, "delay": 0.0 },
-                { "enemy": "shade",     "count": 6, "nest": -1, "interval": 0.7, "delay": 2.0 },
-                { "enemy": "cinder",    "count": 3, "nest": -1, "interval": 1.0, "delay": 5.0 },
-                { "enemy": "flicker",   "count": 4, "nest": -1, "interval": 0.5, "delay": 7.0 },
-                { "enemy": "brood",     "count": 2, "nest": -1, "interval": 3.0, "delay": 10.0 }
-            ]
-        },
-        {
-            "comment": "Wave 11 — endgame: full elite roster and a second sovereign",
-            "spawns": [
-                { "enemy": "titan",     "count": 4, "nest": -1, "interval": 1.5, "delay": 0.0 },
-                { "enemy": "sentinel",  "count": 4, "nest": -1, "interval": 1.2, "delay": 3.5 },
-                { "enemy": "cinder",    "count": 4, "nest": -1, "interval": 1.2, "delay": 6.5 },
-                { "enemy": "brood",     "count": 3, "nest": -1, "interval": 2.0, "delay": 9.5 },
-                { "enemy": "sovereign", "count": 1, "nest":  1, "interval": 1.0, "delay": 13.0 }
-            ]
-        }
+    "budget":   { "base_budget": 20, "growth_exponent": 1.2, "victory_wave": 0 },
+    "boss":     { "interval": 10, "boss_enemies": ["sovereign"] },
+    "upgrade_interval": 5,
+    "enemy_pool": [
+        { "enemy": "shade",     "cost": 3,  "min_wave": 1,   "interval": 1.0 },
+        { "enemy": "flicker",   "cost": 4,  "min_wave": 3,   "interval": 0.5 },
+        { "enemy": "cinder",    "cost": 6,  "min_wave": 7,   "interval": 1.2 },
+        { "enemy": "glacius",   "cost": 5,  "min_wave": 11,   "interval": 1.2 },
+        { "enemy": "golem",     "cost": 10, "min_wave": 15,   "interval": 1.8 },
+        { "enemy": "brood",     "cost": 8,  "min_wave": 21,   "interval": 2.5 },
+        { "enemy": "sentinel",  "cost": 9,  "min_wave": 21,   "interval": 1.2 },
+        { "enemy": "titan",     "cost": 14, "min_wave": 31,   "interval": 1.6 },
+        { "enemy": "sovereign", "cost": 40, "min_wave": 999, "interval": 1.0 }
     ]
 }
