@@ -161,11 +161,8 @@ void PlayingState::UpgradeSelectedTower(Game& game) {
     game.GetGameData().m_gold -= up.m_cost;
     // Each key is broadcast to every module; each consumer applies only the keys it recognizes
     // (the AttackModule handles core combat stats, effect modules handle their own params).
-    auto applyDelta = [&](const std::string& k, float v, bool mul) {
-        for (auto& mod : tower->m_modules) mod->PatchStats(k, v, mul);
-    };
-    for (auto& [k, v] : up.m_adds) applyDelta(k, v, false);
-    for (auto& [k, v] : up.m_muls) applyDelta(k, v, true);
+    for (auto& [k, v] : up.m_adds) tower->PatchStats(k, v, false);
+    for (auto& [k, v] : up.m_muls) tower->PatchStats(k, v, true);
     for (auto& mod : up.m_addModules)
         if (auto m = game.GetTowerFactory().BuildModule(mod)) tower->AddModule(std::move(m));
 

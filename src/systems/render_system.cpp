@@ -18,6 +18,18 @@ void RenderSystem::DrawMap(const Map& map, Resources& assets){
                 case TileType::Rock:
                     DrawTexture(assets.GetTexture("tile_rock"), map.TileToWorld(x, y).x, map.TileToWorld(x, y).y, WHITE);
                     break;
+                case TileType::Buff: {
+                    // Pick the grass-variant texture that matches this tile's buff; fall back to
+                    // plain grass if the art asset is missing so rendering never throws.
+                    const TileModifier& mod = map.Get(x, y).m_modifier;
+                    const char* texKey = "tile_grass";
+                    if (mod.m_statKey == "range")               texKey = "tile_grass_range";
+                    else if (mod.m_statKey == "damage")         texKey = "tile_grass_damage";
+                    else if (mod.m_statKey == "shotsPerMinute") texKey = "tile_grass_attackspeed";
+                    if (!assets.HasTexture(texKey)) texKey = "tile_grass";
+                    DrawTexture(assets.GetTexture(texKey), map.TileToWorld(x, y).x, map.TileToWorld(x, y).y, WHITE);
+                    break;
+                }
             }
         }
     }

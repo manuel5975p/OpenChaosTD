@@ -28,6 +28,7 @@ public:
     void Create(int cols, int rows);
     void SetCore(int cols, int rows);
     void AddNest(int cols, int rows);
+    void SetBuff(int cols, int rows, std::string statKey, float value, bool mul);
 
     // Pathfinding
     void BuildPathMesh();

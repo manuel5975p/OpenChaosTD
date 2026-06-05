@@ -7,6 +7,17 @@ namespace {
     constexpr int kMaxCluster = 7;   // largest rock blob
     constexpr int kSeedTries  = 64;  // tries to find a free seed tile for a new cluster
     constexpr int kGrowTries  = 16;  // tries to extend a cluster before giving up
+
+    constexpr int kTilesPerBuffTile = 48; // grid area per buff tile (density)
+
+    // Round-robin set of terrain buffs; one is assigned per placed buff tile in order.
+    struct BuffSpec { const char* m_statKey; float m_value; bool m_mul; };
+    constexpr BuffSpec kBuffSpecs[] = {
+        { "range",          20.0f, false }, // flat +range
+        { "damage",          2.0f, false }, // flat +damage
+        { "shotsPerMinute", 30.0f, false }, // flat +fire rate
+    };
+    constexpr int kBuffSpecCount = static_cast<int>(sizeof(kBuffSpecs) / sizeof(kBuffSpecs[0]));
 }
 
 void MapGenerator::Generate(Map& map, int cols, int rows, int nestCount, int obstacleCount){
@@ -17,6 +28,10 @@ void MapGenerator::Generate(Map& map, int cols, int rows, int nestCount, int obs
 
     PlaceNests(map, nestCount);
     PlaceObstacles(map, obstacleCount);
+
+    // Range-buff terrain: count scales with map size. Buff tiles stay walkable, so they never
+    // affect pathing and need no validation.
+    PlaceBuffTiles(map, std::max(1, (cols * rows) / kTilesPerBuffTile));
 
     map.BuildPathMesh(); // final, clean path mesh for the chosen layout
 }
@@ -42,6 +57,29 @@ void MapGenerator::PlaceObstacles(Map& map, int obstacleCount){
     const int maxGuard = obstacleCount * 4 + 32;
     while (placed < obstacleCount && guard++ < maxGuard)
         GrowCluster(map, placed, obstacleCount);
+}
+
+void MapGenerator::PlaceBuffTiles(Map& map, int count){
+    int cols = map.GetCols();
+    int rows = map.GetRows();
+
+    // Convert random open grass tiles into buff terrain, cycling through the buff specs so each
+    // map gets an even mix of range/damage/speed tiles. Buff tiles stay walkable+buildable, so no
+    // path validation is needed; only grass is eligible (core/nests/rocks are skipped).
+    int placed = 0;
+    while (placed < count) {
+        int sx = -1, sy = -1;
+        for (int t = 0; t < kSeedTries; t++) {
+            int x = RandInt(0, cols - 1);
+            int y = RandInt(0, rows - 1);
+            if (map.Get(x, y).m_type == TileType::Grass) { sx = x; sy = y; break; }
+        }
+        if (sx < 0) break; // map too saturated to seed another buff tile
+
+        const BuffSpec& spec = kBuffSpecs[placed % kBuffSpecCount];
+        map.SetBuff(sx, sy, spec.m_statKey, spec.m_value, spec.m_mul);
+        placed++;
+    }
 }
 
 void MapGenerator::GrowCluster(Map& map, int& placed, int target){

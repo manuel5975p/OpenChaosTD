@@ -39,6 +39,14 @@ public:
     // Non-null iff this tower can attack; null marks a wall/passive tower.
     AttackModule* GetAttack() const { return m_attack; }
 
+    // Broadcast a stat delta to every module by key; each module patches only the keys it owns
+    // (AttackModule -> core combat stats, effect modules -> their own params). Mirrors
+    // Enemy::PatchStats; shared by the upgrade pipeline and tile-based terrain buffs.
+    void PatchStats(const std::string& key, float v, bool mul) {
+        for (auto& mod : m_modules)
+            mod->PatchStats(key, v, mul);
+    }
+
 private:
     AttackModule* m_attack = nullptr; // points into m_modules; set in AddModule
 };

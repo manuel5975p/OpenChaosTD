@@ -112,6 +112,14 @@ void Map::AddNest(int cols, int rows) {
     m_paths.push_back({}); // reserve slot for this nest's path
 }
 
+void Map::SetBuff(int cols, int rows, std::string statKey, float value, bool mul) {
+    Tile& tile = m_grid.Get(cols, rows);
+    tile.m_type = TileType::Buff;
+    tile.m_walkable = true;  // towers place normally and pathing is unaffected
+    tile.m_buildable = true;
+    tile.m_modifier = {std::move(statKey), value, mul};
+}
+
 void Map::BuildPathMesh() {
     static const int dx4[] = { 1, -1,  0,  0 };
     static const int dy4[] = { 0,  0,  1, -1 };

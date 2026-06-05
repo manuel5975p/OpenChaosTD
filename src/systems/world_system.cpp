@@ -9,6 +9,13 @@ bool WorldSystem::PlaceTower(int x, int y, Tower& tower, GameData& gameData){
 
     Tile& tile = gameData.m_map.Get(x, y);
     tower.m_position = Vector2Add(gameData.m_map.TileToWorld(x, y), {gameData.m_map.GetTileSize() /2.f, gameData.m_map.GetTileSize() /2.f});
+
+    // Bake any terrain buff into the tower's base stats before it moves into the slotmap. The
+    // modifier stays on the tile, so a tower placed here later is buffed again; selling/destroying
+    // a tower erases it entirely, which reverts the buff with no extra bookkeeping.
+    if (tile.m_modifier.Active())
+        tower.PatchStats(tile.m_modifier.m_statKey, tile.m_modifier.m_value, tile.m_modifier.m_mul);
+
     DenseSlotMap<Tower>::Key towerKey = gameData.m_towers.Insert(std::move(tower));
 
     tile.m_walkable = false;

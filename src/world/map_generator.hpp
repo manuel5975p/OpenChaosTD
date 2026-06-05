@@ -15,6 +15,7 @@ public:
 private:
     void PlaceNests(Map& map, int nestCount);
     void PlaceObstacles(Map& map, int obstacleCount);
+    void PlaceBuffTiles(Map& map, int count); // seed range-buff terrain on open grass
     void GrowCluster(Map& map, int& placed, int target);
     bool TryPlaceRock(Map& map, int x, int y); // keep the rock only if all nests still reach core
     int  RandInt(int lo, int hi);
