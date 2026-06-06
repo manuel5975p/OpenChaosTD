@@ -29,7 +29,7 @@ public:
     std::vector<Effect> m_effects;
     std::vector<std::unique_ptr<EnemyModule>> m_modules;
 
-    int m_level = 0;
+    int m_level = 1; // base tier; EnemyFactory::ApplyUpgrade bumps this per upgrade tier applied
     const EnemyUpgrade* m_upgrade = nullptr; // stable pointer into the factory template (null if none)
 
     // Patch a stat by key: broadcast to every module (the BaseStatsModule handles the core stats,

@@ -1,11 +1,11 @@
 #include <hud/wave_hud.hpp>
+#include <hud/wave_enemy_card.hpp>
 #include <game.hpp>
 #include <systems/wave_manager.hpp>
 #include <systems/render_system.hpp>
 #include <world/enemy.hpp>
-#include <world/enemy_modules.hpp>
 #include <raylib.h>
-#include <string>
+#include <vector>
 #include <unordered_map>
 
 void WaveHUD::Build(Game& game, const WaveManager& waveManager, const RenderSystem& renderSystem) {
@@ -36,11 +36,28 @@ void WaveHUD::OnDraw(Game& game) {
     const std::vector<WaveManager::SpawnGroup>& groups = m_waveManager->GetNextWaveDef().groups;
     const std::unordered_map<std::string, Enemy>& prototypes = m_waveManager->GetPreviewPrototypes();
 
-    // One card per enemy group; an empty wave collapses to a single note line.
-    float cardH = m_iconSize + 2.0f * m_cardPad;
-    float bodyH = groups.empty()
-        ? m_lineH
-        : static_cast<float>(groups.size()) * (cardH + m_cardGap) - m_cardGap;
+    // Build one card per enemy group up front, so the panel can size itself to their total height
+    // (cards grow with their module count, exactly like the tower info panel).
+    std::vector<WaveEnemyCard> cards;
+    cards.reserve(groups.size());
+    for (const auto& g : groups) {
+        WaveEnemyCard card;
+        card.m_pad = m_cardPad;
+        card.m_iconSize = m_iconSize;
+        card.m_lineH = m_lineH;
+        card.m_fontSm = m_fontSm;
+        auto it = prototypes.find(g.enemyType);
+        card.SetContent(g.count, g.enemyType, it != prototypes.end() ? &it->second : nullptr);
+        cards.push_back(std::move(card));
+    }
+
+    // An empty wave collapses to a single note line; otherwise sum the cards plus the gaps.
+    float bodyH = m_lineH;
+    if (!cards.empty()) {
+        bodyH = static_cast<float>(cards.size() - 1) * m_cardGap;
+        for (const auto& card : cards)
+            bodyH += card.Measure();
+    }
     float panelH = m_margin + m_headerH + bodyH + m_margin;
 
     float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
@@ -61,60 +78,14 @@ void WaveHUD::OnDraw(Game& game) {
              static_cast<int>(y + (m_fontHeader - m_fontSm)), m_fontSm, {180, 180, 180, 255});
     y += m_headerH;
 
-    if (groups.empty()) {
+    if (cards.empty()) {
         DrawText("No enemies", static_cast<int>(x), static_cast<int>(y), m_fontSm, {180, 180, 180, 255});
         return;
     }
 
-    for (const auto& g : groups) {
-        // Card frame: subtle fill plus a border so each enemy type reads as a distinct tile.
-        Rectangle card = { x, y, innerW, cardH };
-        DrawRectangleRec(card, {40, 40, 48, 200});
-        DrawRectangleLinesEx(card, 1.0f, {90, 90, 100, 255});
-
-        // Icon area on the left, with a darker backing for sprite contrast.
-        Rectangle icon = { card.x + m_cardPad, card.y + m_cardPad, m_iconSize, m_iconSize };
-        DrawRectangleRec(icon, {20, 20, 24, 255});
-
-        auto it = prototypes.find(g.enemyType);
-        const Enemy* proto = (it != prototypes.end()) ? &it->second : nullptr;
-        if (proto)
-            m_renderSystem->DrawEnemyIcon(proto->m_visual.m_texture, game.GetResources(), icon);
-
-        // Text column to the right of the icon.
-        float tx = icon.x + m_iconSize + m_cardPad;
-        float ty = card.y + m_cardPad;
-        float textRight = card.x + card.width - m_cardPad;
-
-        // Title row: "Nx Name" on the left, "Lv N" badge right-aligned.
-        DrawText(TextFormat("%dx %s", g.count, g.enemyType.c_str()),
-                 static_cast<int>(tx), static_cast<int>(ty), m_fontSm, RAYWHITE);
-        if (proto) {
-            const char* lvlText = TextFormat("Lv %d", proto->m_level);
-            int lw = MeasureText(lvlText, m_fontSm);
-            DrawText(lvlText, static_cast<int>(textRight) - lw, static_cast<int>(ty), m_fontSm, GOLD);
-        }
-        ty += m_lineH;
-
-        // Stat rows read the upgraded prototype; unknown types (e.g. an unlisted boss) stay blank.
-        if (proto) {
-            const BaseStatsModule* bs = proto->GetBaseStats();
-            DrawText(TextFormat("HP %g  SPD %g", bs->m_maxHealth, bs->m_liveSpeed),
-                     static_cast<int>(tx), static_cast<int>(ty), m_fontSm, {150, 200, 150, 255});
-            ty += m_lineH;
-
-            std::string row2;
-            if (bs->m_liveArmor > 0.0f)
-                row2 += TextFormat("ARM %g", bs->m_liveArmor);
-            if (const ShieldModule* shield = proto->GetShield()) {
-                if (!row2.empty()) row2 += "  ";
-                row2 += TextFormat("SHD %g", shield->GetShield());
-            }
-            if (!row2.empty())
-                DrawText(row2.c_str(), static_cast<int>(tx), static_cast<int>(ty),
-                         m_fontSm, {150, 200, 150, 255});
-        }
-
-        y += cardH + m_cardGap;
+    for (const auto& card : cards) {
+        float h = card.Measure();
+        card.Draw({ x, y, innerW, h }, *m_renderSystem, game.GetResources());
+        y += h + m_cardGap;
     }
 }

@@ -2,6 +2,7 @@
 #include <game.hpp>
 #include <systems/wave_manager.hpp>
 #include <raylib.h>
+#include <cstdio>
 
 void StatusHUD::Build(Game& game, const WaveManager& waveManager) {
     HUD::Build(game.GetGameConfig().hudScale);
@@ -66,32 +67,17 @@ void StatusHUD::OnDraw(Game& game) {
     int fontMain  = ScaledInt(16.0f);
     int fontBtn   = ScaledInt(12.0f);
     int marginX   = ScaledInt(6.0f);
-    int goldX     = marginX + ScaledInt(110.0f);
-    int victoryX  = goldX + ScaledInt(100.0f);
+    int gapX      = ScaledInt(16.0f);
 
-    // Left side: lives and gold
-    DrawText(TextFormat("Lives: %d", data.m_lives), marginX, m_textY, fontMain, RAYWHITE);
-    DrawText(TextFormat("Gold: %d",  data.m_gold),  goldX,   m_textY, fontMain, GOLD);
+    // Left cluster: lives, then gold placed after the measured lives width so a large value never
+    // runs under the centered readout.
+    const char* livesStr = TextFormat("Lives: %d", data.m_lives);
+    DrawText(livesStr, marginX, m_textY, fontMain, RAYWHITE);
+    int goldX = marginX + MeasureText(livesStr, fontMain) + gapX;
+    DrawText(TextFormat("Gold: %d", data.m_gold), goldX, m_textY, fontMain, GOLD);
 
-    // Win condition: the victory target wave, or endless if none (victory_wave == 0)
-    if (m_waveManager) {
-        int victoryWave = m_waveManager->GetVictoryWave();
-        const char* victoryStr = victoryWave == 0
-            ? "Endless Mode"
-            : TextFormat("Victory Wave: %d", victoryWave);
-        DrawText(victoryStr, victoryX, m_textY, fontMain, Color{120, 180, 220, 255});
-    }
-
-    // Center: wave number and elapsed time
-    const char* waveStr;
-    if (data.m_waveNumber == 0)
-        waveStr = "Wave: --";
-    else if (data.m_waveActive)
-        waveStr = TextFormat("Wave: %d  |  %.1fs", data.m_waveNumber, data.m_waveTimer);
-    else
-        waveStr = TextFormat("Wave: %d  |  Done", data.m_waveNumber);
-
-    DrawTextCenteredX(waveStr, static_cast<int>(m_panelRect.width / 2.0f), m_textY, fontMain, RAYWHITE);
+    // Center: wave progress, win target, and timer folded into one readout (endless => infinity).
+    DrawWaveReadout(game, static_cast<int>(m_panelRect.width / 2.0f));
 
     // Wave info panel toggle
     m_waveInfoBtn.Draw();
@@ -109,4 +95,57 @@ void StatusHUD::OnDraw(Game& game) {
     const WidgetStyle& waveStyle = data.m_waveActive ? kDisabledStyle : kDefaultStyle;
     m_startWaveBtn.Draw(false, waveStyle);
     m_startWaveBtn.DrawLabel(fontBtn, data.m_waveActive ? DARKGRAY : RAYWHITE);
+}
+
+void StatusHUD::DrawWaveReadout(Game& game, int centerX) {
+    const auto& data = game.GetGameData();
+    int font = ScaledInt(16.0f);
+
+    // Current wave number ("--" before the first wave) and the timer/progress suffix.
+    char num[16];
+    if (data.m_waveNumber == 0)
+        snprintf(num, sizeof(num), "--");
+    else
+        snprintf(num, sizeof(num), "%d", data.m_waveNumber);
+
+    char suffix[24] = "";
+    if (data.m_waveNumber != 0)
+        snprintf(suffix, sizeof(suffix), "  |  %s",
+                 data.m_waveActive ? TextFormat("%.1fs", data.m_waveTimer) : "Done");
+
+    int victoryWave = m_waveManager ? m_waveManager->GetVictoryWave() : 0;
+
+    // Numeric win target: one plain centered string.
+    if (victoryWave > 0) {
+        DrawTextCenteredX(TextFormat("Wave: %s / %d%s", num, victoryWave, suffix),
+                          centerX, m_textY, font, RAYWHITE);
+        return;
+    }
+
+    // Endless: the target is the infinity glyph. The default font has no U+221E, so it is drawn by
+    // hand; the readout is laid out in measured segments so the whole thing stays centered.
+    const char* left = TextFormat("Wave: %s / ", num);
+    float glyphH = static_cast<float>(font);
+    float glyphW = glyphH * 1.2f;
+    float gap = Scaled(2.0f);
+
+    int leftW = MeasureText(left, font);
+    int rightW = MeasureText(suffix, font);
+    float totalW = static_cast<float>(leftW) + gap + glyphW + gap + static_cast<float>(rightW);
+    float startX = static_cast<float>(centerX) - totalW / 2.0f;
+
+    DrawText(left, static_cast<int>(startX), m_textY, font, RAYWHITE);
+    float glyphX = startX + static_cast<float>(leftW) + gap;
+    DrawInfinity(glyphX, static_cast<float>(m_textY) + glyphH / 2.0f, glyphH, Color{120, 180, 220, 255});
+    DrawText(suffix, static_cast<int>(glyphX + glyphW + gap), m_textY, font, RAYWHITE);
+}
+
+void StatusHUD::DrawInfinity(float x, float yMid, float h, Color color) const {
+    // Two ring outlines side by side form the lemniscate; spans [x, x + 4r] = [x, x + 1.2*h].
+    float r = h * 0.30f;
+    float th = Scaled(1.5f);
+    float inner = r - th;
+    if (inner < 0.0f) inner = 0.0f;
+    DrawRing({ x + r, yMid },        inner, r, 0.0f, 360.0f, 32, color);
+    DrawRing({ x + 3.0f * r, yMid }, inner, r, 0.0f, 360.0f, 32, color);
 }
