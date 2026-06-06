@@ -7,6 +7,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 class WaveManager {
 public:
@@ -23,13 +24,13 @@ public:
         std::vector<SpawnGroup> groups;
     };
 
-    void Load(JsonStore& jsonio);
+    void Load(JsonStore& jsonio, const EnemyFactory& enemyFactory);
 
     // Advance wave state: tick timer, process spawn queue, detect wave end, trigger auto-spawn
     void Update(float dt, GameData& data, WorldSystem& worldSystem, EnemyFactory& enemyFactory);
 
     // Start the next wave; no-op if one is already active
-    void StartWave(GameData& data);
+    void StartWave(GameData& data, const EnemyFactory& enemyFactory);
 
     void ToggleAutoSpawn() { m_autoSpawn = !m_autoSpawn; }
     bool IsAutoSpawn() const { return m_autoSpawn; }
@@ -39,6 +40,10 @@ public:
     float GetNextWaveBudget() const { return m_pendingBudget; } // threat budget of the upcoming wave
     int GetVictoryWave() const { return m_victoryWave; } // 0 = endless
     int GetUpgradeTier() const { return m_activeTier; }
+
+    // Fully-upgraded prototype enemies for the upcoming (pending) wave, keyed by enemy type. The HUD
+    // reads stats/level straight from these; the spawn path clones from the promoted copy of this set.
+    const std::unordered_map<std::string, Enemy>& GetPreviewPrototypes() const { return m_previewPrototypes; }
 
 private:
     // One enemy type the procedural generator may draw from, with its threat cost and pacing.
@@ -71,6 +76,13 @@ private:
     // Apply the current upgrade tier to a freshly created enemy before it spawns.
     void ApplyTierUpgrades(Enemy& enemy, int tier, const EnemyFactory& enemyFactory) const;
 
+    // Rebuild the preview prototype pool for m_pendingDef, upgraded to the pending wave's tier.
+    void RebuildPreviewPrototypes(int pendingWaveNumber, const EnemyFactory& enemyFactory);
+
+    // Recompute an enemy's live combat stats after upgrades (mirrors the tail of EnemyFactory::Create)
+    // so the HUD reads upgraded speed/armor rather than the pre-upgrade values.
+    void RecomputeLive(Enemy& enemy) const;
+
     // Expands a WaveDef into a sorted PendingSpawn list.
     void BuildSpawnQueue(const WaveDef& def, int nestCount);
 
@@ -89,6 +101,12 @@ private:
     float m_pendingBudget = 0.0f;   // total budget of m_pendingDef's wave
     float m_lookaheadBudget = 0.0f; // total budget of m_lookaheadDef's wave
     int m_activeTier = 0;   // upgrade tier of the wave currently spawning
+
+    // Pre-upgraded prototype enemies, cloned on spawn and read by the HUD.
+    // m_previewPrototypes corresponds to m_pendingDef (the upcoming wave, shown by the HUD);
+    // m_spawnPrototypes is the wave currently spawning, moved from preview on StartWave.
+    std::unordered_map<std::string, Enemy> m_previewPrototypes;
+    std::unordered_map<std::string, Enemy> m_spawnPrototypes;
 
     std::mt19937 m_rng;
 

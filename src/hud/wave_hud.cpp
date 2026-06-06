@@ -1,23 +1,27 @@
 #include <hud/wave_hud.hpp>
 #include <game.hpp>
 #include <systems/wave_manager.hpp>
+#include <systems/render_system.hpp>
 #include <world/enemy.hpp>
 #include <world/enemy_modules.hpp>
 #include <raylib.h>
 #include <string>
+#include <unordered_map>
 
-void WaveHUD::Build(Game& game, const WaveManager& waveManager) {
+void WaveHUD::Build(Game& game, const WaveManager& waveManager, const RenderSystem& renderSystem) {
     HUD::Build(game.GetGameConfig().hudScale);
-    m_panelW    = Scaled(190.0f);
+    m_panelW    = Scaled(200.0f);
     m_margin    = Scaled(8.0f);
     m_lineH     = Scaled(14.0f);
-    m_rowGap    = Scaled(4.0f);
     m_headerH   = Scaled(20.0f);
-    m_indent    = Scaled(10.0f);
+    m_cardGap   = Scaled(6.0f);
+    m_cardPad   = Scaled(6.0f);
+    m_iconSize  = Scaled(44.0f);
     m_topOffset = Scaled(42.0f);
     m_fontSm     = ScaledInt(11.0f);
     m_fontHeader = ScaledInt(14.0f);
     m_waveManager = &waveManager;
+    m_renderSystem = &renderSystem;
     Hide(); // hidden by default; shown via the Waves button or the WaveInfo hotkey
 }
 
@@ -27,14 +31,16 @@ void WaveHUD::OnProcessInput(Game& game) {
 }
 
 void WaveHUD::OnDraw(Game& game) {
-    if (!m_waveManager) return;
+    if (!m_waveManager || !m_renderSystem) return;
 
     const std::vector<WaveManager::SpawnGroup>& groups = m_waveManager->GetNextWaveDef().groups;
+    const std::unordered_map<std::string, Enemy>& prototypes = m_waveManager->GetPreviewPrototypes();
 
-    // Height: a header row, then a two-line block per enemy group (empty wave -> one note line).
+    // One card per enemy group; an empty wave collapses to a single note line.
+    float cardH = m_iconSize + 2.0f * m_cardPad;
     float bodyH = groups.empty()
         ? m_lineH
-        : static_cast<float>(groups.size()) * (2.0f * m_lineH + m_rowGap);
+        : static_cast<float>(groups.size()) * (cardH + m_cardGap) - m_cardGap;
     float panelH = m_margin + m_headerH + bodyH + m_margin;
 
     float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
@@ -44,6 +50,7 @@ void WaveHUD::OnDraw(Game& game) {
 
     float x = m_panelRect.x + m_margin;
     float y = m_panelRect.y + m_margin;
+    float innerW = m_panelW - 2.0f * m_margin;
 
     // Header: title on the left, upcoming threat budget right-aligned.
     DrawText("Next Wave", static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
@@ -59,25 +66,55 @@ void WaveHUD::OnDraw(Game& game) {
         return;
     }
 
-    const EnemyFactory& factory = game.GetEnemyFactory();
     for (const auto& g : groups) {
-        // Row 1: count and enemy type.
-        DrawText(TextFormat("%dx %s", g.count, g.enemyType.c_str()),
-                 static_cast<int>(x), static_cast<int>(y), m_fontSm, RAYWHITE);
-        y += m_lineH;
+        // Card frame: subtle fill plus a border so each enemy type reads as a distinct tile.
+        Rectangle card = { x, y, innerW, cardH };
+        DrawRectangleRec(card, {40, 40, 48, 200});
+        DrawRectangleLinesEx(card, 1.0f, {90, 90, 100, 255});
 
-        // Row 2: compact key stats, indented. Unknown types (e.g. an unlisted boss) show no stats.
-        if (factory.Has(g.enemyType)) {
-            Enemy enemy = factory.Create(g.enemyType);
-            const BaseStatsModule* bs = enemy.GetBaseStats();
-            std::string stats = TextFormat("HP %g  SPD %g", bs->m_maxHealth, bs->m_liveSpeed);
-            if (bs->m_liveArmor > 0.0f)
-                stats += TextFormat("  ARM %g", bs->m_liveArmor);
-            if (const ShieldModule* shield = enemy.GetShield())
-                stats += TextFormat("  SHD %g", shield->GetShield());
-            DrawText(stats.c_str(), static_cast<int>(x + m_indent), static_cast<int>(y),
-                     m_fontSm, {150, 200, 150, 255});
+        // Icon area on the left, with a darker backing for sprite contrast.
+        Rectangle icon = { card.x + m_cardPad, card.y + m_cardPad, m_iconSize, m_iconSize };
+        DrawRectangleRec(icon, {20, 20, 24, 255});
+
+        auto it = prototypes.find(g.enemyType);
+        const Enemy* proto = (it != prototypes.end()) ? &it->second : nullptr;
+        if (proto)
+            m_renderSystem->DrawEnemyIcon(proto->m_visual.m_texture, game.GetResources(), icon);
+
+        // Text column to the right of the icon.
+        float tx = icon.x + m_iconSize + m_cardPad;
+        float ty = card.y + m_cardPad;
+        float textRight = card.x + card.width - m_cardPad;
+
+        // Title row: "Nx Name" on the left, "Lv N" badge right-aligned.
+        DrawText(TextFormat("%dx %s", g.count, g.enemyType.c_str()),
+                 static_cast<int>(tx), static_cast<int>(ty), m_fontSm, RAYWHITE);
+        if (proto) {
+            const char* lvlText = TextFormat("Lv %d", proto->m_level);
+            int lw = MeasureText(lvlText, m_fontSm);
+            DrawText(lvlText, static_cast<int>(textRight) - lw, static_cast<int>(ty), m_fontSm, GOLD);
         }
-        y += m_lineH + m_rowGap;
+        ty += m_lineH;
+
+        // Stat rows read the upgraded prototype; unknown types (e.g. an unlisted boss) stay blank.
+        if (proto) {
+            const BaseStatsModule* bs = proto->GetBaseStats();
+            DrawText(TextFormat("HP %g  SPD %g", bs->m_maxHealth, bs->m_liveSpeed),
+                     static_cast<int>(tx), static_cast<int>(ty), m_fontSm, {150, 200, 150, 255});
+            ty += m_lineH;
+
+            std::string row2;
+            if (bs->m_liveArmor > 0.0f)
+                row2 += TextFormat("ARM %g", bs->m_liveArmor);
+            if (const ShieldModule* shield = proto->GetShield()) {
+                if (!row2.empty()) row2 += "  ";
+                row2 += TextFormat("SHD %g", shield->GetShield());
+            }
+            if (!row2.empty())
+                DrawText(row2.c_str(), static_cast<int>(tx), static_cast<int>(ty),
+                         m_fontSm, {150, 200, 150, 255});
+        }
+
+        y += cardH + m_cardGap;
     }
 }

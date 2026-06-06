@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <memory>
 #include <raylib.h>
 #include <world/effect.hpp>
 #include <world/tower_modules.hpp> // DescLine + ApplyDelta shared module utilities
@@ -18,6 +19,8 @@ struct SpawnRequest {
 class EnemyModule {
 public:
     virtual ~EnemyModule() = default;
+    // Deep-copy this module (virtual-constructor idiom) so an Enemy prototype can be cloned.
+    virtual std::unique_ptr<EnemyModule> Clone() const = 0;
     // Stateful per-frame hook (e.g. RegenerationModule); non-const so modules mutate cleanly.
     virtual void Tick(float, Enemy&) {}
     // Augment the enemy's live combat stats each tick (e.g. ArmorModule feeds m_liveArmor).
@@ -52,6 +55,7 @@ public:
     float m_liveSpeed = 0.0f;
     float m_liveArmor = 0.0f;
 
+    std::unique_ptr<EnemyModule> Clone() const override { return std::make_unique<BaseStatsModule>(*this); }
     void ResetLive(); // copy base -> live, called at the start of each recompute
     void PatchStats(const std::string& key, float v, bool mul) override;
     // Core stat rows (Health/Speed), reading the live values.
@@ -62,6 +66,7 @@ class RegenerationModule : public EnemyModule {
 public:
     float m_rate;
     explicit RegenerationModule(float rate) : m_rate(rate) {}
+    std::unique_ptr<EnemyModule> Clone() const override { return std::make_unique<RegenerationModule>(*this); }
     void Tick(float dt, Enemy& enemy) override;
     void DescribeStats(std::vector<DescLine>& out) const override;
     void PatchStats(const std::string& key, float v, bool mul) override;
@@ -71,6 +76,7 @@ class ArmorModule : public EnemyModule {
 public:
     float m_amount;
     explicit ArmorModule(float amount) : m_amount(amount) {}
+    std::unique_ptr<EnemyModule> Clone() const override { return std::make_unique<ArmorModule>(*this); }
     void ContributeStats(BaseStatsModule& base) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
     void PatchStats(const std::string& key, float v, bool mul) override;
@@ -81,6 +87,7 @@ class ImmuneModule : public EnemyModule {
 public:
     EffectType m_effect;
     explicit ImmuneModule(EffectType effect) : m_effect(effect) {}
+    std::unique_ptr<EnemyModule> Clone() const override { return std::make_unique<ImmuneModule>(*this); }
     bool ShouldBlock(EffectType type) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
 };
@@ -91,6 +98,7 @@ public:
     float m_maxShield;
     float m_currentShield;
     explicit ShieldModule(float shield) : m_maxShield(shield), m_currentShield(shield) {}
+    std::unique_ptr<EnemyModule> Clone() const override { return std::make_unique<ShieldModule>(*this); }
     float GetShield() const override { return m_currentShield; }
     float InterceptDamage(float incoming) override;
     void DescribeStats(std::vector<DescLine>& out) const override;
@@ -104,6 +112,7 @@ public:
     int m_count;
     SplitModule(std::string childType, int count)
         : m_childType(std::move(childType)), m_count(count) {}
+    std::unique_ptr<EnemyModule> Clone() const override { return std::make_unique<SplitModule>(*this); }
     std::optional<SpawnRequest> OnDeath() const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
     void PatchStats(const std::string& key, float v, bool mul) override;

@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <iostream>
 
-void WaveManager::Load(JsonStore& jsonio) {
+void WaveManager::Load(JsonStore& jsonio, const EnemyFactory& enemyFactory) {
     m_rng.seed(std::random_device{}());
 
     if (!jsonio.Exists("data/waves.json")) {
@@ -50,6 +50,9 @@ void WaveManager::Load(JsonStore& jsonio) {
     m_lookaheadDef = GenerateWave(2);
     m_pendingBudget = BudgetForWave(1);
     m_lookaheadBudget = BudgetForWave(2);
+
+    // Build the prototype pool previewing wave 1 (the next wave to launch).
+    RebuildPreviewPrototypes(1, enemyFactory);
 
     std::cout << "WaveManager: loaded " << m_enemyPool.size() << " pool entries, victory_wave="
               << m_victoryWave << "\n";
@@ -149,6 +152,29 @@ void WaveManager::ApplyTierUpgrades(Enemy& enemy, int tier, const EnemyFactory& 
         enemyFactory.ApplyUpgrade(enemy, ups[std::min(i, last)]);
 }
 
+void WaveManager::RecomputeLive(Enemy& enemy) const {
+    BaseStatsModule* base = enemy.GetBaseStats();
+    if (!base) return;
+    base->ResetLive();
+    for (auto& mod : enemy.m_modules)
+        mod->ContributeStats(*base);
+}
+
+void WaveManager::RebuildPreviewPrototypes(int pendingWaveNumber, const EnemyFactory& enemyFactory) {
+    m_previewPrototypes.clear();
+    int tier = UpgradeTierFor(pendingWaveNumber);
+
+    // One fully-upgraded prototype per unique enemy type in the upcoming wave.
+    for (const auto& grp : m_pendingDef.groups) {
+        if (m_previewPrototypes.count(grp.enemyType)) continue;
+        if (!enemyFactory.Has(grp.enemyType)) continue; // e.g. an unlisted type — nothing to clone
+        Enemy proto = enemyFactory.Create(grp.enemyType);
+        ApplyTierUpgrades(proto, tier, enemyFactory);
+        RecomputeLive(proto); // refresh live speed/armor so the HUD shows upgraded values
+        m_previewPrototypes.emplace(grp.enemyType, std::move(proto));
+    }
+}
+
 void WaveManager::BuildSpawnQueue(const WaveDef& def, int nestCount) {
     m_pendingSpawns.clear();
     m_nextSpawn = 0;
@@ -176,14 +202,13 @@ void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, Ene
         data.m_waveTimer += dt;
         m_elapsed += dt;
 
-        // Fire any spawns whose scheduled time has arrived, applying the active upgrade tier
+        // Fire any spawns whose scheduled time has arrived, cloning from the pre-upgraded prototypes
         while (m_nextSpawn < static_cast<int>(m_pendingSpawns.size())
                && m_pendingSpawns[m_nextSpawn].time <= m_elapsed) {
             const auto& ps = m_pendingSpawns[m_nextSpawn++];
-            if (!enemyFactory.Has(ps.type)) continue;
-            Enemy enemy = enemyFactory.Create(ps.type);
-            ApplyTierUpgrades(enemy, m_activeTier, enemyFactory);
-            worldSystem.SpawnEnemy(ps.nest, std::move(enemy), data);
+            auto it = m_spawnPrototypes.find(ps.type);
+            if (it == m_spawnPrototypes.end()) continue; // unknown type — no prototype to clone
+            worldSystem.SpawnEnemy(ps.nest, it->second.Clone(), data);
         }
 
         // Wave ends once the spawn queue is exhausted and all enemies are cleared
@@ -203,11 +228,11 @@ void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, Ene
     if (m_autoSpawn && data.m_waveNumber > 0 && !data.m_victory) {
         m_autoSpawnTimer += dt;
         if (m_autoSpawnTimer >= data.m_autoSpawnDelay)
-            StartWave(data);
+            StartWave(data, enemyFactory);
     }
 }
 
-void WaveManager::StartWave(GameData& data) {
+void WaveManager::StartWave(GameData& data, const EnemyFactory& enemyFactory) {
     if (data.m_waveActive) return;
 
     data.m_waveNumber++;
@@ -219,9 +244,16 @@ void WaveManager::StartWave(GameData& data) {
     int nestCount = static_cast<int>(data.m_map.GetNests().size());
     BuildSpawnQueue(m_pendingDef, nestCount); // m_pendingDef holds this wave's composition
 
+    // The preview prototypes were already upgraded to exactly this wave's tier, so promote them to
+    // the active spawn set — Update clones from these without re-running the upgrade path.
+    m_spawnPrototypes = std::move(m_previewPrototypes);
+
     // Promote the lookahead to pending and pre-generate the new lookahead (keeps one wave ahead).
     m_pendingDef = std::move(m_lookaheadDef);
     m_lookaheadDef = GenerateWave(data.m_waveNumber + 2);
     m_pendingBudget = m_lookaheadBudget;
     m_lookaheadBudget = BudgetForWave(data.m_waveNumber + 2);
+
+    // Rebuild the preview pool for the new upcoming wave (next wave's tier) for the HUD.
+    RebuildPreviewPrototypes(data.m_waveNumber + 1, enemyFactory);
 }

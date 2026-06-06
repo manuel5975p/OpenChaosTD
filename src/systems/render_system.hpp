@@ -21,6 +21,9 @@ public:
     void DrawRangeIndicator(DenseSlotMap<Tower>::Key selectedKey, const Map& map, const DenseSlotMap<Tower>& towers, Vector2 mouseWorld);
     void DrawGhostTower(Vector2 position, float radius, Texture2D& texture);
     void DrawEnemies(const DenseSlotMap<Enemy>& enemies, Resources& assets);
+    // Draw an enemy sprite scaled (aspect-preserving) to fit `dest`; reads the texture from Resources.
+    // Used by the WaveHUD enemy cards. No-op if the key is missing.
+    void DrawEnemyIcon(const std::string& textureKey, Resources& assets, Rectangle dest) const;
     void DrawAttacks(const std::vector<Attack>& attacks);
 
     void CenterCamera(Map& map, Screen& renderer);

@@ -225,3 +225,18 @@ Every key is broadcast to all of the tower's modules; each applies only the keys
 | `idleTime`         | RampUpModule     | Seconds idle before stacks clear |
 | `critChance`       | CritModule       | Critical hit probability (requires a Crit module on the tower) |
 | `critMultiplier`   | CritModule       | Critical damage multiplier (requires a Crit module on the tower) |
+
+---
+
+## Enemy upgrade tiers & the wave preview
+
+Enemies reuse this same `add`/`mul` upgrade mechanism (see `enemies.md`), but they are not bought
+individually — `WaveManager` applies the wave's **upgrade tier** to every enemy. To keep the preview
+and the spawned enemies in sync, the tier is pre-applied to a small **prototype pool**: one fully
+upgraded `Enemy` template per enemy type in the upcoming wave, rebuilt on each wave transition.
+
+- The spawn path **clones** enemies from these prototypes instead of re-running the upgrade routine
+  per spawn.
+- The **WaveHUD** reads the same prototypes, so the card it shows for each enemy type displays the
+  fully upgraded stats (`maxHealth`, `speed`, `armor`, `shield`, `regenRate`, `splitCount`) and the
+  current upgrade **level** — i.e. the preview already reflects the active tier.

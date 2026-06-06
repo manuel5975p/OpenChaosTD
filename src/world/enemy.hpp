@@ -43,6 +43,30 @@ public:
             m_currentHealth = m_baseStats->m_maxHealth;
     }
 
+    // Deep-copy this enemy (modules included). Used to spawn from a pre-upgraded prototype and to
+    // hand fully-upgraded copies to the HUD. Enemy is move-only (its modules are unique_ptr), so the
+    // implicit copy is deleted; cloning rebuilds each module via its virtual Clone() and re-adds it
+    // through AddModule, which re-caches m_baseStats/m_shield into the new module vector (order
+    // preserved). m_upgrades is a stable pointer into the factory template, so a shallow copy is
+    // correct (mirrors EnemyFactory::Create); m_level is copied as-is.
+    Enemy Clone() const {
+        Enemy copy;
+        copy.m_name          = m_name;
+        copy.m_description    = m_description;
+        copy.m_position       = m_position;
+        copy.m_visual         = m_visual;
+        copy.m_currentHealth  = m_currentHealth;
+        copy.m_progress       = m_progress;
+        copy.m_spawnedNest    = m_spawnedNest;
+        copy.m_waypointIndex  = m_waypointIndex;
+        copy.m_effects        = m_effects;
+        copy.m_level          = m_level;
+        copy.m_upgrades       = m_upgrades;
+        for (const auto& mod : m_modules)
+            copy.AddModule(mod->Clone());
+        return copy;
+    }
+
     void AddModule(std::unique_ptr<EnemyModule> mod) {
         // Cache the BaseStatsModule and ShieldModule (if present) so the damage and targeting hot
         // paths can read core/shield stats without scanning the module list every frame.

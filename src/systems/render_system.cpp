@@ -1,6 +1,7 @@
 #include <systems/render_system.hpp>
 
 #include <raymath.h>
+#include <algorithm>
 
 void RenderSystem::DrawMap(const Map& map, Resources& assets){
     for (int y = 0; y < map.GetRows(); y++) {
@@ -131,6 +132,20 @@ void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, Resources& as
         // Health bar: 24px wide, 4px tall, floats above the sprite
         DrawHealthBar({enemy.m_position.x, enemy.m_position.y + hh + 2.0f}, enemy.m_currentHealth, enemy.GetBaseStats()->m_maxHealth, 20.0f, 4.0f );
     }
+}
+
+void RenderSystem::DrawEnemyIcon(const std::string& textureKey, Resources& assets, Rectangle dest) const {
+    if (!assets.HasTexture(textureKey)) return; // GetTexture throws on a missing key
+    Texture2D& texture = assets.GetTexture(textureKey);
+    if (texture.width <= 0 || texture.height <= 0) return;
+
+    // Fit the sprite into dest, preserving aspect ratio, and center it.
+    float scale = std::min(dest.width / texture.width, dest.height / texture.height);
+    float w = texture.width  * scale;
+    float h = texture.height * scale;
+    Rectangle src = {0.0f, 0.0f, static_cast<float>(texture.width), static_cast<float>(texture.height)};
+    Rectangle dst = {dest.x + (dest.width - w) * 0.5f, dest.y + (dest.height - h) * 0.5f, w, h};
+    DrawTexturePro(texture, src, dst, {0.0f, 0.0f}, 0.0f, WHITE);
 }
 
 void RenderSystem::DrawAttacks(const std::vector<Attack>& attacks) {

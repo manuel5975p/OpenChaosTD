@@ -19,10 +19,10 @@ void PlayingState::OnEnter(Game& game) {
     m_towerHUD.Build(game);
     m_scoreHUD.Build(game, m_waveManager);
     m_towerInfoHUD.Build(game);
-    m_waveHUD.Build(game, m_waveManager);
+    m_waveHUD.Build(game, m_waveManager, m_renderSystem);
     m_eventLog.Build(game.GetGameConfig().hudScale);
 
-    m_waveManager.Load(game.GetJsonStore());
+    m_waveManager.Load(game.GetJsonStore(), game.GetEnemyFactory());
 }
 
 void PlayingState::OnExit(Game& game) {
@@ -143,7 +143,7 @@ void PlayingState::HandleHudSignals(Game& game) {
         UpgradeSelectedTower(game);
 
     if (m_scoreHUD.WasWaveRequested())
-        m_waveManager.StartWave(game.GetGameData());
+        m_waveManager.StartWave(game.GetGameData(), game.GetEnemyFactory());
 
     if (m_scoreHUD.WasAutoToggled())
         m_waveManager.ToggleAutoSpawn();
