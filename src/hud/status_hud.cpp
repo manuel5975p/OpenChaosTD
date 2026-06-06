@@ -76,7 +76,7 @@ void StatusHUD::OnDraw(Game& game) {
     int goldX = marginX + MeasureText(livesStr, fontMain) + gapX;
     DrawText(TextFormat("Gold: %d", data.m_gold), goldX, m_textY, fontMain, GOLD);
 
-    // Center: wave progress, win target, and timer folded into one readout (endless => infinity).
+    // Center: wave progress and win target folded into one readout (endless => infinity).
     DrawWaveReadout(game, static_cast<int>(m_panelRect.width / 2.0f));
 
     // Wave info panel toggle

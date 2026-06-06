@@ -1,7 +1,7 @@
 {
     "budget":   { "base_budget": 20, "growth_exponent": 0.75, "victory_wave": 0 },
     "boss":     { "interval": 20, "boss_enemies": ["sovereign"] },
-    "upgrade_interval": 21,
+    "upgrade_interval": 11,
     "enemy_pool": [
         { "enemy": "shade",     "cost": 3,  "min_wave": 1,   "interval": 0.8 },
         { "enemy": "flicker",   "cost": 4,  "min_wave": 3,   "interval": 0.5 },

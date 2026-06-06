@@ -10,7 +10,7 @@
                 "texture": "enemy_shade",
                 "deathEmitter": "death_small"
             },
-            "upgrade": { "cost": 1, "add": { "maxHealth": 10 }, "mul": { "speed": 1.2 } }
+            "upgrade": { "add": { "maxHealth": 10 }, "mul": { "speed": 1.2 } }
         },
         {
             "name": "flicker",
@@ -22,7 +22,7 @@
                 "texture": "enemy_flicker",
                 "deathEmitter": "death_small"
             },
-            "upgrade": { "cost": 1, "add": { "maxHealth": 3 }, "mul": { "speed": 1.3 } }
+            "upgrade": { "add": { "maxHealth": 3 }, "mul": { "speed": 1.3 } }
         },
         {
             "name": "golem",
@@ -38,7 +38,7 @@
                 { "type": "Regeneration", "regenRate": 2.0 },
                 { "type": "Armor",        "armor": 2.0 }
             ],
-            "upgrade": { "cost": 1, "add": { "armor": 2, "regenRate": 2 }, "mul": { "maxHealth": 1.5 } }
+            "upgrade": { "add": { "armor": 2, "regenRate": 2 }, "mul": { "maxHealth": 1.5 } }
         },
         {
             "name": "titan",
@@ -53,7 +53,7 @@
             "modules": [
                 { "type": "Armor", "armor": 3.0 }
             ],
-            "upgrade": { "cost": 1, "add": { "armor": 3 }, "mul": { "maxHealth": 1.4 } }
+            "upgrade": { "add": { "armor": 3 }, "mul": { "maxHealth": 1.4 } }
         },
         {
             "name": "sovereign",
@@ -71,7 +71,7 @@
                 { "type": "Split", "child": "golem", "splitCount": 2 },
                 { "type": "Immune", "effect": "Stun" }
             ],
-            "upgrade": { "cost": 1, "add": { "splitCount": 1, "armor": 2 }, "mul": { "maxHealth": 1.5 } }
+            "upgrade": { "add": { "splitCount": 1, "armor": 2 }, "mul": { "maxHealth": 1.5 } }
         },
         {
             "name": "glacius",
@@ -86,7 +86,7 @@
             "modules": [
                 { "type": "Immune", "effect": "Slow" }
             ],
-            "upgrade": { "cost": 1, "add": { "maxHealth": 15 }, "mul": { "speed": 1.2 } }
+            "upgrade": { "add": { "maxHealth": 15 }, "mul": { "speed": 1.2 } }
         },
         {
             "name": "sentinel",
@@ -101,7 +101,7 @@
             "modules": [
                 { "type": "Shield", "shield": 15.0 }
             ],
-            "upgrade": { "cost": 1, "add": { "shield": 15 }, "mul": { "maxHealth": 1.3 } }
+            "upgrade": { "add": { "shield": 15 }, "mul": { "maxHealth": 1.3 } }
         },
         {
             "name": "brood",
@@ -116,7 +116,7 @@
             "modules": [
                 { "type": "Split", "child": "flicker", "splitCount": 3 }
             ],
-            "upgrade": { "cost": 1, "add": { "splitCount": 2 }, "mul": { "maxHealth": 1.4 } }
+            "upgrade": { "add": { "splitCount": 2 }, "mul": { "maxHealth": 1.4 } }
         },
         {
             "name": "cinder",
@@ -131,7 +131,7 @@
             "modules": [
                 { "type": "Immune", "effect": "Burn" }
             ],
-            "upgrade": { "cost": 1, "add": { "maxHealth": 12 }, "mul": { "speed": 1.25 } }
+            "upgrade": { "add": { "maxHealth": 12 }, "mul": { "speed": 1.25 } }
         }
     ]
 }

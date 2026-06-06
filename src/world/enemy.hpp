@@ -84,6 +84,16 @@ public:
     // Non-null iff this enemy carries a shield; points into m_modules, set in AddModule.
     ShieldModule* GetShield() const { return m_shield; }
 
+    // Recompute the live combat stats from base + module contributions (speed, armor). Shared by
+    // the per-tick update, the factory build-time prime, and the wave-preview path so the three
+    // never drift. The enemy analogue of TowerSystem::RecomputeStats.
+    void RecomputeLive() {
+        if (!m_baseStats) return;
+        m_baseStats->ResetLive();
+        for (auto& mod : m_modules)
+            mod->ContributeStats(*m_baseStats);
+    }
+
     void AddEffect(Effect effect) {
         for (const auto& mod : m_modules)
             if (mod->ShouldBlock(effect.m_type)) return;

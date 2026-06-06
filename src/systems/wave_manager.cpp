@@ -145,17 +145,10 @@ void WaveManager::ApplyTierUpgrades(Enemy& enemy, int tier, const EnemyFactory& 
     if (tier <= 0 || !enemy.m_upgrade) return;
 
     // The enemy defines a single upgrade option; re-apply it `tier` times so each upgrade tier
-    // stacks one more copy of the same deltas, scaling indefinitely (endless mode).
+    // stacks one more copy of the same scalar deltas, scaling indefinitely (endless mode). Added
+    // modules are appended once (first tier only), not per tier.
     for (int i = 0; i < tier; i++)
-        enemyFactory.ApplyUpgrade(enemy, *enemy.m_upgrade);
-}
-
-void WaveManager::RecomputeLive(Enemy& enemy) const {
-    BaseStatsModule* base = enemy.GetBaseStats();
-    if (!base) return;
-    base->ResetLive();
-    for (auto& mod : enemy.m_modules)
-        mod->ContributeStats(*base);
+        enemyFactory.ApplyUpgrade(enemy, *enemy.m_upgrade, i == 0);
 }
 
 void WaveManager::RebuildPreviewPrototypes(int pendingWaveNumber, const EnemyFactory& enemyFactory) {
@@ -168,7 +161,7 @@ void WaveManager::RebuildPreviewPrototypes(int pendingWaveNumber, const EnemyFac
         if (!enemyFactory.Has(grp.enemyType)) continue; // e.g. an unlisted type — nothing to clone
         Enemy proto = enemyFactory.Create(grp.enemyType);
         ApplyTierUpgrades(proto, tier, enemyFactory);
-        RecomputeLive(proto); // refresh live speed/armor so the HUD shows upgraded values
+        proto.RecomputeLive(); // refresh live speed/armor so the HUD shows upgraded values
         m_previewPrototypes.emplace(grp.enemyType, std::move(proto));
     }
 }
@@ -197,7 +190,6 @@ void WaveManager::BuildSpawnQueue(const WaveDef& def, int nestCount) {
 
 void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, EnemyFactory& enemyFactory) {
     if (data.m_waveActive) {
-        data.m_waveTimer += dt;
         m_elapsed += dt;
 
         // Fire any spawns whose scheduled time has arrived, cloning from the pre-upgraded prototypes
@@ -235,7 +227,6 @@ void WaveManager::StartWave(GameData& data, const EnemyFactory& enemyFactory) {
 
     data.m_waveNumber++;
     data.m_waveActive = true;
-    data.m_waveTimer = 0.0f;
 
     m_activeTier = UpgradeTierFor(data.m_waveNumber);
 

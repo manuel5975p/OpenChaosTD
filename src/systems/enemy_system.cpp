@@ -33,13 +33,10 @@ void EnemySystem::FollowPath(float dt, GameData& gameData){
 
 void EnemySystem::TickEnemies(float dt, GameData& gameData, ParticleSystem& particles){
     for (auto& enemy : gameData.m_enemies) {
-        // Recompute live combat stats: reset the core module's mirror from base, then let every
-        // module contribute (BaseStatsModule supplies speed, ArmorModule feeds armor). Mirrors
-        // TowerSystem::RecomputeStats.
+        // Recompute live combat stats (speed, armor) from base + module contributions.
+        // Mirrors TowerSystem::RecomputeStats.
+        enemy.RecomputeLive();
         BaseStatsModule* base = enemy.GetBaseStats();
-        base->ResetLive();
-        for (auto& mod : enemy.m_modules)
-            mod->ContributeStats(*base);
 
         for (auto& mod : enemy.m_modules)
             mod->Tick(dt, enemy);

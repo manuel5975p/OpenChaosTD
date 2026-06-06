@@ -131,15 +131,14 @@ elite or late-wave variants). Applying it broadcasts its deltas through the enem
 stat-patching pipeline and appends any new modules.
 
 ```json
-"upgrade": { "cost": 1, "add": { "armor": 2, "regenRate": 2 }, "mul": { "maxHealth": 1.5 } }
+"upgrade": { "add": { "armor": 2, "regenRate": 2 }, "mul": { "maxHealth": 1.5 } }
 ```
 
 | Field     | Type   | Description |
 |-----------|--------|-------------|
-| `cost`    | int    | Reserved for a future "threat budget"; currently unused by the runtime |
 | `add`     | object | Map of stat key → **flat** delta added to the current value |
 | `mul`     | object | Map of stat key → **multiplier** applied to the current value |
-| `modules` | array  | Additional `modules` entries appended to the enemy each time the upgrade is applied |
+| `modules` | array  | Additional module entries appended to the enemy **once**, regardless of tier (the `add`/`mul` deltas stack per tier, but modules are added a single time). Also accepted under the key `effects`, for parity with tower upgrades. |
 
 ### How the upgrade scales over tiers
 

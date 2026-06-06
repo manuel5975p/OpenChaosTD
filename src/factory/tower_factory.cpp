@@ -59,8 +59,11 @@ static TowerUpgrade ParseUpgrade(const json& j) {
         for (auto& [k, v] : j["add"].items()) up.m_adds.push_back({k, v.get<float>()});
     if (j.contains("mul"))
         for (auto& [k, v] : j["mul"].items()) up.m_muls.push_back({k, v.get<float>()});
-    if (j.contains("effects"))
-        for (auto& m : j["effects"]) up.m_addModules.push_back(m);
+    // Added modules live under "effects" (canonical for towers); also accept "modules" for
+    // schema parity with enemy upgrades.
+    const char* moduleKey = j.contains("effects") ? "effects" : "modules";
+    if (j.contains(moduleKey))
+        for (auto& m : j[moduleKey]) up.m_addModules.push_back(m);
     return up;
 }
 

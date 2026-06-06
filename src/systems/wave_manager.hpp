@@ -79,10 +79,6 @@ private:
     // Rebuild the preview prototype pool for m_pendingDef, upgraded to the pending wave's tier.
     void RebuildPreviewPrototypes(int pendingWaveNumber, const EnemyFactory& enemyFactory);
 
-    // Recompute an enemy's live combat stats after upgrades (mirrors the tail of EnemyFactory::Create)
-    // so the HUD reads upgraded speed/armor rather than the pre-upgrade values.
-    void RecomputeLive(Enemy& enemy) const;
-
     // Expands a WaveDef into a sorted PendingSpawn list.
     void BuildSpawnQueue(const WaveDef& def, int nestCount);
 

@@ -208,8 +208,8 @@ bool TowerSystem::CompareTarget(const Enemy& a, const Enemy& b, TargetingMode mo
         case TargetingMode::Last:           return a.m_progress > b.m_progress;
         case TargetingMode::MostHealth:     return a.m_currentHealth > b.m_currentHealth;
         case TargetingMode::LowestHealth:   return a.m_currentHealth < b.m_currentHealth;
-        case TargetingMode::Fastest:        return a.GetBaseStats()->m_liveSpeed < b.GetBaseStats()->m_liveSpeed;
-        case TargetingMode::Slowest:        return a.GetBaseStats()->m_liveSpeed > b.GetBaseStats()->m_liveSpeed;
+        case TargetingMode::Fastest:        return a.GetBaseStats()->m_liveSpeed > b.GetBaseStats()->m_liveSpeed;
+        case TargetingMode::Slowest:        return a.GetBaseStats()->m_liveSpeed < b.GetBaseStats()->m_liveSpeed;
         case TargetingMode::MostArmor:      return a.GetBaseStats()->m_liveArmor > b.GetBaseStats()->m_liveArmor;
         case TargetingMode::MostShield:     return TotalShield(a) > TotalShield(b);
     }

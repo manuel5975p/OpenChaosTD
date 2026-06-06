@@ -33,11 +33,10 @@ inline std::string FormatEnemyMulDelta(const std::string& key, float v) {
     return buf;
 }
 
-// One upgrade level for an enemy: scalar deltas routed through Enemy::PatchStats
-// (additive + multiplicative) plus any new modules to append. Mirrors TowerUpgrade.
-// m_cost is kept for structural symmetry with TowerUpgrade (future "threat budget"); unused for now.
+// One upgrade step for an enemy: scalar deltas routed through Enemy::PatchStats
+// (additive + multiplicative) plus any new modules to append. Mirrors TowerUpgrade, minus the
+// player-facing cost (enemy upgrades are applied by wave tier, not purchased).
 struct EnemyUpgrade {
-    int m_cost = 0;
     std::vector<std::pair<std::string, float>> m_adds; // stat key -> additive delta
     std::vector<std::pair<std::string, float>> m_muls; // stat key -> multiplicative factor
     std::vector<nlohmann::json> m_addModules;          // new modules built via EnemyFactory

@@ -20,9 +20,10 @@ public:
     // Build a single module from its JSON description (also used to append upgrade modules).
     std::unique_ptr<EnemyModule> BuildModule(const nlohmann::json& mod) const;
 
-    // Apply one upgrade level to an enemy: broadcast deltas via Enemy::PatchStats and append
-    // any new modules. The enemy analogue of PlayingState::UpgradeSelectedTower (no gold/UI).
-    void ApplyUpgrade(Enemy& enemy, const EnemyUpgrade& up) const;
+    // Apply one upgrade step to an enemy: broadcast deltas via Enemy::PatchStats and, when
+    // includeModules is set, append any new modules. The enemy analogue of
+    // PlayingState::UpgradeSelectedTower (no gold/UI). Scalars stack per tier; modules append once.
+    void ApplyUpgrade(Enemy& enemy, const EnemyUpgrade& up, bool includeModules = true) const;
 
 private:
     using ModuleBuilder = std::function<std::unique_ptr<EnemyModule>(const nlohmann::json&)>;

@@ -23,7 +23,7 @@ protected:
     void OnDraw(Game& game) override;
 
 private:
-    // Center readout: wave progress + win target + timer, drawn centered on centerX. Endless mode
+    // Center readout: wave progress + win target, drawn centered on centerX. Endless mode
     // shows the infinity glyph in place of a target wave.
     void DrawWaveReadout(Game& game, int centerX);
     // Hand-drawn infinity glyph (the default font lacks U+221E). Spans [x, x + 1.2*h] horizontally,

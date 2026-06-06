@@ -47,7 +47,7 @@ OpenChaosTD/
 │
 ├── data/
 │   ├── config.json             - Window resolution, FPS, HUD scale, title
-│   ├── gameplay.json           - Starting lives, gold, sell rate, wave count, auto-spawn delay
+│   ├── gameplay.json           - Starting lives, gold, sell rate, auto-spawn delay
 │   ├── keybindings.json        - Input action bindings (rebindable)
 │   ├── towers.json             - Tower type definitions (stats, modules, description)
 │   └── enemies.json            - Enemy type definitions (stats, modules, description)

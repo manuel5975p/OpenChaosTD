@@ -189,7 +189,7 @@ Each entry is one purchasable upgrade level, applied in order (L1 first, then L2
 | `cost`    | int    | Gold required to purchase |
 | `add`     | object | Additive deltas — key→value pairs |
 | `mul`     | object | Multiplicative factors — key→value pairs |
-| `effects` | array  | New status-effect modules to append (same schema as entries in the top-level `modules` array) |
+| `effects` | array  | New status-effect modules to append (same schema as entries in the top-level `modules` array). Also accepted under the key `modules`, for parity with enemy upgrades. |
 
 All three optional fields are independent and can appear together in one upgrade level.
 

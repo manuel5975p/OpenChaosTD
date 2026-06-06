@@ -22,13 +22,15 @@ static EnemyVisual ParseVisual(const json& j, const EmitterPresets& presets) {
 
 static EnemyUpgrade ParseUpgrade(const json& j) {
     EnemyUpgrade up;
-    up.m_cost = j.value("cost", 0);
     if (j.contains("add"))
         for (auto& [k, v] : j["add"].items()) up.m_adds.push_back({k, v.get<float>()});
     if (j.contains("mul"))
         for (auto& [k, v] : j["mul"].items()) up.m_muls.push_back({k, v.get<float>()});
-    if (j.contains("modules"))
-        for (auto& m : j["modules"]) up.m_addModules.push_back(m);
+    // Added modules live under "modules" (canonical for enemies); also accept "effects" for
+    // schema parity with tower upgrades.
+    const char* moduleKey = j.contains("modules") ? "modules" : "effects";
+    if (j.contains(moduleKey))
+        for (auto& m : j[moduleKey]) up.m_addModules.push_back(m);
     return up;
 }
 
@@ -98,10 +100,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
 
     // Initial live-stat pass so the HUD/targeting read valid values before the first tick
     // (mirrors TowerFactory calling AttackModule::ResetLive at build time).
-    BaseStatsModule* baseStats = enemy.GetBaseStats();
-    baseStats->ResetLive();
-    for (auto& mod : enemy.m_modules)
-        mod->ContributeStats(*baseStats);
+    enemy.RecomputeLive();
 
     return enemy;
 }
@@ -115,13 +114,17 @@ std::unique_ptr<EnemyModule> EnemyFactory::BuildModule(const json& mod) const {
     return nullptr;
 }
 
-void EnemyFactory::ApplyUpgrade(Enemy& enemy, const EnemyUpgrade& up) const {
+void EnemyFactory::ApplyUpgrade(Enemy& enemy, const EnemyUpgrade& up, bool includeModules) const {
     // Each key routes through Enemy::PatchStats: base stats hit the enemy's own fields,
     // everything else is forwarded to the modules that recognize it.
     for (auto& [k, v] : up.m_adds) enemy.PatchStats(k, v, false);
     for (auto& [k, v] : up.m_muls) enemy.PatchStats(k, v, true);
-    for (auto& mod : up.m_addModules)
-        if (auto m = BuildModule(mod)) enemy.AddModule(std::move(m));
+    // Scalar deltas stack per tier, but added modules are appended only once across all tiers
+    // (unlike tower upgrades, where each distinct level adds its modules once). The tier loop in
+    // WaveManager::ApplyTierUpgrades passes includeModules=true on the first tier only.
+    if (includeModules)
+        for (auto& mod : up.m_addModules)
+            if (auto m = BuildModule(mod)) enemy.AddModule(std::move(m));
     enemy.m_level++;
 }
 
