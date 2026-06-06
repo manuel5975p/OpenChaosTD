@@ -32,9 +32,8 @@ void WaveEnemyCard::Draw(Rectangle bounds, const RenderSystem& render, Resources
     DrawRectangleRec(bounds, {40, 40, 48, 200});
     DrawRectangleLinesEx(bounds, 1.0f, {90, 90, 100, 255});
 
-    // Icon tile on the left, with a neutral mid-gray backing so dark sprites keep their contrast.
+    // Icon tile on the left; the sprite draws directly over the card with a transparent backing.
     Rectangle icon = { bounds.x + m_pad, bounds.y + m_pad, m_iconSize, m_iconSize };
-    DrawRectangleRec(icon, {70, 74, 82, 255});
     if (m_hasProto)
         render.DrawEnemyIcon(m_textureKey, assets, icon);
 

@@ -1,5 +1,5 @@
 {
-    "budget":   { "base_budget": 20, "growth_exponent": 0.5, "victory_wave": 0 },
+    "budget":   { "base_budget": 20, "growth_exponent": 0.75, "victory_wave": 0 },
     "boss":     { "interval": 20, "boss_enemies": ["sovereign"] },
     "upgrade_interval": 21,
     "enemy_pool": [

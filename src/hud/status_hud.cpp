@@ -101,23 +101,18 @@ void StatusHUD::DrawWaveReadout(Game& game, int centerX) {
     const auto& data = game.GetGameData();
     int font = ScaledInt(16.0f);
 
-    // Current wave number ("--" before the first wave) and the timer/progress suffix.
+    // Current wave number ("--" before the first wave).
     char num[16];
     if (data.m_waveNumber == 0)
         snprintf(num, sizeof(num), "--");
     else
         snprintf(num, sizeof(num), "%d", data.m_waveNumber);
 
-    char suffix[24] = "";
-    if (data.m_waveNumber != 0)
-        snprintf(suffix, sizeof(suffix), "  |  %s",
-                 data.m_waveActive ? TextFormat("%.1fs", data.m_waveTimer) : "Done");
-
     int victoryWave = m_waveManager ? m_waveManager->GetVictoryWave() : 0;
 
     // Numeric win target: one plain centered string.
     if (victoryWave > 0) {
-        DrawTextCenteredX(TextFormat("Wave: %s / %d%s", num, victoryWave, suffix),
+        DrawTextCenteredX(TextFormat("Wave: %s / %d", num, victoryWave),
                           centerX, m_textY, font, RAYWHITE);
         return;
     }
@@ -130,14 +125,12 @@ void StatusHUD::DrawWaveReadout(Game& game, int centerX) {
     float gap = Scaled(2.0f);
 
     int leftW = MeasureText(left, font);
-    int rightW = MeasureText(suffix, font);
-    float totalW = static_cast<float>(leftW) + gap + glyphW + gap + static_cast<float>(rightW);
+    float totalW = static_cast<float>(leftW) + gap + glyphW;
     float startX = static_cast<float>(centerX) - totalW / 2.0f;
 
     DrawText(left, static_cast<int>(startX), m_textY, font, RAYWHITE);
     float glyphX = startX + static_cast<float>(leftW) + gap;
     DrawInfinity(glyphX, static_cast<float>(m_textY) + glyphH / 2.0f, glyphH, Color{120, 180, 220, 255});
-    DrawText(suffix, static_cast<int>(glyphX + glyphW + gap), m_textY, font, RAYWHITE);
 }
 
 void StatusHUD::DrawInfinity(float x, float yMid, float h, Color color) const {
