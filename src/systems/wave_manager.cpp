@@ -142,14 +142,12 @@ WaveManager::WaveDef WaveManager::GenerateWave(int waveNumber) {
 }
 
 void WaveManager::ApplyTierUpgrades(Enemy& enemy, int tier, const EnemyFactory& enemyFactory) const {
-    if (tier <= 0 || !enemy.m_upgrades || enemy.m_upgrades->empty()) return;
+    if (tier <= 0 || !enemy.m_upgrade) return;
 
-    const auto& ups = *enemy.m_upgrades;
-    int last = static_cast<int>(ups.size()) - 1;
-    // Walk any defined upgrade levels, then keep re-applying the last one so scaling continues
-    // indefinitely (endless mode). With a single defined upgrade this re-applies it `tier` times.
+    // The enemy defines a single upgrade option; re-apply it `tier` times so each upgrade tier
+    // stacks one more copy of the same deltas, scaling indefinitely (endless mode).
     for (int i = 0; i < tier; i++)
-        enemyFactory.ApplyUpgrade(enemy, ups[std::min(i, last)]);
+        enemyFactory.ApplyUpgrade(enemy, *enemy.m_upgrade);
 }
 
 void WaveManager::RecomputeLive(Enemy& enemy) const {

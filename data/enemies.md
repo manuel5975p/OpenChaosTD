@@ -14,11 +14,11 @@ All enemies are defined in `data/enemies.json` as an array under the `"enemies"`
 | `livesOnReach` | int    | no       | Lives lost if the enemy reaches the core (default 1) |
 | `visual`       | object | yes      | Presentation-only data (sprite, death effect) — see below |
 | `modules`      | array  | no       | The enemy's defensive and mechanical traits — see below |
-| `upgrades`     | array  | no       | Stat-scaling levels applied on top of the base stats — see below |
+| `upgrade`      | object | no       | A single stat-scaling step re-applied once per upgrade tier — see below |
 
 The core stats above (`maxHealth`, `speed`, `reward`, `livesOnReach`) stay top-level in JSON but are
 parsed into an internal core stats module at build time — the runtime analogue of the tower's
-`Attack` module — so their names match the `upgrades` keys exactly.
+`Attack` module — so their names match the `upgrade` keys exactly.
 
 An enemy with no `modules` is a plain target defined entirely by its core stats (`shade` and
 `flicker` are examples). All special behavior — armor, regeneration, shields, splitting, and
@@ -124,17 +124,14 @@ effect to grant multiple immunities.
 
 ---
 
-## `upgrades` array
+## `upgrade` object
 
-An optional list of upgrade levels that scale an enemy beyond its base definition (e.g. for
-elite or late-wave variants). Each entry is one level; applying it broadcasts its deltas
-through the enemy's stat-patching pipeline and appends any new modules. This mirrors the
-tower `"upgrades"` block (`data/towers.md`).
+An optional single upgrade step that scales an enemy beyond its base definition (e.g. for
+elite or late-wave variants). Applying it broadcasts its deltas through the enemy's
+stat-patching pipeline and appends any new modules.
 
 ```json
-"upgrades": [
-    { "cost": 1, "add": { "armor": 2, "regenRate": 2 }, "mul": { "maxHealth": 1.5 } }
-]
+"upgrade": { "cost": 1, "add": { "armor": 2, "regenRate": 2 }, "mul": { "maxHealth": 1.5 } }
 ```
 
 | Field     | Type   | Description |
@@ -142,7 +139,17 @@ tower `"upgrades"` block (`data/towers.md`).
 | `cost`    | int    | Reserved for a future "threat budget"; currently unused by the runtime |
 | `add`     | object | Map of stat key → **flat** delta added to the current value |
 | `mul`     | object | Map of stat key → **multiplier** applied to the current value |
-| `modules` | array  | Additional `modules` entries appended to the enemy at this level |
+| `modules` | array  | Additional `modules` entries appended to the enemy each time the upgrade is applied |
+
+### How the upgrade scales over tiers
+
+Waves carry an **upgrade tier** (configured in `data/waves.json` via `upgrade_interval` — the tier
+increments every Nth wave). The wave manager applies this one upgrade definition **once per tier**:
+tier 1 applies it once, tier 2 applies it twice, and so on, with no upper bound (endless mode keeps
+stacking). Because the deltas are re-applied on top of the already-upgraded stats, the effect
+compounds — `add` accumulates linearly while `mul` compounds exponentially. For example, the
+`add: { "armor": 2 }`, `mul: { "maxHealth": 1.5 }` step above yields at tier *n*: `+2n` armor and
+`maxHealth × 1.5ⁿ`. An enemy with no `upgrade` key never scales and ignores the wave tier entirely.
 
 `add` and `mul` accept the same keys, routed to either the enemy's base stats or the matching
 module:

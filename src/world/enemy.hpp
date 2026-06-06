@@ -30,7 +30,7 @@ public:
     std::vector<std::unique_ptr<EnemyModule>> m_modules;
 
     int m_level = 0;
-    const std::vector<EnemyUpgrade>* m_upgrades = nullptr; // stable pointer into the factory template
+    const EnemyUpgrade* m_upgrade = nullptr; // stable pointer into the factory template (null if none)
 
     // Patch a stat by key: broadcast to every module (the BaseStatsModule handles the core stats,
     // the rest handle shield, armor, regenRate, splitCount, ...). Mirrors the generic PatchStats
@@ -47,7 +47,7 @@ public:
     // hand fully-upgraded copies to the HUD. Enemy is move-only (its modules are unique_ptr), so the
     // implicit copy is deleted; cloning rebuilds each module via its virtual Clone() and re-adds it
     // through AddModule, which re-caches m_baseStats/m_shield into the new module vector (order
-    // preserved). m_upgrades is a stable pointer into the factory template, so a shallow copy is
+    // preserved). m_upgrade is a stable pointer into the factory template, so a shallow copy is
     // correct (mirrors EnemyFactory::Create); m_level is copied as-is.
     Enemy Clone() const {
         Enemy copy;
@@ -61,7 +61,7 @@ public:
         copy.m_waypointIndex  = m_waypointIndex;
         copy.m_effects        = m_effects;
         copy.m_level          = m_level;
-        copy.m_upgrades       = m_upgrades;
+        copy.m_upgrade        = m_upgrade;
         for (const auto& mod : m_modules)
             copy.AddModule(mod->Clone());
         return copy;

@@ -60,9 +60,8 @@ void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
                 tmpl.modules.push_back(mod);
         }
 
-        if (entry.contains("upgrades"))
-            for (auto& up : entry["upgrades"])
-                tmpl.upgrades.push_back(ParseUpgrade(up));
+        if (entry.contains("upgrade"))
+            tmpl.upgrade = ParseUpgrade(entry["upgrade"]);
 
         std::string name = tmpl.name;
         m_templates[name] = std::move(tmpl);
@@ -80,7 +79,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     enemy.m_name        = tmpl.name;
     enemy.m_description = tmpl.description;
     enemy.m_visual      = tmpl.visual;
-    enemy.m_upgrades    = &tmpl.upgrades; // stable: templates are fixed after Load
+    enemy.m_upgrade     = tmpl.upgrade ? &*tmpl.upgrade : nullptr; // stable: templates are fixed after Load
 
     // The core stats module is always present and added first, so it is cached (GetBaseStats) and
     // contributes its base speed before any other module. The analogue of the tower's AttackModule.

@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <nlohmann/json.hpp>
 #include <world/enemy.hpp>
 #include <engine/util/json_store.hpp>
@@ -35,7 +36,7 @@ private:
         int livesOnReach = 1;
         EnemyVisual visual;
         std::vector<nlohmann::json> modules;
-        std::vector<EnemyUpgrade> upgrades;
+        std::optional<EnemyUpgrade> upgrade; // single upgrade option, applied once per upgrade tier
     };
 
     std::unordered_map<std::string, ModuleBuilder> m_builders;
