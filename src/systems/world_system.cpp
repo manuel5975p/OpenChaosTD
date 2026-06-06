@@ -119,14 +119,30 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory,
 
         RemoveEnemy(key, gameData);
 
-        // Spawn children after parent is removed
+        // Unit vector pointing back along the path (away from the core), used to fan the children out.
+        // Children are only ever pushed backward, so they never skip ahead or reach the core early.
+        Vector2 back = {0.0f, 0.0f};
+        const auto& path = gameData.m_map.GetPaths()[nest];
+        if (waypoint >= 0 && waypoint < static_cast<int>(path.size())) {
+            Vector2 toWp = Vector2Subtract(path[waypoint], pos);
+            float dist = Vector2Length(toWp);
+            if (dist > 0.001f) // guard against NaN when the parent sits exactly on the waypoint
+                back = Vector2Scale(toWp, -1.0f / dist);
+        }
+        float tileSize = static_cast<float>(gameData.m_map.GetTileSize());
+
+        // Spawn children after parent is removed, staggered backward along the path by req.spacing so
+        // they spread out instead of stacking on the exact death position.
         for (const auto& req : requests) {
             for (int i = 0; i < req.count; i++) {
+                float offset = i * req.spacing;
                 Enemy child = enemyFactory.Create(req.type);
-                child.m_position     = pos;
+                child.m_position     = Vector2Add(pos, Vector2Scale(back, offset));
                 child.m_spawnedNest  = nest;
                 child.m_waypointIndex = waypoint;
-                child.m_progress     = progress;
+                // Progress rises away from the core, matching the backward push, so targeting (First/
+                // Last) sees distinct values instead of ties.
+                child.m_progress     = progress + (tileSize > 0.0f ? offset / tileSize : 0.0f);
                 gameData.m_enemies.Insert(std::move(child));
             }
         }

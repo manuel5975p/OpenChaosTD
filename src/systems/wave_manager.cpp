@@ -18,7 +18,14 @@ void WaveManager::Load(JsonStore& jsonio, const EnemyFactory& enemyFactory) {
     if (json.contains("budget")) {
         const auto& b = json["budget"];
         m_baseBudget = b.value("base_budget", m_baseBudget);
-        m_growthExponent = b.value("growth_exponent", m_growthExponent);
+
+        // Scaling model: "step_linear" or "exponential" (the default for an absent/unknown type).
+        std::string type = b.value("type", "");
+        m_budgetType = (type == "step_linear") ? BudgetType::StepLinear : BudgetType::Exponential;
+        m_growthRate = b.value("growth_rate", m_growthRate);
+        m_linearStep = b.value("linear_step", m_linearStep);
+        m_tierAdjustment = b.value("tier_adjustment", m_tierAdjustment);
+
         m_victoryWave = b.value("victory_wave", m_victoryWave);
     }
 
@@ -70,7 +77,15 @@ int WaveManager::UpgradeTierFor(int waveNumber) const {
 }
 
 float WaveManager::BudgetForWave(int waveNumber) const {
-    return m_baseBudget * std::pow(static_cast<float>(waveNumber), m_growthExponent);
+    if (m_budgetType == BudgetType::StepLinear) {
+        // Linear growth with a dip each upgrade tier (tougher enemies, fewer of them). Clamped so the
+        // tier subtraction can never push a wave below the base budget.
+        int tier = UpgradeTierFor(waveNumber);
+        float budget = m_baseBudget + m_linearStep * waveNumber - m_tierAdjustment * tier;
+        return std::max(budget, m_baseBudget);
+    }
+    // Exponential (default): smooth compounding growth.
+    return m_baseBudget * std::pow(1.0f + m_growthRate, static_cast<float>(waveNumber - 1));
 }
 
 WaveManager::WaveDef WaveManager::GenerateWave(int waveNumber) {

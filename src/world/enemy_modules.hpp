@@ -14,6 +14,7 @@ class BaseStatsModule;
 struct SpawnRequest {
     std::string type;
     int count;
+    float spacing = 0.0f; // world-unit gap between consecutive children so they don't perfectly overlap
 };
 
 class EnemyModule {
@@ -105,13 +106,15 @@ public:
     void PatchStats(const std::string& key, float v, bool mul) override;
 };
 
-// On death, spawns m_count children of type m_childType at the death position
+// On death, spawns m_count children of type m_childType, staggered along the path by m_spacing so the
+// children spread out instead of stacking on the exact death position.
 class SplitModule : public EnemyModule {
 public:
     std::string m_childType;
     int m_count;
-    SplitModule(std::string childType, int count)
-        : m_childType(std::move(childType)), m_count(count) {}
+    float m_spacing; // world-unit gap between consecutive children (0 = stack on the death position)
+    SplitModule(std::string childType, int count, float spacing)
+        : m_childType(std::move(childType)), m_count(count), m_spacing(spacing) {}
     std::unique_ptr<EnemyModule> Clone() const override { return std::make_unique<SplitModule>(*this); }
     std::optional<SpawnRequest> OnDeath() const override;
     void DescribeStats(std::vector<DescLine>& out) const override;

@@ -107,7 +107,7 @@ void ShieldModule::PatchStats(const std::string& key, float v, bool mul) {
 // --- SplitModule ---
 
 std::optional<SpawnRequest> SplitModule::OnDeath() const {
-    return SpawnRequest{m_childType, m_count};
+    return SpawnRequest{m_childType, m_count, m_spacing};
 }
 
 void SplitModule::DescribeStats(std::vector<DescLine>& out) const {

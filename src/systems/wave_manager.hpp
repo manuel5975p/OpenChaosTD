@@ -11,6 +11,13 @@
 
 class WaveManager {
 public:
+    // How a wave's threat budget scales with the wave number (selected by the "type" field in the
+    // budget block of waves.json).
+    enum class BudgetType {
+        Exponential, // base_budget * (1 + growth_rate)^(wave - 1)
+        StepLinear   // base_budget + linear_step * wave - tier_adjustment * tier, clamped to >= base
+    };
+
     // A group of enemies sharing the same type and spawn timing within a wave
     struct SpawnGroup {
         std::string enemyType;
@@ -84,7 +91,10 @@ private:
 
     // --- Configuration parsed from waves.json ---
     float m_baseBudget = 20.0f;
-    float m_growthExponent = 1.25f;
+    BudgetType m_budgetType = BudgetType::Exponential; // scaling model; default when "type" is absent
+    float m_growthRate = 0.15f;     // Exponential: per-wave growth fraction
+    float m_linearStep = 10.0f;     // Step-Linear: budget added per wave
+    float m_tierAdjustment = 0.0f;  // Step-Linear: budget removed per upgrade tier
     int m_victoryWave = 0;          // 0 = endless, >0 = victory after this wave is cleared
     int m_bossInterval = 0;         // boss wave every Nth wave; 0 disables
     std::vector<std::string> m_bossEnemies;

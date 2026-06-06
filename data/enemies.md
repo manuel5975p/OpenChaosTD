@@ -58,8 +58,9 @@ and `Immune`. An enemy may combine any number of them (the `sovereign` stacks fo
 ```
 
 Reduces every incoming hit by a flat amount. The reduction is applied after any tower armor
-pierce, and the resulting damage is floored at 0 — so an enemy can never be healed by an
-attack that is fully absorbed by armor.
+pierce. Armor can never fully nullify an attack: when it meets or exceeds the hit's damage,
+the hit still chips `min(damage, 1.0)` instead of dropping to 0 — so a heavily-armored enemy
+always takes at least a sliver of damage and can never be healed by an absorbed attack.
 
 | Field   | Type  | Description |
 |---------|-------|-------------|
@@ -95,16 +96,23 @@ shield does not recharge on its own.
 ### Split
 
 ```json
-{ "type": "Split", "child": "golem", "splitCount": 2 }
+{ "type": "Split", "child": "golem", "splitCount": 2, "spacing": 12.0 }
 ```
 
-On death, spawns `splitCount` child enemies of type `child` at the dying enemy's position. The
+On death, spawns `splitCount` child enemies of type `child` near the dying enemy's position. The
 `child` value must be the `name` of another enemy defined in `enemies.json`.
+
+To stop the children from stacking into a single indistinguishable blob, they are fanned out
+**backward along the path** (away from the core) — each successive child is offset by `spacing`
+world units. Pushing them backward only means a split can never skip a child ahead or let it reach
+the core early. Set `spacing` to `0` to spawn every child exactly on the death position (the old
+stacking behavior).
 
 | Field        | Type   | Description |
 |--------------|--------|-------------|
 | `child`      | string | `name` of the enemy type to spawn on death |
 | `splitCount` | int    | Number of children to spawn |
+| `spacing`    | float  | World-unit gap between consecutive children along the path (default `12.0`; `0` = stack) |
 
 ### Immune
 
@@ -173,7 +181,8 @@ the rest route to the matching trait module. A key with no matching field or mod
 
 When a tower hits an enemy, damage is resolved in this order:
 
-1. **Armor** subtracts its `armor` value (after the attacker's armor pierce); the result is floored at 0.
+1. **Armor** subtracts its `armor` value (after the attacker's armor pierce). If that leaves the hit at
+   0 or below, the hit instead deals `min(damage, 1.0)` — armor never zeroes out (or heals from) an attack.
 2. **Shield** absorbs what remains, draining its pool before any damage reaches health.
 3. Whatever is left is deducted from the enemy's health.
 

@@ -66,6 +66,10 @@ Composes onto any `Attack` tower.
 |---------------|-------|-------------|
 | `armorPierce` | float | Flat armor value ignored before damage reduction |
 
+**Chip-damage floor:** armor can never fully nullify a shot. When a target's (post-pierce) armor meets
+or exceeds the hit's damage, the hit still lands `min(damage, 1.0)` rather than 0. Armor pierce simply
+recovers more of the shot's damage before that floor is reached.
+
 ---
 
 ## Status-effect modules

@@ -52,7 +52,7 @@
                     "targetCount": 0,
                     "targetingMode": "First"
                 },
-                { "type": "Slow", "slowPercent": 20, "slowDuration": 1.0, "effect": "slow_effect" }
+                { "type": "Slow", "slowPercent": 25, "slowDuration": 1.0, "effect": "slow_effect" }
             ],
             "visual": {
                 "texture": "tower_freezer",
@@ -63,8 +63,8 @@
                 "impact": "freezer_impact"
             },
             "upgrades": [
-                { "cost": 200, "add": { "slowPercent": 20, "range": 10 } },
-                { "cost": 300, "add": { "slowPercent": 20, "slowDuration": 1.0, "range": 10  } },
+                { "cost": 200, "add": { "slowPercent": 10, "range": 10 } },
+                { "cost": 300, "add": { "slowPercent": 10, "slowDuration": 1.0, "range": 10  } },
                 { "cost": 400, "effects": [ { "type": "Weakness", "weaknessAmount": 1, "weaknessDuration": 1.0, "effect": "weakness_effect" } ] }
             ]
         },
@@ -75,9 +75,9 @@
             "modules": [
                 {
                     "type": "Attack",
-                    "damage": 15,
-                    "shotsPerMinute": 25,
-                    "range": 120,
+                    "damage": 150,
+                    "shotsPerMinute": 250,
+                    "range": 1200,
                     "targetCount": 1,
                     "targetingMode": "MostHealth"
                 },

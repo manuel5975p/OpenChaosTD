@@ -24,24 +24,41 @@ All enemy names referenced anywhere in this file must match a `name` defined in 
 ## `budget` object
 
 ```json
-"budget": { "base_budget": 20, "growth_exponent": 1.25, "victory_wave": 0 }
+"budget": { "type": "exponential", "base_budget": 20, "growth_rate": 0.15, "victory_wave": 0 }
 ```
 
-Sets how much "threat" each wave is allowed to spend and when the game ends. The budget for a wave is:
+Sets how much "threat" each wave is allowed to spend and when the game ends. Each enemy drawn into the
+wave costs its pool `cost`; spawning continues until the budget can no longer afford the cheapest
+available enemy. Because enemy costs stay constant, a bigger budget makes a wave denser rather than
+just swapping in pricier units.
+
+The `type` field selects one of two scaling models (defaulting to `exponential` if omitted):
+
+**Exponential** — smooth compounding growth:
 
 ```
-budget = base_budget * (wave_number ^ growth_exponent)
+budget = base_budget * (1 + growth_rate) ^ (wave_number - 1)
 ```
 
-Each enemy drawn into the wave costs its pool `cost`; spawning continues until the budget can no
-longer afford the cheapest available enemy. Because enemy costs stay constant, raising
-`growth_exponent` makes later waves denser rather than just swapping in pricier units.
+**Step-Linear** — linear growth with a dip on every upgrade tier (so a tier that makes enemies tougher
+also sends fewer of them). `tier` is the current upgrade tier (see `upgrade_interval`). The result is
+clamped so the tier subtraction can never push a wave below `base_budget`:
 
-| Field             | Type  | Description |
-|-------------------|-------|-------------|
-| `base_budget`     | float | Threat budget for wave 1; the multiplier in the formula above |
-| `growth_exponent` | float | Exponent applied to the wave number; higher = steeper late-game scaling |
-| `victory_wave`    | int   | Wave that, once cleared, wins the game. `0` = **endless** (waves never stop) |
+```
+budget = max(base_budget, base_budget + linear_step * wave_number - tier_adjustment * tier)
+```
+
+| Field             | Type   | Used by      | Description |
+|-------------------|--------|--------------|-------------|
+| `type`            | string | both         | `"exponential"` (default) or `"step_linear"` |
+| `base_budget`     | float  | both         | Threat budget floor; the multiplier (exponential) / starting value (step-linear) |
+| `growth_rate`     | float  | exponential  | Per-wave growth fraction (`0.15` = +15% each wave); default `0.15` |
+| `linear_step`     | float  | step_linear  | Threat budget added per wave; default `10` |
+| `tier_adjustment` | float  | step_linear  | Threat budget removed per upgrade tier; default `0` |
+| `victory_wave`    | int    | both         | Wave that, once cleared, wins the game. `0` = **endless** (waves never stop) |
+
+Fields that don't apply to the selected `type` are ignored, and any omitted field falls back to its
+default, so a minimal `{ "base_budget": 20 }` block still loads (as exponential).
 
 ---
 
@@ -121,7 +138,7 @@ still providing a `cost`/`interval` for boss handling.
 
 Each wave is composed independently from its budget:
 
-1. **Budget** — `base_budget * (wave_number ^ growth_exponent)`.
+1. **Budget** — computed from the `budget` block's scaling model (exponential or step-linear; see above).
 2. **Filter** — keep pool entries whose `min_wave <= wave_number` and whose name is **not** in
    `boss_enemies`. The cheapest remaining `cost` becomes the spending floor.
 3. **Boss** (boss waves only) — force one boss from `boss_enemies`, subtract its `cost`.
@@ -143,7 +160,7 @@ wave's exact composition is known in advance (the HUD reads it through the wave 
 
 ```json
 {
-    "budget":   { "base_budget": 20, "growth_exponent": 1.2, "victory_wave": 0 },
+    "budget":   { "type": "step_linear", "base_budget": 20, "linear_step": 10, "tier_adjustment": 30, "victory_wave": 0 },
     "boss":     { "interval": 20, "boss_enemies": ["sovereign"] },
     "upgrade_interval": 5,
     "enemy_pool": [
@@ -162,4 +179,7 @@ wave's exact composition is known in advance (the HUD reads it through the wave 
 
 This config runs endlessly (`victory_wave: 0`), introduces tougher enemies as `min_wave` thresholds
 unlock, sends a lone `sovereign` (plus escorts) every 20th wave, and upgrades every enemy one tier
-every 5 waves. Set `victory_wave` to a positive number to make the run end after that wave is cleared.
+every 5 waves. The step-linear budget grows by `10` per wave but drops by `30` on each upgrade tier
+(waves 5, 10, 15, …), so each tier sends fewer-but-stronger enemies; swap `type` to `"exponential"`
+with a `growth_rate` for smooth compounding instead. Set `victory_wave` to a positive number to make
+the run end after that wave is cleared.

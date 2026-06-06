@@ -137,7 +137,10 @@ static float ResolveDamage(const AttackPayload& payload, const Enemy& enemy, boo
         && GetRandomValue(0, 99) < (int)(payload.m_critChance * 100.0f);
     if (outCrit)
         dmg *= payload.m_critMultiplier;
-    return std::max(0.0f, dmg - armor);
+    // Armor never fully nullifies a hit: when it meets or exceeds the attack, the hit still chips
+    // min(attack, 1.0) instead of dropping to 0 (and so can never heal the enemy).
+    float net = dmg - armor;
+    return (net > 0.0f) ? net : std::min(dmg, 1.0f);
 }
 
 // A pre-existing Weakness adds flat bonus damage to this hit, then is consumed (0 if none).
