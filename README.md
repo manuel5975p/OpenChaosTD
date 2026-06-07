@@ -34,6 +34,16 @@ All fetched automatically via CMake FetchContent — no manual installation need
 | [raylib](https://github.com/raysan5/raylib) | 6.0 | Window, rendering, input, audio |
 | [nlohmann/json](https://github.com/nlohmann/json) | 3.11.3 | JSON parsing for data files |
 
+## Modding
+Towers, enemies, and waves are fully data-driven — no recompile needed to tweak balance or add content.
+Each JSON file under `data/` has a companion `.md` schema doc:
+
+| File | Docs | Configures |
+|---|---|---|
+| `data/towers.json`  | [towers.md](data/towers.md)   | Tower stats and attack/effect modules (incl. the armor chip-damage floor) |
+| `data/enemies.json` | [enemies.md](data/enemies.md) | Enemy stats and modules (armor, shield, regen, split spacing, immunities, upgrades) |
+| `data/waves.json`   | [waves.md](data/waves.md)     | Procedural wave generator: budget scaling models, boss/upgrade cadence, enemy pool |
+
 ## Media
 *(Add a screenshot or GIF here)*
 
@@ -45,17 +55,22 @@ OpenChaosTD/
 │   ├── music/                  - Streaming background music (OGG recommended)
 │   └── sounds/                 - One-shot sound effects
 │
+├── config/
+│   ├── settings.json           - Window resolution, FPS, HUD scale, title, audio volumes
+│   └── keybindings.json        - Input action bindings (rebindable)
+│
 ├── data/
-│   ├── config.json             - Window resolution, FPS, HUD scale, title
 │   ├── gameplay.json           - Starting lives, gold, sell rate, auto-spawn delay
-│   ├── keybindings.json        - Input action bindings (rebindable)
 │   ├── towers.json             - Tower type definitions (stats, modules, description)
-│   └── enemies.json            - Enemy type definitions (stats, modules, description)
+│   ├── enemies.json            - Enemy type definitions (stats, modules, description)
+│   ├── waves.json              - Procedural wave generator: budget scaling, boss/upgrade cadence, enemy pool
+│   ├── particle_effects.json   - Named particle emitter presets
+│   └── *.md                    - Modder schema docs for towers/enemies/waves JSON
 │
 └── src/
-    ├── main.cpp                - Entry point
-    ├── game.hpp/.cpp           - Game loop, state machine, manager accessors
-    ├── game_config.hpp/.cpp    - Window/display settings loaded from JSON
+    ├── main                    - Entry point
+    ├── game                    - Game loop, state machine, manager accessors
+    ├── game_config             - Window/display settings loaded from JSON
     │
     ├── engine/                 Reusable engine infrastructure — see engine/engine.md
     │
@@ -73,7 +88,7 @@ OpenChaosTD/
     │   └── event_log           - Top-left message log with timed fade-out
     │
     ├── states/                 Game screen state machine
-    │   ├── game_state.hpp      - Abstract base (ProcessInput, Update, Draw)
+    │   ├── game_state          - Abstract base (ProcessInput, Update, Draw)
     │   ├── menu_state          - Main menu
     │   ├── play_state          - Active gameplay
     │   └── end_state           - Victory / game over screen
@@ -81,19 +96,19 @@ OpenChaosTD/
     ├── world/                  Entity definitions and data
     │   ├── game_data           - Runtime world state + starting values (JSON)
     │   ├── tower               - Tower entity (position, stats, description, modules)
-    │   ├── tower_modules.hpp   - FlatDamageModule, SlowModule
-    │   ├── tower_vfx.hpp       - Visual effect descriptors attached to towers
+    │   ├── tower_modules       - Attack/Passive + ArmorPierce, Slow, Burn, ArmorShred, Weakness, Stun, Crit, RampUp
+    │   ├── tower_vfx           - Visual effect descriptors attached to towers
     │   ├── enemy               - Enemy entity (position, health, description, effects, modules)
-    │   ├── enemy_modules.hpp   - RegenerationModule, ArmorModule, ResistanceModule
-    │   ├── attack.hpp          - Attack object (origin, targets, payload, visual)
-    │   ├── effect.hpp          - Status effect (Burn, Slow) with duration
-    │   ├── vfx_effect.hpp      - Active in-flight visual effect (trail, impact)
+    │   ├── enemy_modules       - BaseStats + Regeneration, Armor, Immune, Shield, Split
+    │   ├── attack              - Attack object (origin, targets, payload, visual)
+    │   ├── effect              - Status effect (Burn, Slow) with duration
+    │   ├── vfx_effect          - Active in-flight visual effect (trail, impact)
     │   ├── map                 - Grid, nest/core placement, path construction
-    │   └── tile.hpp            - Tile type, walkable/buildable flags
+    │   └── tile                - Tile type, walkable/buildable flags
     │
     └── systems/                Per-frame game logic
-        ├── pathfinder.hpp      - BFS Node type (distance, predecessor)
-        ├── wave_manager        - Wave lifecycle, auto-spawn, victory detection
+        ├── pathfinder          - BFS Node type (distance, predecessor)
+        ├── wave_manager        - Procedural budget-based wave generation, auto-spawn, victory detection
         ├── world_system        - Placement, spawning, game-over checks
         ├── tower_system        - Cooldowns, targeting, attack creation and resolution
         ├── enemy_system        - Movement, status effects, module ticking

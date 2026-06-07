@@ -75,9 +75,9 @@
             "modules": [
                 {
                     "type": "Attack",
-                    "damage": 150,
-                    "shotsPerMinute": 250,
-                    "range": 1200,
+                    "damage": 15,
+                    "shotsPerMinute": 25,
+                    "range": 120,
                     "targetCount": 1,
                     "targetingMode": "MostHealth"
                 },

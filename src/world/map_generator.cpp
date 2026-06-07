@@ -4,18 +4,18 @@
 
 namespace {
     constexpr int kMinCluster = 3;   // smallest rock blob
-    constexpr int kMaxCluster = 7;   // largest rock blob
+    constexpr int kMaxCluster = 7;   // largest rock blobs
     constexpr int kSeedTries  = 64;  // tries to find a free seed tile for a new cluster
     constexpr int kGrowTries  = 16;  // tries to extend a cluster before giving up
 
-    constexpr int kTilesPerBuffTile = 48; // grid area per buff tile (density)
+    constexpr int kTilesPerBuffTile = 44; // grid area per buff tile (density)
 
     // Round-robin set of terrain buffs; one is assigned per placed buff tile in order.
     struct BuffSpec { const char* m_statKey; float m_value; bool m_mul; };
     constexpr BuffSpec kBuffSpecs[] = {
-        { "range",          20.0f, false }, // flat +range
-        { "damage",          2.0f, false }, // flat +damage
-        { "shotsPerMinute", 30.0f, false }, // flat +fire rate
+        { "range",          30.0f, false }, // flat +range
+        { "damage",          1.5f, true }, // mul *damage
+        { "shotsPerMinute", 1.5f, true }, // mul *fire rate
     };
     constexpr int kBuffSpecCount = static_cast<int>(sizeof(kBuffSpecs) / sizeof(kBuffSpecs[0]));
 }
