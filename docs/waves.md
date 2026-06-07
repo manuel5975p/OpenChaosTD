@@ -17,7 +17,7 @@ There is no `"waves"` array — the four top-level keys below drive everything.
 | `enemy_pool`       | array  | yes      | The enemy types the generator may draw from — see below |
 
 All enemy names referenced anywhere in this file must match a `name` defined in `data/enemies.json`
-(`data/enemies.md`).
+(`enemies.md`).
 
 ---
 
@@ -99,7 +99,7 @@ tier = wave_number / upgrade_interval   (integer division; 0 disables upgrades)
 
 With `upgrade_interval: 5`, waves 1–4 are tier 0 (base stats), waves 5–9 are tier 1, waves 10–14 are
 tier 2, and so on. Every enemy spawned in a wave has its `upgrades` from `data/enemies.json`
-(`data/enemies.md`) applied `tier` times before it enters the map.
+(`enemies.md`) applied `tier` times before it enters the map.
 
 If an enemy defines fewer upgrade levels than the current tier, the generator walks the defined
 levels in order and then keeps re-applying the **last** one — so multiplicative upgrades (e.g.

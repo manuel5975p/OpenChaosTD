@@ -165,18 +165,24 @@ No enemy effect. Pair with a `critImpact` visual for an on-crit particle burst.
 
 ## `visual` block
 
-Holds the sprite key plus beam/ring appearance and particle bursts. Only `texture` affects what is
-drawn; the rest is presentation and does not affect gameplay.
+Holds the sprite key, the attack sound, plus beam/ring appearance and particle bursts. Only
+`texture` affects what is drawn; the rest is presentation (visuals and audio) and does not affect
+gameplay.
 
 | Field           | Type        | Description |
 |-----------------|-------------|-------------|
 | `texture`       | string      | Resource key for the tower sprite (required) |
+| `attackSound`   | string      | Resource key for the sound played on each shot; omit for a silent tower |
 | `style`         | string      | `"Line"` (beam to each target) or `"Ring"` (area pulse) |
 | `attackDuration`| float       | Seconds the beam/ring is visible; also controls muzzle-flash fade |
 | `color`         | [R,G,B,A]   | RGBA color of the beam or ring (0–255 per channel) |
 | `muzzle`        | string      | Emitter preset fired at the tower origin on attack |
 | `impact`        | string      | Emitter preset fired at each target on hit |
 | `critImpact`    | string      | Additional emitter preset fired on critical hits |
+
+Sound keys refer to audio files auto-loaded from `resources/sounds/` at startup; the key is the
+filename without its extension (e.g. `resources/sounds/sniper.wav` → `"sniper"`). Supported
+formats: `.wav`, `.ogg`, `.mp3`, `.flac`.
 
 ---
 

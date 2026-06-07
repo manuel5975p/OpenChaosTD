@@ -8,7 +8,7 @@
 #include <engine/lib/dense_slotmap.hpp>
 #include <world/enemy.hpp>
 #include <world/tower_modules.hpp>
-#include <world/tower_visual.hpp>
+#include <world/tower_presentation.hpp>
 #include <world/tower_upgrade.hpp>
 
 class Tower {
@@ -19,7 +19,7 @@ public:
 
     int m_cost = 0;
 
-    TowerVisual m_visual; // set by factory, never modified at runtime
+    TowerPresentation m_presentation; // set by factory, never modified at runtime
 
     float m_cooldown         = 0.0f;
     float m_attackFlashRatio = 0.0f;

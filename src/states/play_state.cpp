@@ -73,12 +73,12 @@ void PlayingState::StepSimulation(Game& game, float dt) {
     m_enemySystem.TickEnemies(dt, game.GetGameData(), game.GetParticles());
     m_enemySystem.FollowPath(dt, game.GetGameData());
 
-    m_towerSystem.Update(dt, game.GetGameData(), game.GetParticles());
+    m_towerSystem.Update(dt, game.GetGameData(), game.GetParticles(), game.GetSoundSystem());
     m_towerSystem.TickAttacks(dt, game.GetGameData(), game.GetParticles());
     game.GetParticles().Tick(dt);
 
     m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
-    m_worldSystem.CheckEnemyDead(game.GetGameData(), game.GetEnemyFactory(), game.GetParticles());
+    m_worldSystem.CheckEnemyDead(game.GetGameData(), game.GetEnemyFactory(), game.GetParticles(), game.GetSoundSystem());
     m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
 }
 

@@ -13,9 +13,10 @@ static EffectType ParseEffectType(const std::string& name) {
     return EffectType::Burn;
 }
 
-static EnemyVisual ParseVisual(const json& j, const EmitterPresets& presets) {
-    EnemyVisual v;
+static EnemyPresentation ParsePresentation(const json& j, const EmitterPresets& presets) {
+    EnemyPresentation v;
     v.m_texture = j.value("texture", "");
+    v.m_deathSound = j.value("deathSound", "enemy_death");
     if (j.contains("deathEmitter")) v.m_deathDescPtr = presets.GetPtr(j["deathEmitter"]);
     return v;
 }
@@ -55,7 +56,7 @@ void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         tmpl.speed       = entry.value("speed", 50.0f);
         tmpl.reward      = entry.value("reward", 5);
         tmpl.livesOnReach = entry.value("livesOnReach", 1);
-        if (entry.contains("visual")) tmpl.visual = ParseVisual(entry["visual"], presets);
+        if (entry.contains("visual")) tmpl.visual = ParsePresentation(entry["visual"], presets);
 
         if (entry.contains("modules")) {
             for (auto& mod : entry["modules"])
@@ -80,7 +81,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     Enemy enemy;
     enemy.m_name        = tmpl.name;
     enemy.m_description = tmpl.description;
-    enemy.m_visual      = tmpl.visual;
+    enemy.m_presentation = tmpl.visual;
     enemy.m_upgrade     = tmpl.upgrade ? &*tmpl.upgrade : nullptr; // stable: templates are fixed after Load
 
     // The core stats module is always present and added first, so it is cached (GetBaseStats) and

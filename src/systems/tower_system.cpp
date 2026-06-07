@@ -5,13 +5,14 @@
 
 #include <world/tower.hpp>
 #include <world/enemy_modules.hpp>
+#include <engine/features/sound_system.hpp>
 
 // Cooldown sentinels (seconds). Cooldown counts down each frame; a shot is taken at <= 0.
 constexpr float kIdleRetryCooldown = 0.05f;  // short retry while no target is in range
 constexpr float kInactiveCooldown  = 999.0f; // shotsPerMinute == 0: effectively never fires
 constexpr float kSecondsPerMinute  = 60.0f;  // shot interval = 60 / shotsPerMinute
 
-void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles){
+void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles, SoundSystem& sound){
     for (Tower& tower : gameData.m_towers) {
         RecomputeStats(tower, dt); // runs for walls too (ticks their modules)
 
@@ -29,7 +30,7 @@ void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles
             continue;
         }
 
-        Fire(tower, targetKeys, gameData, particles);
+        Fire(tower, targetKeys, gameData, particles, sound);
     }
 }
 
@@ -45,14 +46,14 @@ void TowerSystem::RecomputeStats(Tower& tower, float dt) {
 
 // Decay the attack flash over the visual's m_attackDuration; guard against a zero duration.
 void TowerSystem::DecayAttackFlash(Tower& tower, float dt) {
-    if (tower.m_visual.m_attackDuration > 0.0f)
-        tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_visual.m_attackDuration);
+    if (tower.m_presentation.m_attackDuration > 0.0f)
+        tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_presentation.m_attackDuration);
     else
         tower.m_attackFlashRatio = 0.0f;
 }
 
 // Execute one shot: reset cooldown/flash, notify modules, and enqueue the damage payload + VFX.
-void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>& targetKeys, GameData& gameData, ParticleSystem& particles) {
+void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>& targetKeys, GameData& gameData, ParticleSystem& particles, SoundSystem& sound) {
     float shotsPerMinute     = tower.GetAttack()->m_liveShotsPerMinute;
     tower.m_cooldown         = (shotsPerMinute > 0.0f) ? kSecondsPerMinute / shotsPerMinute : kInactiveCooldown;
     tower.m_attackFlashRatio = 1.0f;
@@ -70,10 +71,12 @@ void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>
     attack.m_combat.m_targetKeys = targetKeys;
     BuildPayload(tower, attack.m_combat);
     attack.m_visual = BuildVisual(tower, std::move(targetPositions));
-    attack.m_duration = attack.m_maxDuration = tower.m_visual.m_attackDuration;
+    attack.m_duration = attack.m_maxDuration = tower.m_presentation.m_attackDuration;
 
-    if (tower.m_visual.m_muzzleDesc.m_count > 0) // muzzle burst
-        particles.Emit(tower.m_position, tower.m_visual.m_muzzleDesc);
+    if (tower.m_presentation.m_muzzleDesc.m_count > 0) // muzzle burst
+        particles.Emit(tower.m_position, tower.m_presentation.m_muzzleDesc);
+
+    sound.PlaySfx(tower.m_presentation.m_attackSound); // no-op when the key is empty
 
     gameData.m_attacks.push_back(std::move(attack));
 }
@@ -83,8 +86,8 @@ AttackVisual TowerSystem::BuildVisual(const Tower& tower, std::vector<Vector2> t
     visual.m_origin = tower.m_position;
     visual.m_targetPositions = std::move(targetPositions);
     visual.m_radius = tower.GetAttack()->m_liveRange;
-    visual.m_color = tower.m_visual.m_color;
-    visual.m_style = tower.m_visual.m_style;
+    visual.m_color = tower.m_presentation.m_color;
+    visual.m_style = tower.m_presentation.m_style;
     return visual;
 }
 
@@ -120,10 +123,10 @@ std::vector<Enemy*> TowerSystem::FindEnemiesInRange(const Tower& tower, DenseSlo
 void TowerSystem::BuildPayload(const Tower& tower, AttackPayload& payload) {
     // Damage comes from the AttackModule; armor pierce and behavioural effects come from modules
     payload.m_damage = tower.GetAttack()->m_liveDamage;
-    if (tower.m_visual.m_impactDesc.m_count > 0)
-        payload.m_impactDescs.push_back(tower.m_visual.m_impactDesc);
-    if (tower.m_visual.m_critImpactDesc.m_count > 0)
-        payload.m_critImpactDescs.push_back(tower.m_visual.m_critImpactDesc);
+    if (tower.m_presentation.m_impactDesc.m_count > 0)
+        payload.m_impactDescs.push_back(tower.m_presentation.m_impactDesc);
+    if (tower.m_presentation.m_critImpactDesc.m_count > 0)
+        payload.m_critImpactDescs.push_back(tower.m_presentation.m_critImpactDesc);
     for (auto& mod : tower.m_modules)
         mod->Contribute(payload);
 }

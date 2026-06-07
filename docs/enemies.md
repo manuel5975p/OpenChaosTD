@@ -28,12 +28,13 @@ status immunities — comes from the `modules` array.
 
 ## `visual` object
 
-All presentation-only data lives in a nested `"visual"` object, separate from the gameplay
-stats. This mirrors the `"visual"` block used by towers (`data/towers.md`).
+All presentation-only data (visuals **and** audio) lives in a nested `"visual"` object, separate
+from the gameplay stats. This mirrors the `"visual"` block used by towers (`towers.md`).
 
 ```json
 "visual": {
     "texture": "enemy_shade",
+    "deathSound": "enemy_death",
     "deathEmitter": "death_small"
 }
 ```
@@ -41,7 +42,12 @@ stats. This mirrors the `"visual"` block used by towers (`data/towers.md`).
 | Field          | Type   | Required | Description |
 |----------------|--------|----------|-------------|
 | `texture`      | string | yes      | Resource key for the enemy sprite |
+| `deathSound`   | string | no       | Resource key for the sound played when the enemy dies (defaults to `enemy_death`) |
 | `deathEmitter` | string | no       | Emitter preset spawned at the enemy's position on death |
+
+Sound keys refer to audio files auto-loaded from `resources/sounds/` at startup; the key is the
+filename without its extension (e.g. `resources/sounds/enemy_death.wav` → `"enemy_death"`).
+Supported formats: `.wav`, `.ogg`, `.mp3`, `.flac`.
 
 ---
 

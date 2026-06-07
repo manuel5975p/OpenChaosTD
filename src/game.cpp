@@ -98,6 +98,8 @@ void Game::LoadResources() {
     m_resources.LoadTexturesFromDir("textures");
     // Load all music from the music folder; key = filename stem
     m_resources.LoadMusicFromDir("music");
+    // Load all sound effects from the sounds folder; key = filename stem
+    m_resources.LoadSoundsFromDir("sounds");
     m_soundSystem.Init(m_resources);
 }
 

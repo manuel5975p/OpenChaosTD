@@ -4,6 +4,7 @@
 #include <engine/features/particle_system.hpp>
 
 class EnemyFactory;
+class SoundSystem;
 
 class WorldSystem{
 public:
@@ -13,7 +14,7 @@ public:
     void RemoveEnemy(DenseSlotMap<Enemy>::Key key, GameData& gameData);
 
     void CheckEnemyReachedCore(GameData& gameData);
-    void CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory, ParticleSystem& particles);
+    void CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory, ParticleSystem& particles, SoundSystem& sound);
     void CheckGameOver(bool& gameOver, GameData& gameData);
 
 private:

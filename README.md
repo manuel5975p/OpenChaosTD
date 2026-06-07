@@ -36,13 +36,13 @@ All fetched automatically via CMake FetchContent — no manual installation need
 
 ## Modding
 Towers, enemies, and waves are fully data-driven — no recompile needed to tweak balance or add content.
-Each JSON file under `data/` has a companion `.md` schema doc:
+Each JSON file under `data/` has a companion `.md` schema doc under `docs/`:
 
 | File | Docs | Configures |
 |---|---|---|
-| `data/towers.json`  | [towers.md](data/towers.md)   | Tower stats and attack/effect modules (incl. the armor chip-damage floor) |
-| `data/enemies.json` | [enemies.md](data/enemies.md) | Enemy stats and modules (armor, shield, regen, split spacing, immunities, upgrades) |
-| `data/waves.json`   | [waves.md](data/waves.md)     | Procedural wave generator: budget scaling models, boss/upgrade cadence, enemy pool |
+| `data/towers.json`  | [towers.md](docs/towers.md)   | Tower stats and attack/effect modules (incl. the armor chip-damage floor) |
+| `data/enemies.json` | [enemies.md](docs/enemies.md) | Enemy stats and modules (armor, shield, regen, split spacing, immunities, upgrades) |
+| `data/waves.json`   | [waves.md](docs/waves.md)     | Procedural wave generator: budget scaling models, boss/upgrade cadence, enemy pool |
 
 ## Media
 *(Add a screenshot or GIF here)*
@@ -64,7 +64,9 @@ OpenChaosTD/
 │   ├── towers.json             - Tower type definitions (stats, modules, description)
 │   ├── enemies.json            - Enemy type definitions (stats, modules, description)
 │   ├── waves.json              - Procedural wave generator: budget scaling, boss/upgrade cadence, enemy pool
-│   ├── particle_effects.json   - Named particle emitter presets
+│   └── particle_effects.json   - Named particle emitter presets
+│
+├── docs/
 │   └── *.md                    - Modder schema docs for towers/enemies/waves JSON
 │
 └── src/

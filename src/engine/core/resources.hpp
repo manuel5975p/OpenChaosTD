@@ -24,6 +24,7 @@ public:
     void LoadFont(const std::string& key, const std::string& relativePath, int fontSize = 20);
     void LoadMusic(const std::string& key, const std::string& relativePath);
     void LoadMusicFromDir(const std::string& relativeDir);
+    void LoadSoundsFromDir(const std::string& relativeDir); // loads all sounds in a directory; key = filename stem
 
     // Retrieve
     Texture2D& GetTexture(const std::string& key);

@@ -83,6 +83,32 @@ void Resources::LoadMusicFromDir(const std::string& relativeDir) {
     }
 }
 
+void Resources::LoadSoundsFromDir(const std::string& relativeDir) {
+    static const std::unordered_set<std::string> soundExts = { ".wav", ".ogg", ".mp3", ".flac" };
+
+    std::filesystem::path dir = std::filesystem::path(m_assetPath) / relativeDir;
+    if (!std::filesystem::is_directory(dir)) {
+        std::cerr << "Resources: sound directory not found: " << dir << "\n";
+        return;
+    }
+
+    for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+        if (!entry.is_regular_file()) continue;
+        if (!soundExts.count(entry.path().extension().string())) continue;
+
+        std::string key = entry.path().stem().string();
+        if (m_sounds.count(key)) continue;
+
+        Sound sfx = ::LoadSound(entry.path().string().c_str());
+        if (sfx.frameCount == 0) {
+            std::cerr << "Resources: failed to load sound '" << entry.path() << "'\n";
+            continue;
+        }
+        m_sounds[key] = sfx;
+        std::cout << "Resources: loaded sound '" << key << "'\n";
+    }
+}
+
 void Resources::LoadSound(const std::string& key, const std::string& relativePath) {
     if (m_sounds.count(key)) return;
 

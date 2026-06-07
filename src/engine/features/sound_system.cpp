@@ -6,6 +6,10 @@ void SoundSystem::Init(Resources& resources) {
 
 // Sfx
 void SoundSystem::PlaySfx(const std::string& key) {
+    // No-op for an unset key (e.g. a tower with no attack sound) or a key that
+    // never loaded, so a missing/typo'd sound silently does nothing instead of throwing.
+    if (key.empty() || !m_resources->HasSound(key)) return;
+
     Sound& sfx = m_resources->GetSound(key);
     SetSoundVolume(sfx, m_sfxVolume);
     ::PlaySound(sfx);

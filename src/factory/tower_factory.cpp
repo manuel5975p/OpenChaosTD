@@ -40,9 +40,10 @@ static std::unique_ptr<TowerModule> BuildAttackModule(const json& j) {
     return a;
 }
 
-static TowerVisual ParseVisual(const json& j, const EmitterPresets& presets) {
-    TowerVisual v;
+static TowerPresentation ParsePresentation(const json& j, const EmitterPresets& presets) {
+    TowerPresentation v;
     v.m_texture = j.value("texture", "");
+    v.m_attackSound = j.value("attackSound", "");
     v.m_style = ParseAttackStyle(j.value("style", "Line"));
     v.m_attackDuration = j.value("attackDuration", 0.0f);
     if (j.contains("color"))      v.m_color          = ParseColor(j["color"]);
@@ -113,8 +114,8 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         tmpl.description = entry.value("description", "");
         tmpl.cost        = entry.value("cost", 100);
 
-        // Texture now lives inside the visual block (mirroring EnemyVisual); ParseVisual reads it.
-        if (entry.contains("visual")) tmpl.visual = ParseVisual(entry["visual"], presets);
+        // Texture now lives inside the visual block (mirroring EnemyPresentation); ParsePresentation reads it.
+        if (entry.contains("visual")) tmpl.visual = ParsePresentation(entry["visual"], presets);
 
         // Every behaviour is a module now: Attack (combat), Passive (wall marker), or an effect.
         if (entry.contains("modules"))
@@ -160,7 +161,7 @@ Tower TowerFactory::Create(const std::string& name) const {
     tower.m_name        = tmpl.name;
     tower.m_description = tmpl.description;
     tower.m_cost        = tmpl.cost;
-    tower.m_visual      = tmpl.visual; // includes the texture key
+    tower.m_presentation = tmpl.visual; // includes the texture key
     tower.m_upgrades = &tmpl.upgrades; // stable: templates are fixed after Load
 
     // Build every module (incl. the Attack/Passive marker); AddModule caches the AttackModule.

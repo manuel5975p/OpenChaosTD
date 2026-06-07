@@ -1,6 +1,7 @@
 #include <systems/world_system.hpp>
 #include <world/tile.hpp>
 #include <factory/enemy_factory.hpp>
+#include <engine/features/sound_system.hpp>
 #include <raymath.h>
 #include <vector>
 
@@ -90,7 +91,7 @@ void WorldSystem::CheckEnemyReachedCore(GameData& gameData){
     }
 }
 
-void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory, ParticleSystem& particles){
+void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory, ParticleSystem& particles, SoundSystem& sound){
     std::vector<DenseSlotMap<Enemy>::Key> toRemove;
     for (auto& enemy : gameData.m_enemies) {
         if (enemy.m_currentHealth <= 0.0f)
@@ -114,8 +115,10 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory,
         }
 
         // Death burst — pointer into EmitterPresets, set at enemy creation time
-        if (enemy->m_visual.m_deathDescPtr)
-            particles.Emit(pos, *enemy->m_visual.m_deathDescPtr);
+        if (enemy->m_presentation.m_deathDescPtr)
+            particles.Emit(pos, *enemy->m_presentation.m_deathDescPtr);
+
+        sound.PlaySfx(enemy->m_presentation.m_deathSound); // defaults to "enemy_death"
 
         RemoveEnemy(key, gameData);
 

@@ -7,7 +7,7 @@
 #include <world/effect.hpp>
 #include <world/enemy_modules.hpp>
 #include <world/enemy_upgrade.hpp>
-#include <world/enemy_visual.hpp>
+#include <world/enemy_presentation.hpp>
 #include <engine/features/particle_system.hpp>
 
 class Enemy {
@@ -16,7 +16,7 @@ public:
     std::string m_description;
     Vector2 m_position = {0.0f, 0.0f};
 
-    EnemyVisual m_visual; // set by factory, never modified at runtime
+    EnemyPresentation m_presentation; // set by factory, never modified at runtime
 
     // Runtime hit points. Max/speed/reward/livesOnReach live in the BaseStatsModule (see GetBaseStats);
     // current health is the live counterpart that damage and regen mutate, like the tower's m_cooldown.
@@ -54,7 +54,7 @@ public:
         copy.m_name          = m_name;
         copy.m_description    = m_description;
         copy.m_position       = m_position;
-        copy.m_visual         = m_visual;
+        copy.m_presentation   = m_presentation;
         copy.m_currentHealth  = m_currentHealth;
         copy.m_progress       = m_progress;
         copy.m_spawnedNest    = m_spawnedNest;

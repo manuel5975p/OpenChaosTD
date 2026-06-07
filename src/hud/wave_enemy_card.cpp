@@ -13,7 +13,7 @@ void WaveEnemyCard::SetContent(int count, const std::string& name, const Enemy* 
     if (!proto) return;
 
     m_level = proto->m_level;
-    m_textureKey = proto->m_visual.m_texture;
+    m_textureKey = proto->m_presentation.m_texture;
     // Every module appends its rows (Health/Speed, Armor, Regen, Shield, Split, Immune, ...),
     // mirroring the tower info panel's per-module DescribeStats rendering.
     for (const auto& mod : proto->m_modules)

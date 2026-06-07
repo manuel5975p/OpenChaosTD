@@ -27,6 +27,7 @@
             ],
             "visual": {
                 "texture": "tower_zapper",
+                "attackSound": "zapper",
                 "style": "Line",
                 "attackDuration": 0.08,
                 "color": [120, 200, 255, 255],
@@ -56,6 +57,7 @@
             ],
             "visual": {
                 "texture": "tower_freezer",
+                "attackSound": "freezer",
                 "style": "Ring",
                 "attackDuration": 0.3,
                 "color": [80, 190, 255, 255],
@@ -85,6 +87,7 @@
             ],
             "visual": {
                 "texture": "tower_sniper",
+                "attackSound": "sniper",
                 "style": "Line",
                 "attackDuration": 0.4,
                 "color": [240, 240, 255, 255],
@@ -115,6 +118,7 @@
             ],
             "visual": {
                 "texture": "tower_flamer",
+                "attackSound": "flamer",
                 "style": "Ring",
                 "attackDuration": 0.25,
                 "color": [255, 100, 20, 255],
@@ -145,6 +149,7 @@
             ],
             "visual": {
                 "texture": "tower_piercer",
+                "attackSound": "piercer",
                 "style": "Line",
                 "attackDuration": 0.15,
                 "color": [210, 220, 230, 255],

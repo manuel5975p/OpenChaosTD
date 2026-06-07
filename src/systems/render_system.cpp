@@ -66,7 +66,7 @@ void RenderSystem::DebugDrawMap(const Map& map){
 
 void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, Resources& assets){
     for (auto& tower : towers) {
-        Texture2D& texture = assets.GetTexture(tower.m_visual.m_texture);
+        Texture2D& texture = assets.GetTexture(tower.m_presentation.m_texture);
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
 
@@ -123,7 +123,7 @@ void RenderSystem::DrawGhostTower(Vector2 position, float radius, Texture2D& tex
 
 void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, Resources& assets) {
     for (auto& enemy : enemies) {
-        Texture2D& texture = assets.GetTexture(enemy.m_visual.m_texture);
+        Texture2D& texture = assets.GetTexture(enemy.m_presentation.m_texture);
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
 
