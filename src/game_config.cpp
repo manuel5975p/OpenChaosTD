@@ -1,12 +1,12 @@
 #include <game_config.hpp>
-#include <engine/util/json_store.hpp>
+#include <engine/util/file_store.hpp>
 #include <raylib.h>
 
-void GameConfig::Load(JsonStore& jsonio) {
-    if (!jsonio.Exists("config/settings.json"))
+void GameConfig::Load(FileStore& fileStore) {
+    if (!fileStore.Exists("config/settings.json"))
         return;
 
-    auto j = jsonio.Load("config/settings.json");
+    auto j = fileStore.LoadJson("config/settings.json");
     if (j.contains("gameWidth")) gameWidth = j["gameWidth"].get<int>();
     if (j.contains("gameHeight")) gameHeight = j["gameHeight"].get<int>();
     if (j.contains("fps")) fps = j["fps"].get<int>();

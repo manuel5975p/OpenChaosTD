@@ -7,12 +7,12 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <world/tower.hpp>
-#include <engine/util/json_store.hpp>
+#include <engine/util/file_store.hpp>
 #include <factory/emitter_presets.hpp>
 
 class TowerFactory {
 public:
-    void Load(JsonStore& jsonio, const EmitterPresets& presets);
+    void Load(FileStore& fileStore, const EmitterPresets& presets);
     Tower Create(const std::string& name) const;
     bool Has(const std::string& name) const;
 

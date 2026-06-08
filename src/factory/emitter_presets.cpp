@@ -27,8 +27,8 @@ static EmitterDesc ParseEmitterDesc(const json& j) {
     return d;
 }
 
-void EmitterPresets::Load(JsonStore& jsonio) {
-    auto data = jsonio.Load("data/particle_effects.json");
+void EmitterPresets::Load(FileStore& fileStore) {
+    auto data = fileStore.LoadJson("data/particle_effects.json");
     if (data.is_null() || !data.contains("presets")) {
         std::cerr << "EmitterPresets: failed to load particle_effects.json\n";
         return;

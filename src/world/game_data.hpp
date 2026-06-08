@@ -7,7 +7,7 @@
 #include <engine/lib/dense_slotmap.hpp>
 #include <vector>
 
-class JsonStore;
+class FileStore;
 
 struct GameData {
     // Gameplay config — loaded from gameplay.json, not reset between games
@@ -28,6 +28,6 @@ struct GameData {
     DenseSlotMap<Enemy> m_enemies;
     std::vector<Attack> m_attacks;
 
-    void Load(JsonStore& jsonio);
+    void Load(FileStore& fileStore);
     void Reset();
 };

@@ -7,8 +7,8 @@
 
 // Constructor / Destructor
 Game::Game() {
-    m_jsonStore.SetRootPath(SearchFolderParentPath("resources", 5).parent_path());
-    m_gameConfig.Load(m_jsonStore);
+    m_fileStore.SetRootPath(SearchFolderParentPath("resources", 5).parent_path());
+    m_gameConfig.Load(m_fileStore);
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
     InitWindow(m_gameConfig.gameWidth, m_gameConfig.gameHeight, m_gameConfig.title.c_str());
@@ -19,15 +19,15 @@ Game::Game() {
 
     m_screen.Init(m_gameConfig.gameWidth, m_gameConfig.gameHeight);
 
-    m_gameData.Load(m_jsonStore);
-    m_emitterPresets.Load(m_jsonStore);
-    m_towerFactory.Load(m_jsonStore, m_emitterPresets);
-    m_enemyFactory.Load(m_jsonStore, m_emitterPresets);
+    m_gameData.Load(m_fileStore);
+    m_emitterPresets.Load(m_fileStore);
+    m_towerFactory.Load(m_fileStore, m_emitterPresets);
+    m_enemyFactory.Load(m_fileStore, m_emitterPresets);
 
     LoadResources();
     m_soundSystem.SetMusicVolume(m_gameConfig.musicVolume);
     m_soundSystem.SetSfxVolume(m_gameConfig.sfxVolume);
-    m_input.Load(m_jsonStore);
+    m_input.Load(m_fileStore);
 
     // Init initial state
     m_currentState = std::make_unique<MenuState>();

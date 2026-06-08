@@ -66,7 +66,7 @@ static TowerUpgrade ParseUpgrade(const json& j) {
     return up;
 }
 
-void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
+void TowerFactory::Load(FileStore& fileStore, const EmitterPresets& presets) {
     m_presets = &presets;
 
     m_builders["Attack"] = [](const json& j){
@@ -100,7 +100,7 @@ void TowerFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
         return std::make_unique<CritModule>(j.value("critChance", 0.0f), j.value("critMultiplier", 1.0f));
     };
 
-    auto data = jsonio.Load("data/towers.json");
+    auto data = fileStore.LoadJson("data/towers.json");
     if (data.is_null() || !data.contains("towers")) {
         std::cerr << "TowerFactory: failed to load towers data\n";
         return;

@@ -23,7 +23,7 @@ void PlayingState::OnEnter(Game& game) {
     m_waveHUD.Build(game, m_waveManager, m_renderSystem);
     m_eventLog.Build(game.GetGameConfig().hudScale);
 
-    m_waveManager.Load(game.GetJsonStore(), game.GetEnemyFactory());
+    m_waveManager.Load(game.GetFileStore(), game.GetEnemyFactory());
 
     m_pauseHUD.Build(game);
 }

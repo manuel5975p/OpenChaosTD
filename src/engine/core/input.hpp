@@ -6,7 +6,7 @@
 #include <variant>
 
 class Screen;
-class JsonStore;
+class FileStore;
 
 class Input {
 public:
@@ -16,7 +16,7 @@ public:
     Input& operator=(const Input&) = delete;
 
     void Update(const Screen& renderer);
-    void Load(JsonStore& jsonio);
+    void Load(FileStore& fileStore);
 
     bool IsPressed(const std::string& action) const;
     bool IsDown(const std::string& action) const;

@@ -3,7 +3,7 @@
 #include <world/game_data.hpp>
 #include <systems/world_system.hpp>
 #include <factory/enemy_factory.hpp>
-#include <engine/util/json_store.hpp>
+#include <engine/util/file_store.hpp>
 #include <random>
 #include <string>
 #include <vector>
@@ -31,7 +31,7 @@ public:
         std::vector<SpawnGroup> groups;
     };
 
-    void Load(JsonStore& jsonio, const EnemyFactory& enemyFactory);
+    void Load(FileStore& fileStore, const EnemyFactory& enemyFactory);
 
     // Advance wave state: tick timer, process spawn queue, detect wave end, trigger auto-spawn
     void Update(float dt, GameData& data, WorldSystem& worldSystem, EnemyFactory& enemyFactory);

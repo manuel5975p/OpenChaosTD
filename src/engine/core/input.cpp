@@ -1,6 +1,6 @@
 #include <engine/core/input.hpp>
 #include <engine/core/screen.hpp>
-#include <engine/util/json_store.hpp>
+#include <engine/util/file_store.hpp>
 
 void Input::Update(const Screen& renderer) {
     m_mouseConsumed = false;
@@ -87,10 +87,10 @@ static KeyboardKey ParseKey(const std::string& name) {
     return it != kMap.end() ? it->second : KEY_NULL;
 }
 
-void Input::Load(JsonStore& jsonio) {
-    if (!jsonio.Exists("config/keybindings.json"))
+void Input::Load(FileStore& fileStore) {
+    if (!fileStore.Exists("config/keybindings.json"))
         return;
-    auto j = jsonio.Load("config/keybindings.json");
+    auto j = fileStore.LoadJson("config/keybindings.json");
     for (auto& [action, value] : j.items()) {
         std::string name = value.get<std::string>();
         AddAction(action, ParseKey(name));

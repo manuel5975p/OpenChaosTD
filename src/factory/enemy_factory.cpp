@@ -33,14 +33,14 @@ static EnemyUpgrade ParseUpgrade(const json& j) {
     return up;
 }
 
-void EnemyFactory::Load(JsonStore& jsonio, const EmitterPresets& presets) {
+void EnemyFactory::Load(FileStore& fileStore, const EmitterPresets& presets) {
     m_builders["Regeneration"] = [](const json& j){ return std::make_unique<RegenerationModule>(j.value("regenRate", 0.0f)); };
     m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("armor", 0.0f)); };
     m_builders["Immune"]       = [](const json& j){ return std::make_unique<ImmuneModule>(ParseEffectType(j.value("effect", ""))); };
     m_builders["Shield"]       = [](const json& j){ return std::make_unique<ShieldModule>(j.value("shield", 0.0f)); };
     m_builders["Split"]        = [](const json& j){ return std::make_unique<SplitModule>(j.value("child", ""), j.value("splitCount", 0), j.value("spacing", 12.0f)); };
 
-    auto data = jsonio.Load("data/enemies.json");
+    auto data = fileStore.LoadJson("data/enemies.json");
     if (data.is_null() || !data.contains("enemies")) {
         std::cerr << "EnemyFactory: failed to load enemies data\n";
         return;

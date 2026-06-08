@@ -146,15 +146,22 @@ game.GetSoundSystem().Tick(dt);
 
 ## util/
 
-### JsonStore
+### FileStore
 
-Cross-platform JSON read/write backed by nlohmann/json. The root path is set once and all subsequent paths are resolved relative to it.
+Cross-platform file read/write for JSON (nlohmann/json) and TOML (toml++). The root path is set once and all subsequent paths are resolved relative to it.
 
 ```cpp
-m_jsonStore.SetRootPath(projectRoot);
-auto j = m_jsonStore.Load("data/towers.json");
-m_jsonStore.Save("data/save.json", j);
-bool exists = m_jsonStore.Exists("data/config.json");
+m_fileStore.SetRootPath(projectRoot);
+
+// JSON
+auto j = m_fileStore.LoadJson("data/towers.json");
+m_fileStore.SaveJson("data/save.json", j);
+
+// TOML
+auto tbl = m_fileStore.LoadToml("data/towers.toml");
+m_fileStore.SaveToml("data/save.toml", tbl);
+
+bool exists = m_fileStore.Exists("data/config.json");
 ```
 
 Used by all factories and config types. On web builds, path resolution accounts for the Emscripten virtual filesystem.

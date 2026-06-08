@@ -8,7 +8,7 @@
 #include <engine/features/sound_system.hpp>
 #include <engine/core/screen.hpp>
 #include <engine/core/input.hpp>
-#include <engine/util/json_store.hpp>
+#include <engine/util/file_store.hpp>
 #include <game_config.hpp>
 #include <engine/util/profiler.hpp>
 #include <factory/emitter_presets.hpp>
@@ -37,7 +37,7 @@ public:
     Resources& GetResources() {return m_resources;}
     Screen& GetScreen() {return m_screen;}
     Input& GetInput() {return m_input;}
-    JsonStore& GetJsonStore(){return m_jsonStore;}
+    FileStore& GetFileStore(){return m_fileStore;}
     ParticleSystem& GetParticles() {return m_particles;}
     SoundSystem& GetSoundSystem() {return m_soundSystem;}
     TowerFactory& GetTowerFactory() {return m_towerFactory;}
@@ -58,7 +58,7 @@ private:
     ParticleSystem m_particles;
     Screen m_screen;
     Input m_input;
-    JsonStore m_jsonStore;
+    FileStore m_fileStore;
     Profiler m_profiler;
     EmitterPresets m_emitterPresets;
     TowerFactory m_towerFactory;

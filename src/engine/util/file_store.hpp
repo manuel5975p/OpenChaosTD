@@ -1,24 +1,32 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include <toml++/toml.hpp>
 #include <string>
 
-class JsonStore {
+class FileStore {
 public:
-    JsonStore()  = default;
-    ~JsonStore() = default;
+    FileStore()  = default;
+    ~FileStore() = default;
 
     // Non-copyable — owns internal root path state
-    JsonStore(const JsonStore&)            = delete;
-    JsonStore& operator=(const JsonStore&) = delete;
+    FileStore(const FileStore&)            = delete;
+    FileStore& operator=(const FileStore&) = delete;
 
     // Call once, project root as its parent for files stored.
     void SetRootPath(const std::string& assetPath);
     
     const std::string& GetRootPath() const { return m_rootPath; }
 
-    void           Save(const std::string& path, const nlohmann::json& data);
-    nlohmann::json Load(const std::string& path);
+    // JSON file I/O (nlohmann::json)
+    void           SaveJson(const std::string& path, const nlohmann::json& data);
+    nlohmann::json LoadJson(const std::string& path);
+
+    // TOML file I/O (toml++)
+    void           SaveToml(const std::string& path, const toml::table& data);
+    toml::table    LoadToml(const std::string& path);
+
+    // Format-agnostic (operate on the path, regardless of file contents)
     bool           Exists(const std::string& path);
     void           Delete(const std::string& path);
 

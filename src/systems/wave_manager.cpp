@@ -4,15 +4,15 @@
 #include <unordered_map>
 #include <iostream>
 
-void WaveManager::Load(JsonStore& jsonio, const EnemyFactory& enemyFactory) {
+void WaveManager::Load(FileStore& fileStore, const EnemyFactory& enemyFactory) {
     m_rng.seed(std::random_device{}());
 
-    if (!jsonio.Exists("data/waves.json")) {
+    if (!fileStore.Exists("data/waves.json")) {
         std::cerr << "WaveManager: data/waves.json not found\n";
         return;
     }
 
-    auto json = jsonio.Load("data/waves.json");
+    auto json = fileStore.LoadJson("data/waves.json");
 
     // Budget scaling and win condition
     if (json.contains("budget")) {

@@ -15,6 +15,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # toggle libs to be used with ON and OFF
 option(USE_RAYLIB "Use raylib" ON)
 option(USE_NLOHMANN_JSON "Use nlohmann json" ON)
+option(USE_TOMLPLUSPLUS "Use toml++" ON)
 
 
 ##########################################################################################
@@ -68,6 +69,25 @@ if(USE_NLOHMANN_JSON)
 
     # add the dependency here to be linked
     list(APPEND LINK_LIBRARIES nlohmann_json::nlohmann_json)
+endif()
+
+
+##########################################################################################
+# toml++ Setup
+##########################################################################################
+
+if(USE_TOMLPLUSPLUS)
+    message(STATUS "Fetching toml++...")
+    fetchcontent_declare(tomlplusplus
+        GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+        GIT_TAG        v3.4.0
+        GIT_SHALLOW    TRUE
+        GIT_PROGRESS   TRUE
+    )
+    fetchcontent_makeavailable(tomlplusplus)
+
+    # add the dependency here to be linked
+    list(APPEND LINK_LIBRARIES tomlplusplus::tomlplusplus)
 endif()
 
 

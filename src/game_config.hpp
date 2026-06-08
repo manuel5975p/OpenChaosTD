@@ -2,7 +2,7 @@
 
 #include <string>
 
-class JsonStore;
+class FileStore;
 
 struct GameConfig {
     int gameWidth = 1200;
@@ -13,6 +13,6 @@ struct GameConfig {
     float musicVolume = 1.0f;
     float sfxVolume = 1.0f;
 
-    void Load(JsonStore& jsonio);
+    void Load(FileStore& fileStore);
     void ApplyIcon();
 };

@@ -1,11 +1,11 @@
 #include <world/game_data.hpp>
-#include <engine/util/json_store.hpp>
+#include <engine/util/file_store.hpp>
 
-void GameData::Load(JsonStore& jsonio) {
-    if (!jsonio.Exists("data/gameplay.json"))
+void GameData::Load(FileStore& fileStore) {
+    if (!fileStore.Exists("data/gameplay.json"))
         return;
 
-    auto j = jsonio.Load("data/gameplay.json");
+    auto j = fileStore.LoadJson("data/gameplay.json");
     if (j.contains("startingLives")) m_startingLives = j["startingLives"].get<int>();
     if (j.contains("startingGold")) m_startingGold = j["startingGold"].get<int>();
     if (j.contains("sellRefundRate")) m_sellRefundRate = j["sellRefundRate"].get<float>();
