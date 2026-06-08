@@ -1,7 +1,6 @@
 {
     "Game": {
         "Debug": "GRAVE",
-        "Pause": "ESCAPE",
         "Speed": "SPACE"
     },
     "Interface": {

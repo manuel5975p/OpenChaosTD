@@ -47,7 +47,7 @@ std::vector<SettingsState::BindingGroup> SettingsState::DefaultBindings() {
     return {
         {"Movement",  {{"Up", "W"}, {"Down", "S"}, {"Left", "A"}, {"Right", "D"}}},
         {"Interface", {{"Confirm", "ENTER"}, {"Cancel", "ESCAPE"}, {"WaveInfo", "TAB"}}},
-        {"Game",      {{"Pause", "ESCAPE"}, {"Speed", "SPACE"}, {"Debug", "GRAVE"}}},
+        {"Game",      {{"Speed", "SPACE"}, {"Debug", "GRAVE"}}},
     };
 }
 

@@ -33,9 +33,9 @@ void PlayingState::OnExit(Game& game) {
 }
 
 void PlayingState::ProcessInput(Game& game, float dt) {
-    // Pause toggle takes priority; while paused only the overlay receives input so
-    // clicks never bleed through to the game grid.
-    if (game.GetInput().IsPressed("Pause")) SetPaused(!m_paused);
+    // The Cancel/Escape key toggles pause and takes priority; while paused only the
+    // overlay receives input so clicks never bleed through to the game grid.
+    if (game.GetInput().IsPressed("Cancel")) SetPaused(!m_paused);
     if (m_paused) {
         m_pauseHUD.ProcessInput(game);
         HandlePauseSignals(game);
