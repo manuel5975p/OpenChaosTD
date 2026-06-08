@@ -1,6 +1,7 @@
 #include <states/play_state.hpp>
 
 #include <states/end_state.hpp>
+#include <states/menu_state.hpp>
 #include <game.hpp>
 #include <raylib.h>
 #include <raymath.h>
@@ -23,6 +24,8 @@ void PlayingState::OnEnter(Game& game) {
     m_eventLog.Build(game.GetGameConfig().hudScale);
 
     m_waveManager.Load(game.GetJsonStore(), game.GetEnemyFactory());
+
+    m_pauseHUD.Build(game);
 }
 
 void PlayingState::OnExit(Game& game) {
@@ -30,6 +33,15 @@ void PlayingState::OnExit(Game& game) {
 }
 
 void PlayingState::ProcessInput(Game& game, float dt) {
+    // Pause toggle takes priority; while paused only the overlay receives input so
+    // clicks never bleed through to the game grid.
+    if (game.GetInput().IsPressed("Pause")) SetPaused(!m_paused);
+    if (m_paused) {
+        m_pauseHUD.ProcessInput(game);
+        HandlePauseSignals(game);
+        return;
+    }
+
     if (game.GetInput().IsPressed("Debug")) m_debug = !m_debug;
     if (game.GetInput().IsPressed("Speed")) CycleSpeed();
     if (game.GetInput().IsPressed("WaveInfo")) m_waveHUD.Toggle();
@@ -63,7 +75,7 @@ void PlayingState::Update(Game& game, float dt) {
 
     // Run the simulation once per speed step. Each sub-step uses the real frame dt so per-frame
     // timing (tower cooldowns, spawn pacing) stays accurate instead of feeding one oversized step.
-    for (int s = 0; s < kSpeedSteps[m_speedIndex] && !m_gameOver && !game.GetGameData().m_victory; s++)
+    for (int s = 0; s < kSpeedSteps[m_speedIndex] && !m_paused && !m_gameOver && !game.GetGameData().m_victory; s++)
         StepSimulation(game, dt);
 }
 
@@ -118,6 +130,7 @@ void PlayingState::Draw(Game& game) {
     m_waveHUD.Draw(game);
     m_eventLog.Draw(game);
     m_towerInfoHUD.Draw(game);
+    m_pauseHUD.Draw(game); // last so the overlay dims everything; no-op while not paused
 }
 
 // --- Input helpers ---------------------------------------------------------
@@ -244,4 +257,23 @@ void PlayingState::SyncHUDState(Game& game) {
     }
     Vector2 topCenter = m_towerHUD.GetHoveredButtonTopCenter(mousePos);
     m_towerInfoHUD.SetTarget(game, m_hoveredTowerCache, topCenter, false);
+}
+
+// --- Pause menu ------------------------------------------------------------
+
+void PlayingState::SetPaused(bool paused) {
+    m_paused = paused;
+    if (paused) m_pauseHUD.Show();
+    else m_pauseHUD.Hide();
+}
+
+void PlayingState::HandlePauseSignals(Game& game) {
+    if (m_pauseHUD.WasResumeRequested())
+        SetPaused(false);
+
+    if (m_pauseHUD.WasRestartRequested())
+        game.ChangeState(std::make_unique<PlayingState>());
+
+    if (m_pauseHUD.WasMainMenuRequested())
+        game.ChangeState(std::make_unique<MenuState>());
 }

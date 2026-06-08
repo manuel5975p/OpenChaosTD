@@ -5,6 +5,7 @@
     "Left": "A",
     "Confirm": "ENTER",
     "Cancel": "ESCAPE",
+    "Pause": "ESCAPE",
     "Debug": "GRAVE",
     "Speed": "SPACE",
     "WaveInfo": "TAB"

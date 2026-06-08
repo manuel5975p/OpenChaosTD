@@ -12,6 +12,7 @@
 #include <hud/tower_info_hud.hpp>
 #include <hud/wave_hud.hpp>
 #include <hud/event_hud.hpp>
+#include <hud/pause_hud.hpp>
 #include <systems/wave_manager.hpp>
 class PlayingState : public GameState {
 public:
@@ -29,6 +30,10 @@ private:
     void SyncHUDState(Game& game);
     void UpgradeSelectedTower(Game& game);
 
+    // Pause menu
+    void SetPaused(bool paused);
+    void HandlePauseSignals(Game& game);
+
     // Game speed: run the simulation kSpeedSteps[m_speedIndex] times per frame
     void StepSimulation(Game& game, float dt);
     void CycleSpeed() { m_speedIndex = (m_speedIndex + 1) % static_cast<int>(sizeof(kSpeedSteps) / sizeof(kSpeedSteps[0])); }
@@ -43,6 +48,7 @@ private:
 
     bool m_debug = false;
     bool m_gameOver = false;
+    bool m_paused = false;
 
     Tower m_hoveredTowerCache; // rebuilt only when hoveredTowerName changes
 
@@ -51,6 +57,7 @@ private:
     TowerInfoHUD m_towerInfoHUD;
     WaveHUD m_waveHUD;
     EventHUD m_eventLog;
+    PauseHUD m_pauseHUD;
 
     SelectionContext m_selection;
 

@@ -10,7 +10,7 @@
                 "texture": "enemy_shade",
                 "deathEmitter": "death_small"
             },
-            "upgrade": { "add": { "maxHealth": 10 }, "mul": { "speed": 1.2 } }
+            "upgrade": { "add": { "speed": 10 }, "mul": { "maxHealth": 2 } }
         },
         {
             "name": "flicker",
@@ -22,7 +22,7 @@
                 "texture": "enemy_flicker",
                 "deathEmitter": "death_small"
             },
-            "upgrade": { "add": { "maxHealth": 3 }, "mul": { "speed": 1.3 } }
+            "upgrade": { "add": { "speed": 20 }, "mul": { "maxHealth": 2 } }
         },
         {
             "name": "golem",
@@ -38,7 +38,7 @@
                 { "type": "Regeneration", "regenRate": 2.0 },
                 { "type": "Armor",        "armor": 2.0 }
             ],
-            "upgrade": { "add": { "armor": 2, "regenRate": 2 }, "mul": { "maxHealth": 1.5 } }
+            "upgrade": { "add": { "armor": 1, "regenRate": 2 }, "mul": { "maxHealth": 2 } }
         },
         {
             "name": "titan",
@@ -71,7 +71,7 @@
                 { "type": "Split", "child": "golem", "splitCount": 2 },
                 { "type": "Immune", "effect": "Stun" }
             ],
-            "upgrade": { "add": { "splitCount": 1, "armor": 2 }, "mul": { "maxHealth": 1.5 } }
+            "upgrade": { "add": { "splitCount": 1, "armor": 1 }, "mul": { "maxHealth": 2 } }
         },
         {
             "name": "glacius",
@@ -116,13 +116,13 @@
             "modules": [
                 { "type": "Split", "child": "flicker", "splitCount": 3 }
             ],
-            "upgrade": { "add": { "splitCount": 2 }, "mul": { "maxHealth": 1.4 } }
+            "upgrade": { "add": { "splitCount": 2 }, "mul": { "maxHealth": 1.5 } }
         },
         {
             "name": "cinder",
             "description": "Flame-hardened core. Cannot be ignited.",
             "maxHealth": 18,
-            "speed": 58,
+            "speed": 60,
             "reward": 15,
             "visual": {
                 "texture": "enemy_cinder",
@@ -131,7 +131,7 @@
             "modules": [
                 { "type": "Immune", "effect": "Burn" }
             ],
-            "upgrade": { "add": { "maxHealth": 12 }, "mul": { "speed": 1.25 } }
+            "upgrade": { "add": { "speed": 10 }, "mul": { "maxHealth": 1.5 } }
         }
     ]
 }
