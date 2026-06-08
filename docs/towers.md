@@ -191,7 +191,7 @@ formats: `.wav`, `.ogg`, `.mp3`, `.flac`.
 Each entry is one purchasable upgrade level, applied in order (L1 first, then L2, etc.).
 
 ```json
-{ "cost": 90, "add": { ... }, "mul": { ... }, "effects": [ ... ] }
+{ "cost": 90, "add": { ... }, "mul": { ... }, "modules": [ ... ] }
 ```
 
 | Field     | Type   | Description |
@@ -199,7 +199,7 @@ Each entry is one purchasable upgrade level, applied in order (L1 first, then L2
 | `cost`    | int    | Gold required to purchase |
 | `add`     | object | Additive deltas — key→value pairs |
 | `mul`     | object | Multiplicative factors — key→value pairs |
-| `effects` | array  | New status-effect modules to append (same schema as entries in the top-level `modules` array). Also accepted under the key `modules`, for parity with enemy upgrades. |
+| `modules` | array  | New status-effect modules to append (same schema as entries in the top-level `modules` array). |
 
 All three optional fields are independent and can appear together in one upgrade level.
 

@@ -152,7 +152,7 @@ stat-patching pipeline and appends any new modules.
 |-----------|--------|-------------|
 | `add`     | object | Map of stat key → **flat** delta added to the current value |
 | `mul`     | object | Map of stat key → **multiplier** applied to the current value |
-| `modules` | array  | Additional module entries appended to the enemy **once**, regardless of tier (the `add`/`mul` deltas stack per tier, but modules are added a single time). Also accepted under the key `effects`, for parity with tower upgrades. |
+| `modules` | array  | Additional module entries appended to the enemy **once**, regardless of tier (the `add`/`mul` deltas stack per tier, but modules are added a single time). |
 
 ### How the upgrade scales over tiers
 

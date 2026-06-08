@@ -37,7 +37,7 @@
             "upgrades": [
                 { "cost": 200, "add": { "targetCount": 1, "range": 20} },
                 { "cost": 300, "add": { "damage": 1, "range": 20} },
-                { "cost": 400, "effects": [ { "type": "RampUp", "bonusPerStack": 2, "maxStacks": 60, "idleTime": 1.0 } ] }
+                { "cost": 400, "modules": [ { "type": "RampUp", "bonusPerStack": 2, "maxStacks": 60, "idleTime": 1.0 } ] }
             ]
         },
         {
@@ -67,7 +67,7 @@
             "upgrades": [
                 { "cost": 200, "add": { "slowPercent": 10, "range": 10 } },
                 { "cost": 300, "add": { "slowPercent": 10, "slowDuration": 1.0, "range": 10  } },
-                { "cost": 400, "effects": [ { "type": "Weakness", "weaknessAmount": 1, "weaknessDuration": 1.0, "effect": "weakness_effect" } ] }
+                { "cost": 400, "modules": [ { "type": "Weakness", "weaknessAmount": 1, "weaknessDuration": 1.0, "effect": "weakness_effect" } ] }
             ]
         },
         {
@@ -98,7 +98,7 @@
             "upgrades": [
                 { "cost": 250, "add": { "damage": 10, "range": 30 } },
                 { "cost": 350, "add": { "critChance": 0.3, "range": 30 } },
-                { "cost": 450, "add": { "range": 30 }, "effects": [ { "type": "Stun", "stunDuration": 1.0, "effect": "stun_effect" } ] }
+                { "cost": 450, "add": { "range": 30 }, "modules": [ { "type": "Stun", "stunDuration": 1.0, "effect": "stun_effect" } ] }
             ]
         },
         {

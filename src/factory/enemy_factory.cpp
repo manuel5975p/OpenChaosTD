@@ -27,11 +27,9 @@ static EnemyUpgrade ParseUpgrade(const json& j) {
         for (auto& [k, v] : j["add"].items()) up.m_adds.push_back({k, v.get<float>()});
     if (j.contains("mul"))
         for (auto& [k, v] : j["mul"].items()) up.m_muls.push_back({k, v.get<float>()});
-    // Added modules live under "modules" (canonical for enemies); also accept "effects" for
-    // schema parity with tower upgrades.
-    const char* moduleKey = j.contains("modules") ? "modules" : "effects";
-    if (j.contains(moduleKey))
-        for (auto& m : j[moduleKey]) up.m_addModules.push_back(m);
+    // Added modules live under "modules" (unified upgrade schema across towers and enemies).
+    if (j.contains("modules"))
+        for (auto& m : j["modules"]) up.m_addModules.push_back(m);
     return up;
 }
 
