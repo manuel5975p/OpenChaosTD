@@ -31,6 +31,7 @@ public:
     void Quit() { m_running = false; }
     
     const GameConfig& GetGameConfig() const {return m_gameConfig;}
+    GameConfig& GetMutableGameConfig() {return m_gameConfig;} // settings menu writes applied values back
     GameData& GetGameData() {return m_gameData;}
 
     // Accessors for managers

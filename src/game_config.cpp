@@ -7,13 +7,40 @@ void GameConfig::Load(FileStore& fileStore) {
         return;
 
     auto j = fileStore.LoadJson("config/settings.json");
-    if (j.contains("gameWidth")) gameWidth = j["gameWidth"].get<int>();
-    if (j.contains("gameHeight")) gameHeight = j["gameHeight"].get<int>();
-    if (j.contains("fps")) fps = j["fps"].get<int>();
-    if (j.contains("hudScale")) hudScale = j["hudScale"].get<float>();
-    if (j.contains("title")) title = j["title"].get<std::string>();
-    if (j.contains("musicVolume")) musicVolume = j["musicVolume"].get<float>();
-    if (j.contains("sfxVolume")) sfxVolume = j["sfxVolume"].get<float>();
+
+    // Window bootstrap group (not editable from the settings menu)
+    if (j.contains("window")) {
+        const auto& w = j["window"];
+        if (w.contains("width")) gameWidth = w["width"].get<int>();
+        if (w.contains("height")) gameHeight = w["height"].get<int>();
+        if (w.contains("title")) title = w["title"].get<std::string>();
+    }
+    // Display group
+    if (j.contains("display")) {
+        const auto& d = j["display"];
+        if (d.contains("fps")) fps = d["fps"].get<int>();
+        if (d.contains("hudScale")) hudScale = d["hudScale"].get<float>();
+    }
+    // Audio group
+    if (j.contains("audio")) {
+        const auto& a = j["audio"];
+        if (a.contains("musicVolume")) musicVolume = a["musicVolume"].get<float>();
+        if (a.contains("sfxVolume")) sfxVolume = a["sfxVolume"].get<float>();
+    }
+}
+
+void GameConfig::Save(FileStore& fileStore) {
+    // Mirror the grouped on-disk shape. The window group is written straight from
+    // the live struct so it round-trips untouched even though the menu never edits it.
+    nlohmann::json j;
+    j["window"]["width"] = gameWidth;
+    j["window"]["height"] = gameHeight;
+    j["window"]["title"] = title;
+    j["display"]["fps"] = fps;
+    j["display"]["hudScale"] = hudScale;
+    j["audio"]["musicVolume"] = musicVolume;
+    j["audio"]["sfxVolume"] = sfxVolume;
+    fileStore.SaveJson("config/settings.json", j);
 }
 
 void GameConfig::ApplyIcon() {

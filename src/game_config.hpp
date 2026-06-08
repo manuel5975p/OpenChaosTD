@@ -14,5 +14,6 @@ struct GameConfig {
     float sfxVolume = 1.0f;
 
     void Load(FileStore& fileStore);
+    void Save(FileStore& fileStore);
     void ApplyIcon();
 };

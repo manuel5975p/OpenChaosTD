@@ -1,9 +1,15 @@
 {
-    "gameWidth": 1200,
-    "gameHeight": 1200,
-    "fps": 120,
-    "hudScale": 1.75,
-    "title": "OpenChaos TD",
-    "musicVolume": 1.0,
-    "sfxVolume": 1.0
+    "audio": {
+        "musicVolume": 1.0,
+        "sfxVolume": 1.0
+    },
+    "display": {
+        "fps": 120,
+        "hudScale": 1.2
+    },
+    "window": {
+        "height": 1200,
+        "title": "OpenChaos TD",
+        "width": 1200
+    }
 }

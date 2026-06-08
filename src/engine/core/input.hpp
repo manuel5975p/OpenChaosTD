@@ -37,6 +37,12 @@ public:
     void AddAction(const std::string& action, KeyboardKey key);
     void AddAction(const std::string& action, MouseButton button);
 
+    // Key-name <-> KeyboardKey conversion, sharing one lookup table. Used by the
+    // settings menu to display, capture, and persist rebinds. KeyName returns ""
+    // for keys outside the supported set; ParseKey returns KEY_NULL for unknown names.
+    static KeyboardKey ParseKey(const std::string& name);
+    static std::string KeyName(KeyboardKey key);
+
 private:
     using Binding = std::variant<KeyboardKey, MouseButton>;
     std::unordered_map<std::string, Binding> m_bindings;

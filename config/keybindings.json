@@ -1,12 +1,18 @@
 {
-    "Up": "W",
-    "Down": "S",
-    "Right": "D",
-    "Left": "A",
-    "Confirm": "ENTER",
-    "Cancel": "ESCAPE",
-    "Pause": "ESCAPE",
-    "Debug": "GRAVE",
-    "Speed": "SPACE",
-    "WaveInfo": "TAB"
+    "Game": {
+        "Debug": "GRAVE",
+        "Pause": "ESCAPE",
+        "Speed": "SPACE"
+    },
+    "Interface": {
+        "Cancel": "ESCAPE",
+        "Confirm": "ENTER",
+        "WaveInfo": "TAB"
+    },
+    "Movement": {
+        "Down": "S",
+        "Left": "A",
+        "Right": "D",
+        "Up": "W"
+    }
 }

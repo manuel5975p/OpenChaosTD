@@ -63,7 +63,8 @@ void Input::ConsumeMouseInput() {
     m_mouseConsumed = true;
 }
 
-static KeyboardKey ParseKey(const std::string& name) {
+// Single source of truth for name <-> key mapping, shared by ParseKey and KeyName.
+static const std::unordered_map<std::string, KeyboardKey>& KeyTable() {
     static const std::unordered_map<std::string, KeyboardKey> kMap = {
         {"A", KEY_A}, {"B", KEY_B}, {"C", KEY_C}, {"D", KEY_D}, {"E", KEY_E},
         {"F", KEY_F}, {"G", KEY_G}, {"H", KEY_H}, {"I", KEY_I}, {"J", KEY_J},
@@ -83,16 +84,33 @@ static KeyboardKey ParseKey(const std::string& name) {
         {"F1", KEY_F1}, {"F2", KEY_F2}, {"F3", KEY_F3}, {"F4", KEY_F4},
         {"F5", KEY_F5}, {"F6", KEY_F6}, {"F7", KEY_F7}, {"F8", KEY_F8},
     };
-    auto it = kMap.find(name);
-    return it != kMap.end() ? it->second : KEY_NULL;
+    return kMap;
+}
+
+KeyboardKey Input::ParseKey(const std::string& name) {
+    const auto& map = KeyTable();
+    auto it = map.find(name);
+    return it != map.end() ? it->second : KEY_NULL;
+}
+
+std::string Input::KeyName(KeyboardKey key) {
+    if (key == KEY_NULL) return "";
+    for (const auto& [name, k] : KeyTable())
+        if (k == key) return name;
+    return "";
 }
 
 void Input::Load(FileStore& fileStore) {
     if (!fileStore.Exists("config/keybindings.json"))
         return;
     auto j = fileStore.LoadJson("config/keybindings.json");
-    for (auto& [action, value] : j.items()) {
-        std::string name = value.get<std::string>();
-        AddAction(action, ParseKey(name));
+    // Bindings are grouped by category: { "Movement": { "Up": "W", ... }, ... }.
+    // The category is presentation-only; each action name is globally unique.
+    for (auto& [category, actions] : j.items()) {
+        if (!actions.is_object()) continue;
+        for (auto& [action, value] : actions.items()) {
+            std::string name = value.get<std::string>();
+            AddAction(action, ParseKey(name));
+        }
     }
 }

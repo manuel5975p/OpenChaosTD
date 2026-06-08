@@ -14,5 +14,6 @@ public:
 
 private:
     Button m_playButton;
+    Button m_settingsButton;
     Button m_exitButton;
 };
