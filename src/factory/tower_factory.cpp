@@ -115,8 +115,8 @@ void TowerFactory::Load(FileStore& fileStore, const EmitterPresets& presets) {
         tmpl.description = (*entry)["description"].value_or(std::string{});
         tmpl.cost        = (*entry)["cost"].value_or(100);
 
-        // Texture now lives inside the visual block (mirroring EnemyPresentation); ParsePresentation reads it.
-        if (auto vis = (*entry)["visual"].as_table()) tmpl.visual = ParsePresentation(*vis, presets);
+        // Texture now lives inside the presentation block (mirroring EnemyPresentation); ParsePresentation reads it.
+        if (auto vis = (*entry)["presentation"].as_table()) tmpl.presentation = ParsePresentation(*vis, presets);
 
         // Every behaviour is a module now: Attack (combat), Passive (wall marker), or an effect.
         if (auto mods = (*entry)["modules"].as_array())
@@ -164,7 +164,7 @@ Tower TowerFactory::Create(const std::string& name) const {
     tower.m_name        = tmpl.name;
     tower.m_description = tmpl.description;
     tower.m_cost        = tmpl.cost;
-    tower.m_presentation = tmpl.visual; // includes the texture key
+    tower.m_presentation = tmpl.presentation; // includes the texture key
     tower.m_upgrades = &tmpl.upgrades; // stable: templates are fixed after Load
 
     // Build every module (incl. the Attack/Passive marker); AddModule caches the AttackModule.
@@ -192,5 +192,5 @@ float TowerFactory::GetRange(const std::string& name) const {
 const std::string& TowerFactory::GetTexture(const std::string& name) const {
     static const std::string empty;
     auto it = m_templates.find(name);
-    return (it != m_templates.end()) ? it->second.visual.m_texture : empty;
+    return (it != m_templates.end()) ? it->second.presentation.m_texture : empty;
 }

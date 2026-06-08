@@ -12,7 +12,7 @@ All enemies are defined in `data/enemies.json` as an array under the `"enemies"`
 | `speed`        | float  | yes      | Movement speed in world units per second |
 | `reward`       | int    | yes      | Gold granted to the player when the enemy is killed |
 | `livesOnReach` | int    | no       | Lives lost if the enemy reaches the core (default 1) |
-| `visual`       | object | yes      | Presentation-only data (sprite, death effect) — see below |
+| `presentation` | object | yes      | Presentation-only data (sprite, death effect) — see below |
 | `modules`      | array  | no       | The enemy's defensive and mechanical traits — see below |
 | `upgrade`      | object | no       | A single stat-scaling step re-applied once per upgrade tier — see below |
 
@@ -26,13 +26,13 @@ status immunities — comes from the `modules` array.
 
 ---
 
-## `visual` object
+## `presentation` object
 
-All presentation-only data (visuals **and** audio) lives in a nested `"visual"` object, separate
-from the gameplay stats. This mirrors the `"visual"` block used by towers (`towers.md`).
+All presentation-only data (visuals **and** audio) lives in a nested `"presentation"` object, separate
+from the gameplay stats. This mirrors the `"presentation"` block used by towers (`towers.md`).
 
 ```json
-"visual": {
+"presentation": {
     "texture": "enemy_shade",
     "deathSound": "enemy_death",
     "deathEmitter": "death_small"

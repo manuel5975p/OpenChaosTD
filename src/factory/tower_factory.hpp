@@ -35,7 +35,7 @@ private:
         std::string description;
         int cost = 100;
         float range = 0.0f; // cached from the Attack module def for GetRange (build preview/ghost)
-        TowerPresentation visual;
+        TowerPresentation presentation;
         std::vector<toml::table> modules; // all module defs (Attack/Passive/effects), built per Create
         std::vector<TowerUpgrade> upgrades;
     };

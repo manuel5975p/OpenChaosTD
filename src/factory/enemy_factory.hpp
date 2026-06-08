@@ -35,7 +35,7 @@ private:
         float speed = 50.0f;
         int reward = 5;
         int livesOnReach = 1;
-        EnemyPresentation visual;
+        EnemyPresentation presentation;
         std::vector<toml::table> modules;
         std::optional<EnemyUpgrade> upgrade; // single upgrade option, applied once per upgrade tier
     };

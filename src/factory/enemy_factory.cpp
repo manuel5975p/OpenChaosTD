@@ -57,7 +57,7 @@ void EnemyFactory::Load(FileStore& fileStore, const EmitterPresets& presets) {
         tmpl.speed       = (*entry)["speed"].value_or(50.0f);
         tmpl.reward      = (*entry)["reward"].value_or(5);
         tmpl.livesOnReach = (*entry)["livesOnReach"].value_or(1);
-        if (auto vis = (*entry)["visual"].as_table()) tmpl.visual = ParsePresentation(*vis, presets);
+        if (auto vis = (*entry)["presentation"].as_table()) tmpl.presentation = ParsePresentation(*vis, presets);
 
         if (auto mods = (*entry)["modules"].as_array())
             for (auto&& m : *mods)
@@ -81,7 +81,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     Enemy enemy;
     enemy.m_name        = tmpl.name;
     enemy.m_description = tmpl.description;
-    enemy.m_presentation = tmpl.visual;
+    enemy.m_presentation = tmpl.presentation;
     enemy.m_upgrade     = tmpl.upgrade ? &*tmpl.upgrade : nullptr; // stable: templates are fixed after Load
 
     // The core stats module is always present and added first, so it is cached (GetBaseStats) and

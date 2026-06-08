@@ -10,12 +10,12 @@ All towers are defined in `data/towers.json` as an array under the `"towers"` ke
 | `description` | string | yes      | Shown in the info panel |
 | `cost`        | int    | yes      | Gold cost to place |
 | `modules`     | array  | yes      | The tower's behavior modules — see below |
-| `visual`      | object | yes      | Sprite + attack presentation (incl. `texture`) — see below |
+| `presentation`| object | yes      | Sprite + attack presentation (incl. `texture`) — see below |
 
-The sprite key lives inside the `visual` block (mirroring `enemies.md`), not as a top-level field.
+The sprite key lives inside the `presentation` block (mirroring `enemies.md`), not as a top-level field.
 
 There is no role field. A tower's behavior is defined entirely by its `modules`: a tower with an
-`Attack` module shoots; one with only a `Passive` module is a non-attacking wall (its `visual`
+`Attack` module shoots; one with only a `Passive` module is a non-attacking wall (its `presentation`
 block then carries only a `texture`, and it has no `upgrades`).
 
 ---
@@ -163,7 +163,7 @@ No enemy effect. Pair with a `critImpact` visual for an on-crit particle burst.
 
 ---
 
-## `visual` block
+## `presentation` block
 
 Holds the sprite key, the attack sound, plus beam/ring appearance and particle bursts. Only
 `texture` affects what is drawn; the rest is presentation (visuals and audio) and does not affect
