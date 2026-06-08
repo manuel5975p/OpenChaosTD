@@ -63,6 +63,7 @@ struct Slider {
     float m_value = 0.0f;
     float m_min = 0.0f;
     float m_max = 1.0f;
+    float m_step = 0.0f; // 0 = continuous; otherwise snap to multiples of m_step from m_min
 
     void Update(Vector2 mouse, bool held);
     bool IsDragging() const { return m_dragging; }

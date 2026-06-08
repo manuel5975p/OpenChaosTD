@@ -5,7 +5,7 @@
     },
     "display": {
         "fps": 120,
-        "hudScale": 1.2
+        "hudScale": 2.0
     },
     "window": {
         "height": 1200,

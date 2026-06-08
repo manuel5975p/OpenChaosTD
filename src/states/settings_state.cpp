@@ -97,11 +97,11 @@ void SettingsState::Layout(Game& game) {
 
     // Audio + HUD-scale sliders
     m_musicSlider.m_rect = {kSliderX, kMusicY, kSliderW, kSliderH};
-    m_musicSlider.m_min = 0.0f; m_musicSlider.m_max = 1.0f;
+    m_musicSlider.m_min = 0.0f; m_musicSlider.m_max = 1.0f; m_musicSlider.m_step = 0.05f;
     m_sfxSlider.m_rect = {kSliderX, kSfxY, kSliderW, kSliderH};
-    m_sfxSlider.m_min = 0.0f; m_sfxSlider.m_max = 1.0f;
+    m_sfxSlider.m_min = 0.0f; m_sfxSlider.m_max = 1.0f; m_sfxSlider.m_step = 0.05f;
     m_hudScaleSlider.m_rect = {kSliderX, kHudScaleY, kSliderW, kSliderH};
-    m_hudScaleSlider.m_min = 0.5f; m_hudScaleSlider.m_max = 3.0f;
+    m_hudScaleSlider.m_min = 1.0f; m_hudScaleSlider.m_max = 2.0f; m_hudScaleSlider.m_step = 0.25f;
 
     // FPS stepper: [<] value [>]
     m_fpsDownBtn.m_label = "<";

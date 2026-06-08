@@ -1,6 +1,7 @@
 #include <game_config.hpp>
 #include <engine/util/file_store.hpp>
 #include <raylib.h>
+#include <cmath>
 
 void GameConfig::Load(FileStore& fileStore) {
     if (!fileStore.Exists("config/settings.json"))
@@ -37,9 +38,11 @@ void GameConfig::Save(FileStore& fileStore) {
     j["window"]["height"] = gameHeight;
     j["window"]["title"] = title;
     j["display"]["fps"] = fps;
-    j["display"]["hudScale"] = hudScale;
-    j["audio"]["musicVolume"] = musicVolume;
-    j["audio"]["sfxVolume"] = sfxVolume;
+    // Round slider-driven floats to 2 decimals so the snapped increments
+    // serialize cleanly (e.g. 0.85, 1.25) instead of float-promotion noise.
+    j["display"]["hudScale"] = std::round(hudScale * 100.0) / 100.0;
+    j["audio"]["musicVolume"] = std::round(musicVolume * 100.0) / 100.0;
+    j["audio"]["sfxVolume"] = std::round(sfxVolume * 100.0) / 100.0;
     fileStore.SaveJson("config/settings.json", j);
 }
 

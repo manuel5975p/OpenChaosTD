@@ -1,5 +1,6 @@
 #include <engine/features/ui_widgets.hpp>
 #include <algorithm>
+#include <cmath>
 
 // --- Button ---
 
@@ -34,7 +35,13 @@ void Slider::Update(Vector2 mouse, bool held) {
 
     if (m_dragging && m_max > m_min) {
         float t = std::clamp((mouse.x - m_rect.x) / m_rect.width, 0.0f, 1.0f);
-        m_value = m_min + t * (m_max - m_min);
+        float value = m_min + t * (m_max - m_min);
+
+        // Snap to the nearest step boundary measured from m_min.
+        if (m_step > 0.0f)
+            value = m_min + std::round((value - m_min) / m_step) * m_step;
+
+        m_value = std::clamp(value, m_min, m_max);
     }
 }
 
