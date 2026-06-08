@@ -54,13 +54,13 @@ void EnemySystem::TickEnemies(float dt, DenseSlotMap<Enemy>& enemies, const Map&
         }
 
         for (auto& effect : enemy.m_effects) {
-            // Emit visual particles for active effects (burn flicker, slow drift)
-            if (effect.m_emitRate > 0.0f) {
-                effect.m_emitAccumulator += effect.m_emitRate * dt;
-                while (effect.m_emitAccumulator >= 1.0f) {
-                    particles.Emit(enemy.m_position, effect.m_particleDesc, baseVel);
-                    effect.m_emitAccumulator -= 1.0f;
-                }
+            // Drive the engine-owned continuous emitter for this effect (burn flicker, slow drift).
+            // Register once, then refresh its anchor each frame so the emitter follows the enemy.
+            if (effect.m_particleDesc.m_emitRate > 0.0f) {
+                if (effect.m_emitter == DenseSlotMap<Emitter>::INVALID_KEY)
+                    effect.m_emitter = particles.AddEmitter(effect.m_particleDesc, enemy.m_position, baseVel);
+                else
+                    particles.UpdateEmitter(effect.m_emitter, enemy.m_position, baseVel);
             }
 
             // Status effects mutate the core module's live mirror directly (reset from base each
@@ -85,6 +85,11 @@ void EnemySystem::TickEnemies(float dt, DenseSlotMap<Enemy>& enemies, const Map&
             }
             effect.m_duration -= dt;
         }
-        std::erase_if(enemy.m_effects, [](const Effect& e){ return e.m_duration <= 0.0f; });
+        // Drop expired effects, releasing their live emitter promptly (no-op on an invalid handle).
+        std::erase_if(enemy.m_effects, [&particles](const Effect& e){
+            if (e.m_duration > 0.0f) return false;
+            particles.RemoveEmitter(e.m_emitter);
+            return true;
+        });
     }
 }

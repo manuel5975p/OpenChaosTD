@@ -86,34 +86,56 @@ Consumed state resets at the start of each frame in `Update()`.
 
 CPU particle system backed by a fixed-capacity `ObjectPool<Particle>` (2048 slots). Owned by `Game` alongside the other core managers — not part of game state.
 
-`EmitterDesc` is the public API for configuring a burst. `Particle` is an internal runtime type.
+`EmitterDesc` configures both spawning paths; `Particle` and `Emitter` are internal runtime types. There are two ways to spawn:
+
+- **Bursts** — fire-and-forget. `Emit` spawns `count` particles once at a position.
+- **Continuous emitters** — engine-owned, timer-driven. The system keeps a `DenseSlotMap<Emitter>` of live emitters that spawn `count` particles `emitRate` times per second from `Tick`. The owner registers one, then refreshes its anchor every frame so it can follow a moving source (e.g. a status effect on an enemy). Each emitter has a short keepalive that is reset by `UpdateEmitter`; if the owner stops updating it (effect expired, enemy dead), it self-removes within ~0.15 s, so explicit removal is optional.
 
 ```cpp
-// Spawn a burst at a world position
-game.GetParticles().Emit(position, desc);
+// --- Bursts ---
+game.GetParticles().Emit(position, desc);                 // one-shot
+game.GetParticles().Emit(position, desc, sourceVelocity); // base velocity added to each particle
 
-// With base velocity so particles follow a moving emitter (e.g. status effects on enemies)
-game.GetParticles().Emit(position, desc, enemyVelocity);
+// --- Continuous emitters ---
+EmitterHandle h = game.GetParticles().AddEmitter(desc, position, sourceVelocity);
+game.GetParticles().UpdateEmitter(h, newPosition, newVelocity); // each frame; refreshes keepalive
+game.GetParticles().RemoveEmitter(h);                           // optional prompt removal
 
-// Drive from the game loop
+// Drive from the game loop (advances emitters + integrates particles)
 game.GetParticles().Tick(dt);
 game.GetParticles().Draw();
 
-// Clear all live particles (call alongside GameData::Reset)
+// Clear all live particles and emitters (call alongside GameData::Reset)
 game.GetParticles().Clear();
 ```
+
+**Motion model.** Each particle's velocity each frame is the sum of three components, all relative to a per-particle `center` anchor captured at spawn:
+
+- **linear** — the cone direction (`angle` ± `spread`) at `speed`, plus any base velocity;
+- **radial** — `radialSpeed` along `normalize(position − center)` (outward if positive);
+- **tangential** — `tangentialSpeed` perpendicular to the radial direction (spin around the anchor).
+
+**Spawn shapes** offset each particle from the anchor at spawn while keeping `center` at the anchor, so radial/tangential math stays correct for shaped spawns. `Point` (default), `Line` (`shapeWidth` length along `angle`), `Box` (`shapeWidth` × `shapeHeight`), `Circle` (filled, `shapeRadius`), `Ring` (on the `shapeRadius` circumference).
 
 `EmitterDesc` fields — all angles in degrees:
 
 | Field | Default | Meaning |
 |---|---|---|
 | `color` / `endColor` | WHITE / transparent | Start and end tint, lerped over lifetime |
-| `count` | 0 | Particles per burst; 0 = disabled |
+| `count` | 0 | Particles per burst / per emission step; 0 = disabled for `Emit` |
 | `speed` / `speedVariance` | 50 / 20 | Ejection speed ± random |
 | `angle` | 0 | Centre direction (0=right, 90=down, 180=left, 270=up) |
 | `spread` | 360 | Total arc of the spawn cone in degrees |
 | `lifetime` | 0.2 | Seconds each particle lives |
 | `size` / `endSize` | 3 / 0 | Radius at birth and death, lerped over lifetime |
+| `shape` | Point | Spawn shape: Point / Line / Box / Circle / Ring |
+| `shapeSize` (`shapeWidth`/`shapeHeight`) | 0 / 0 | Box extents; Line uses width as length |
+| `shapeRadius` | 0 | Circle (max) / Ring (fixed) radius |
+| `radialSpeed` | 0 | Outward (+) / inward (−) speed relative to the anchor |
+| `tangentialSpeed` | 0 | Spin speed around the anchor |
+| `emitRate` | 0 | Continuous emitter spawns/sec; 0 = burst-only |
+
+Presets are defined in `data/particle_effects.toml` and loaded by `EmitterPresets` (`src/factory/`); the TOML keys match the field names above (`shapeWidth`/`shapeHeight` for the shape extents).
 
 ---
 
@@ -190,7 +212,7 @@ Header-only data structures with no engine or game dependencies.
 
 ### DenseSlotMap
 
-Stable-ID container with dense storage optimised for fast iteration. Handles are stable across insertions and removals. Used for towers and enemies.
+Stable-ID container with dense storage optimised for fast iteration. Handles are stable across insertions and removals. Used for towers, enemies, and the ParticleSystem's live emitters.
 
 ```cpp
 DenseSlotMap<Tower> towers;

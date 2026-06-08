@@ -97,10 +97,15 @@ public:
         for (const auto& mod : m_modules)
             if (mod->ShouldBlock(effect.m_type)) return;
 
-        // Effects don't stack; reapply only refreshes (timer + value) when equal or stronger
+        // Effects don't stack; reapply only refreshes (timer + value) when equal or stronger.
+        // Preserve the running emitter handle so the refresh doesn't orphan the live emitter.
         for (auto& existing : m_effects) {
             if (existing.m_type != effect.m_type) continue;
-            if (effect.m_value >= existing.m_value) existing = effect;
+            if (effect.m_value >= existing.m_value) {
+                EmitterHandle keep = existing.m_emitter;
+                existing = effect;
+                existing.m_emitter = keep;
+            }
             return;
         }
         m_effects.push_back(std::move(effect));

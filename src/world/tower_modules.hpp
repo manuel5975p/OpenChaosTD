@@ -116,7 +116,6 @@ class SlowModule : public TowerModule {
 public:
     float m_slowPercent, m_duration; // m_slowPercent: slow strength as a percent (90 = 90% slower)
     EmitterDesc m_particleDesc;
-    float m_emitRate = 8.0f;
     SlowModule(float slowPercent, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
@@ -127,7 +126,6 @@ class BurnModule : public TowerModule {
 public:
     float m_damage, m_duration;
     EmitterDesc m_particleDesc;
-    float m_emitRate = 18.0f;
     BurnModule(float value, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
@@ -138,7 +136,6 @@ class ArmorShredModule : public TowerModule {
 public:
     float m_amount, m_duration; // m_amount: flat armor removed while active
     EmitterDesc m_particleDesc;
-    float m_emitRate = 12.0f;
     ArmorShredModule(float amount, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
@@ -149,7 +146,6 @@ class WeaknessModule : public TowerModule {
 public:
     float m_amount, m_duration; // m_amount: flat bonus damage the next hit deals
     EmitterDesc m_particleDesc;
-    float m_emitRate = 10.0f;
     WeaknessModule(float amount, float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;
@@ -160,7 +156,6 @@ class StunModule : public TowerModule {
 public:
     float m_duration;
     EmitterDesc m_particleDesc;
-    float m_emitRate = 14.0f;
     StunModule(float duration, EmitterDesc particleDesc);
     void Contribute(AttackPayload& attack) const override;
     void DescribeStats(std::vector<DescLine>& out) const override;

@@ -9,6 +9,14 @@ static Color ParseColor(const toml::array& a) {
     };
 }
 
+static SpawnShape ParseShape(const std::string& s) {
+    if (s == "Line")   return SpawnShape::Line;
+    if (s == "Box")    return SpawnShape::Box;
+    if (s == "Circle") return SpawnShape::Circle;
+    if (s == "Ring")   return SpawnShape::Ring;
+    return SpawnShape::Point;
+}
+
 static EmitterDesc ParseEmitterDesc(const toml::table& j) {
     EmitterDesc d;
     if (auto c = j["color"].as_array())    d.m_color    = ParseColor(*c);
@@ -21,6 +29,14 @@ static EmitterDesc ParseEmitterDesc(const toml::table& j) {
     d.m_lifetime      = j["lifetime"].value_or(0.2f);
     d.m_size          = j["size"].value_or(3.0f);
     d.m_endSize       = j["endSize"].value_or(0.0f);
+
+    // Spawn shape, unified dynamics, and continuous emission rate.
+    d.m_shape           = ParseShape(j["shape"].value_or(std::string("Point")));
+    d.m_shapeSize       = {j["shapeWidth"].value_or(0.0f), j["shapeHeight"].value_or(0.0f)};
+    d.m_shapeRadius     = j["shapeRadius"].value_or(0.0f);
+    d.m_radialSpeed     = j["radialSpeed"].value_or(0.0f);
+    d.m_tangentialSpeed = j["tangentialSpeed"].value_or(0.0f);
+    d.m_emitRate        = j["emitRate"].value_or(0.0f);
 
     return d;
 }

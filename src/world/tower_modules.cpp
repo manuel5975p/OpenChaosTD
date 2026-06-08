@@ -62,7 +62,6 @@ SlowModule::SlowModule(float slowPercent, float duration, EmitterDesc particleDe
 void SlowModule::Contribute(AttackPayload& attack) const {
     Effect e(EffectType::Slow, m_duration, m_slowPercent);
     e.m_particleDesc = m_particleDesc;
-    e.m_emitRate = m_emitRate;
     attack.m_effects.push_back(std::move(e));
 }
 
@@ -85,7 +84,6 @@ BurnModule::BurnModule(float value, float duration, EmitterDesc particleDesc)
 void BurnModule::Contribute(AttackPayload& attack) const {
     Effect e(EffectType::Burn, m_duration, m_damage);
     e.m_particleDesc = m_particleDesc;
-    e.m_emitRate = m_emitRate;
     attack.m_effects.push_back(std::move(e));
 }
 
@@ -108,7 +106,6 @@ ArmorShredModule::ArmorShredModule(float amount, float duration, EmitterDesc par
 void ArmorShredModule::Contribute(AttackPayload& attack) const {
     Effect e(EffectType::ArmorShred, m_duration, m_amount);
     e.m_particleDesc = m_particleDesc;
-    e.m_emitRate = m_emitRate;
     attack.m_effects.push_back(std::move(e));
 }
 
@@ -131,7 +128,6 @@ WeaknessModule::WeaknessModule(float amount, float duration, EmitterDesc particl
 void WeaknessModule::Contribute(AttackPayload& attack) const {
     Effect e(EffectType::Weakness, m_duration, m_amount);
     e.m_particleDesc = m_particleDesc;
-    e.m_emitRate = m_emitRate;
     attack.m_effects.push_back(std::move(e));
 }
 
@@ -155,7 +151,6 @@ void StunModule::Contribute(AttackPayload& attack) const {
     // m_value = duration so the "equal or stronger" rule means a longer stun wins
     Effect e(EffectType::Stun, m_duration, m_duration);
     e.m_particleDesc = m_particleDesc;
-    e.m_emitRate = m_emitRate;
     attack.m_effects.push_back(std::move(e));
 }
 
