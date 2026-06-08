@@ -1,23 +1,29 @@
 #include <hud/wave_enemy_card.hpp>
-#include <systems/render_system.hpp>
-#include <world/enemy.hpp>
-#include <world/enemy_modules.hpp>
+#include <engine/core/resources.hpp>
 #include <raylib.h>
 #include <algorithm>
 
-void WaveEnemyCard::SetContent(int count, const std::string& name, const Enemy* proto) {
-    m_count = count;
-    m_name = name;
-    m_stats.clear();
-    m_hasProto = proto != nullptr;
-    if (!proto) return;
+// Draw a sprite scaled (aspect-preserving) to fit `dest`, centered. No-op if the key is missing.
+static void DrawSpriteFit(const std::string& textureKey, Resources& assets, Rectangle dest) {
+    if (!assets.HasTexture(textureKey)) return; // GetTexture throws on a missing key
+    Texture2D& texture = assets.GetTexture(textureKey);
+    if (texture.width <= 0 || texture.height <= 0) return;
 
-    m_level = proto->m_level;
-    m_textureKey = proto->m_presentation.m_texture;
-    // Every module appends its rows (Health/Speed, Armor, Regen, Shield, Split, Immune, ...),
-    // mirroring the tower info panel's per-module DescribeStats rendering.
-    for (const auto& mod : proto->m_modules)
-        mod->DescribeStats(m_stats);
+    float scale = std::min(dest.width / texture.width, dest.height / texture.height);
+    float w = texture.width  * scale;
+    float h = texture.height * scale;
+    Rectangle src = {0.0f, 0.0f, static_cast<float>(texture.width), static_cast<float>(texture.height)};
+    Rectangle dst = {dest.x + (dest.width - w) * 0.5f, dest.y + (dest.height - h) * 0.5f, w, h};
+    DrawTexturePro(texture, src, dst, {0.0f, 0.0f}, 0.0f, WHITE);
+}
+
+void WaveEnemyCard::SetContent(const WaveEnemyEntry& entry) {
+    m_count      = entry.m_count;
+    m_name       = entry.m_name;
+    m_level      = entry.m_level;
+    m_hasProto   = entry.m_hasProto;
+    m_textureKey = entry.m_textureKey;
+    m_stats      = entry.m_stats;
 }
 
 float WaveEnemyCard::Measure() const {
@@ -27,7 +33,7 @@ float WaveEnemyCard::Measure() const {
     return contentH + 2.0f * m_pad;
 }
 
-void WaveEnemyCard::Draw(Rectangle bounds, const RenderSystem& render, Resources& assets) const {
+void WaveEnemyCard::Draw(Rectangle bounds, Resources& assets) const {
     // Card frame: subtle fill plus a border so each enemy type reads as a distinct tile.
     DrawRectangleRec(bounds, {40, 40, 48, 200});
     DrawRectangleLinesEx(bounds, 1.0f, {90, 90, 100, 255});
@@ -35,7 +41,7 @@ void WaveEnemyCard::Draw(Rectangle bounds, const RenderSystem& render, Resources
     // Icon tile on the left; the sprite draws directly over the card with a transparent backing.
     Rectangle icon = { bounds.x + m_pad, bounds.y + m_pad, m_iconSize, m_iconSize };
     if (m_hasProto)
-        render.DrawEnemyIcon(m_textureKey, assets, icon);
+        DrawSpriteFit(m_textureKey, assets, icon);
 
     // Text column to the right of the icon.
     float tx = icon.x + m_iconSize + m_pad;

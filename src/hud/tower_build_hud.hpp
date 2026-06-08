@@ -1,14 +1,25 @@
 #pragma once
 
 #include <hud/hud.hpp>
+#include <hud/hud_views.hpp>
 #include <engine/features/ui_widgets.hpp>
 #include <raylib.h>
 #include <vector>
 #include <string>
 
+class Input;
+class Resources;
+
+// Static per-tower config for a build-bar button, captured once at Build time from the factory.
+struct TowerBuildOption {
+    std::string m_name;
+    std::string m_textureKey;
+    int m_cost = 0;
+};
+
 class TowerBuildHUD : public HUD {
 public:
-    void Build(Game& game);
+    void Build(float scale, int screenW, int screenH, const std::vector<TowerBuildOption>& options);
 
     const std::string& GetSelectedTower() const { return m_selectedTower; }
     void ClearSelection() { m_selectedTower = ""; }
@@ -18,11 +29,15 @@ public:
     // Returns the top-center screen position of the button under mousePos
     Vector2 GetHoveredButtonTopCenter(Vector2 mousePos) const;
 
-protected:
-    void OnProcessInput(Game& game) override;
-    void OnDraw(Game& game) override;
+    void ProcessInput(Input& input);
+    void Draw(const BuildBarView& view, Resources& assets);
 
 private:
-    std::vector<Button> m_buttons;
+    struct BuildButton {
+        Button m_button;
+        std::string m_textureKey;
+        int m_cost = 0;
+    };
+    std::vector<BuildButton> m_buttons;
     std::string m_selectedTower;
 };

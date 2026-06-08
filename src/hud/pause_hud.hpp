@@ -4,22 +4,21 @@
 #include <engine/features/ui_widgets.hpp>
 #include <raylib.h>
 
-class Game;
+class Input;
 
 // Centered pause overlay: dims the screen so the world stays visible behind it and offers
 // Resume / Restart / Main Menu. Hidden by default; PlayingState shows it while the simulation
 // is paused. Each button raises a one-shot signal that PlayingState consumes.
 class PauseHUD : public HUD {
 public:
-    void Build(Game& game);
+    void Build(float scale, int screenW, int screenH);
+
+    void ProcessInput(Input& input);
+    void Draw();
 
     bool WasResumeRequested()   { return m_resumeSignal.Consume(); }
     bool WasRestartRequested()  { return m_restartSignal.Consume(); }
     bool WasMainMenuRequested() { return m_mainMenuSignal.Consume(); }
-
-protected:
-    void OnProcessInput(Game& game) override;
-    void OnDraw(Game& game) override;
 
 private:
     Button m_resumeBtn;
@@ -28,4 +27,6 @@ private:
     HudSignal m_resumeSignal;
     HudSignal m_restartSignal;
     HudSignal m_mainMenuSignal;
+    int m_screenW = 0;
+    int m_screenH = 0;
 };

@@ -44,10 +44,10 @@ void WaveManager::Load(FileStore& fileStore, const EnemyFactory& enemyFactory) {
             auto e = eNode.as_table();
             if (!e) continue;
             PoolEntry entry;
-            entry.enemy = (*e)["enemy"].value_or(std::string{});
-            entry.cost = (*e)["cost"].value_or(1);
-            entry.minWave = (*e)["min_wave"].value_or(1);
-            entry.interval = (*e)["interval"].value_or(1.0f);
+            entry.m_enemy = (*e)["enemy"].value_or(std::string{});
+            entry.m_cost = (*e)["cost"].value_or(1);
+            entry.m_minWave = (*e)["min_wave"].value_or(1);
+            entry.m_interval = (*e)["interval"].value_or(1.0f);
             m_enemyPool.push_back(std::move(entry));
         }
     }
@@ -67,7 +67,7 @@ void WaveManager::Load(FileStore& fileStore, const EnemyFactory& enemyFactory) {
 
 const WaveManager::PoolEntry* WaveManager::FindPoolEntry(const std::string& name) const {
     for (const auto& e : m_enemyPool)
-        if (e.enemy == name) return &e;
+        if (e.m_enemy == name) return &e;
     return nullptr;
 }
 
@@ -97,8 +97,8 @@ WaveManager::WaveDef WaveManager::GenerateWave(int waveNumber) {
     // Selection pool: types unlocked by this wave and not reserved as bosses.
     std::vector<const PoolEntry*> pool;
     for (const auto& e : m_enemyPool) {
-        if (e.minWave > waveNumber) continue;
-        if (std::find(m_bossEnemies.begin(), m_bossEnemies.end(), e.enemy) != m_bossEnemies.end())
+        if (e.m_minWave > waveNumber) continue;
+        if (std::find(m_bossEnemies.begin(), m_bossEnemies.end(), e.m_enemy) != m_bossEnemies.end())
             continue;
         pool.push_back(&e);
     }
@@ -111,46 +111,46 @@ WaveManager::WaveDef WaveManager::GenerateWave(int waveNumber) {
         const PoolEntry* boss = FindPoolEntry(bossName);
 
         SpawnGroup g;
-        g.enemyType = bossName;
-        g.count = 1;
-        g.nest = -1;
-        g.interval = boss ? boss->interval : 1.5f;
-        def.groups.push_back(std::move(g));
+        g.m_enemyType = bossName;
+        g.m_count = 1;
+        g.m_nest = -1;
+        g.m_interval = boss ? boss->m_interval : 1.5f;
+        def.m_groups.push_back(std::move(g));
 
-        if (boss) budget -= static_cast<float>(boss->cost);
+        if (boss) budget -= static_cast<float>(boss->m_cost);
         if (budget < 0.0f) budget = 0.0f;
     }
 
     if (pool.empty()) return def; // boss-only wave (or nothing unlocked yet)
 
     // Cheapest unit sets the loop's termination floor.
-    int cheapest = pool.front()->cost;
-    for (const auto* e : pool) cheapest = std::min(cheapest, e->cost);
+    int cheapest = pool.front()->m_cost;
+    for (const auto* e : pool) cheapest = std::min(cheapest, e->m_cost);
 
     // Semi-random selection: draw affordable units until the budget can't afford the cheapest.
     std::unordered_map<std::string, int> tally;
     while (budget >= static_cast<float>(cheapest)) {
         std::vector<const PoolEntry*> affordable;
         for (const auto* e : pool)
-            if (static_cast<float>(e->cost) <= budget) affordable.push_back(e);
+            if (static_cast<float>(e->m_cost) <= budget) affordable.push_back(e);
         if (affordable.empty()) break;
 
         std::uniform_int_distribution<std::size_t> pick(0, affordable.size() - 1);
         const PoolEntry* chosen = affordable[pick(m_rng)];
-        tally[chosen->enemy]++;
-        budget -= static_cast<float>(chosen->cost);
+        tally[chosen->m_enemy]++;
+        budget -= static_cast<float>(chosen->m_cost);
     }
 
     // Group identical selections into one spawn group each.
     for (const auto& [name, count] : tally) {
         const PoolEntry* e = FindPoolEntry(name);
         SpawnGroup g;
-        g.enemyType = name;
-        g.count = count;
-        g.nest = -1;
-        g.interval = e ? e->interval : 1.0f;
-        g.delay = 0.0f;
-        def.groups.push_back(std::move(g));
+        g.m_enemyType = name;
+        g.m_count = count;
+        g.m_nest = -1;
+        g.m_interval = e ? e->m_interval : 1.0f;
+        g.m_delay = 0.0f;
+        def.m_groups.push_back(std::move(g));
     }
 
     return def;
@@ -171,13 +171,13 @@ void WaveManager::RebuildPreviewPrototypes(int pendingWaveNumber, const EnemyFac
     int tier = UpgradeTierFor(pendingWaveNumber);
 
     // One fully-upgraded prototype per unique enemy type in the upcoming wave.
-    for (const auto& grp : m_pendingDef.groups) {
-        if (m_previewPrototypes.count(grp.enemyType)) continue;
-        if (!enemyFactory.Has(grp.enemyType)) continue; // e.g. an unlisted type — nothing to clone
-        Enemy proto = enemyFactory.Create(grp.enemyType);
+    for (const auto& grp : m_pendingDef.m_groups) {
+        if (m_previewPrototypes.count(grp.m_enemyType)) continue;
+        if (!enemyFactory.Has(grp.m_enemyType)) continue; // e.g. an unlisted type — nothing to clone
+        Enemy proto = enemyFactory.Create(grp.m_enemyType);
         ApplyTierUpgrades(proto, tier, enemyFactory);
         proto.RecomputeLive(); // refresh live speed/armor so the HUD shows upgraded values
-        m_previewPrototypes.emplace(grp.enemyType, std::move(proto));
+        m_previewPrototypes.emplace(grp.m_enemyType, std::move(proto));
     }
 }
 
@@ -189,18 +189,18 @@ void WaveManager::BuildSpawnQueue(const WaveDef& def, int nestCount) {
     if (nestCount <= 0) return; // no nests — nothing to spawn from, and avoids modulo-by-zero
 
     int nestIdx = 0;
-    for (const auto& grp : def.groups) {
-        for (int i = 0; i < grp.count; i++) {
+    for (const auto& grp : def.m_groups) {
+        for (int i = 0; i < grp.m_count; i++) {
             PendingSpawn ps;
-            ps.type = grp.enemyType;
-            ps.nest = (grp.nest >= 0) ? grp.nest : (nestIdx++ % nestCount);
-            ps.time = grp.delay + i * grp.interval;
+            ps.m_type = grp.m_enemyType;
+            ps.m_nest = (grp.m_nest >= 0) ? grp.m_nest : (nestIdx++ % nestCount);
+            ps.m_time = grp.m_delay + i * grp.m_interval;
             m_pendingSpawns.push_back(ps);
         }
     }
 
     std::sort(m_pendingSpawns.begin(), m_pendingSpawns.end(),
-        [](const PendingSpawn& a, const PendingSpawn& b) { return a.time < b.time; });
+        [](const PendingSpawn& a, const PendingSpawn& b) { return a.m_time < b.m_time; });
 }
 
 void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, EnemyFactory& enemyFactory) {
@@ -209,11 +209,11 @@ void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, Ene
 
         // Fire any spawns whose scheduled time has arrived, cloning from the pre-upgraded prototypes
         while (m_nextSpawn < static_cast<int>(m_pendingSpawns.size())
-               && m_pendingSpawns[m_nextSpawn].time <= m_elapsed) {
+               && m_pendingSpawns[m_nextSpawn].m_time <= m_elapsed) {
             const auto& ps = m_pendingSpawns[m_nextSpawn++];
-            auto it = m_spawnPrototypes.find(ps.type);
+            auto it = m_spawnPrototypes.find(ps.m_type);
             if (it == m_spawnPrototypes.end()) continue; // unknown type — no prototype to clone
-            worldSystem.SpawnEnemy(ps.nest, it->second.Clone(), data);
+            worldSystem.SpawnEnemy(ps.m_nest, it->second.Clone(), data);
         }
 
         // Wave ends once the spawn queue is exhausted and all enemies are cleared

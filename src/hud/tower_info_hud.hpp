@@ -1,29 +1,28 @@
 #pragma once
 
 #include <hud/hud.hpp>
+#include <hud/hud_views.hpp>
 #include <engine/features/ui_widgets.hpp>
-#include <world/tower.hpp>
 #include <raylib.h>
 #include <string>
 #include <vector>
 
-class Game;
+class Input;
 
 class TowerInfoHUD : public HUD {
 public:
-    void Build(Game& game);
+    void Build(float scale);
 
-    // Point the panel at a tower, position it near a screen anchor, and show it.
-    // interactive = a real selected tower (shows config buttons) vs a hover preview.
-    void SetTarget(Game& game, const Tower& tower, Vector2 screenPos, bool interactive);
+    // Point the panel at a tower (or hover preview) described by a read-only view, position it
+    // near the view's screen anchor, and show it.
+    void SetTarget(const TowerInfoView& view);
+
+    void ProcessInput(Input& input);
+    void Draw();
 
     bool WasSellRequested() { return m_sellSignal.Consume(); }
     bool WasTargetingCycleRequested() { return m_targetSignal.Consume(); }
     bool WasUpgradeRequested() { return m_upgradeSignal.Consume(); }
-
-protected:
-    void OnProcessInput(Game& game) override;
-    void OnDraw(Game& game) override;
 
 private:
     float m_panelW    = 160.0f;
@@ -38,7 +37,17 @@ private:
     int   m_fontDesc   = 10;
     int   m_fontHeader = 14;
 
-    const Tower* m_target = nullptr;
+    // Content snapshot taken in SetTarget (no Tower/Enemy references kept).
+    bool m_hasTarget = false;
+    std::string m_name;
+    bool m_hasAttack = false;
+    int  m_level = 0;
+    int  m_upgradeCount = 0;
+    std::vector<std::string> m_descLines;
+    std::vector<DescLine> m_statLines;
+    std::string m_targetingName;
+    int m_screenH = 0;
+
     Button m_sellBtn;
     Button m_targetBtn;
     Button m_upgradeBtn;
@@ -51,8 +60,7 @@ private:
     bool m_showUpgrade = false;
     bool m_upgradeReady = false;    // affordable and not yet max level
     bool m_hasNextUpgrade = false;  // an unpurchased upgrade level exists
-    std::vector<std::string> m_descLines;
     std::vector<DescLine> m_upgradePreview; // delta lines for the next upgrade
 
-    void DrawUpgradeTooltip(Game& game);
+    void DrawUpgradeTooltip();
 };

@@ -1,15 +1,12 @@
 #include <hud/wave_hud.hpp>
 #include <hud/wave_enemy_card.hpp>
-#include <game.hpp>
-#include <systems/wave_manager.hpp>
-#include <systems/render_system.hpp>
-#include <world/enemy.hpp>
+#include <engine/core/input.hpp>
+#include <engine/core/resources.hpp>
 #include <raylib.h>
 #include <vector>
-#include <unordered_map>
 
-void WaveHUD::Build(Game& game, const WaveManager& waveManager, const RenderSystem& renderSystem) {
-    HUD::Build(game.GetGameConfig().hudScale);
+void WaveHUD::Build(float scale, int screenW) {
+    HUD::Build(scale);
     m_panelW    = Scaled(200.0f);
     m_margin    = Scaled(8.0f);
     m_lineH     = Scaled(14.0f);
@@ -20,34 +17,30 @@ void WaveHUD::Build(Game& game, const WaveManager& waveManager, const RenderSyst
     m_topOffset = Scaled(42.0f);
     m_fontSm     = ScaledInt(11.0f);
     m_fontHeader = ScaledInt(14.0f);
-    m_waveManager = &waveManager;
-    m_renderSystem = &renderSystem;
+    m_screenW = screenW;
     Hide(); // hidden by default; shown via the Waves button or the WaveInfo hotkey
 }
 
-void WaveHUD::OnProcessInput(Game& game) {
+void WaveHUD::ProcessInput(Input& input) {
+    if (!m_visible) return;
     // Swallow clicks that land on the panel so they don't place/deselect towers underneath.
-    ConsumePanelClick(game.GetInput());
+    ConsumePanelClick(input);
 }
 
-void WaveHUD::OnDraw(Game& game) {
-    if (!m_waveManager || !m_renderSystem) return;
+void WaveHUD::Draw(const WaveView& view, Resources& assets) {
+    if (!m_visible) return;
 
-    const std::vector<WaveManager::SpawnGroup>& groups = m_waveManager->GetNextWaveDef().groups;
-    const std::unordered_map<std::string, Enemy>& prototypes = m_waveManager->GetPreviewPrototypes();
-
-    // Build one card per enemy group up front, so the panel can size itself to their total height
+    // Build one card per enemy entry up front, so the panel can size itself to their total height
     // (cards grow with their module count, exactly like the tower info panel).
     std::vector<WaveEnemyCard> cards;
-    cards.reserve(groups.size());
-    for (const auto& g : groups) {
+    cards.reserve(view.m_entries.size());
+    for (const auto& entry : view.m_entries) {
         WaveEnemyCard card;
         card.m_pad = m_cardPad;
         card.m_iconSize = m_iconSize;
         card.m_lineH = m_lineH;
         card.m_fontSm = m_fontSm;
-        auto it = prototypes.find(g.enemyType);
-        card.SetContent(g.count, g.enemyType, it != prototypes.end() ? &it->second : nullptr);
+        card.SetContent(entry);
         cards.push_back(std::move(card));
     }
 
@@ -60,7 +53,7 @@ void WaveHUD::OnDraw(Game& game) {
     }
     float panelH = m_margin + m_headerH + bodyH + m_margin;
 
-    float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
+    float screenW = static_cast<float>(m_screenW);
     m_panelRect = { screenW - m_panelW - m_margin, m_topOffset, m_panelW, panelH };
 
     DrawPanelBackground(220, true);
@@ -71,7 +64,7 @@ void WaveHUD::OnDraw(Game& game) {
 
     // Header: title on the left, upcoming threat budget right-aligned.
     DrawText("Next Wave", static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
-    const char* budgetText = TextFormat("Budget: %d", static_cast<int>(m_waveManager->GetNextWaveBudget()));
+    const char* budgetText = TextFormat("Budget: %d", static_cast<int>(view.m_budget));
     int bw = MeasureText(budgetText, m_fontSm);
     DrawText(budgetText,
              static_cast<int>(m_panelRect.x + m_panelW - m_margin) - bw,
@@ -85,7 +78,7 @@ void WaveHUD::OnDraw(Game& game) {
 
     for (const auto& card : cards) {
         float h = card.Measure();
-        card.Draw({ x, y, innerW, h }, *m_renderSystem, game.GetResources());
+        card.Draw({ x, y, innerW, h }, assets);
         y += h + m_cardGap;
     }
 }

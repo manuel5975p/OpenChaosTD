@@ -1,13 +1,15 @@
 #include <hud/pause_hud.hpp>
-#include <game.hpp>
+#include <engine/core/input.hpp>
 #include <raylib.h>
 
-void PauseHUD::Build(Game& game) {
-    HUD::Build(game.GetGameConfig().hudScale);
+void PauseHUD::Build(float scale, int screenW, int screenH) {
+    HUD::Build(scale);
     Hide(); // shown only while the game is paused
 
-    float gw = static_cast<float>(game.GetScreen().GetGameWidth());
-    float gh = static_cast<float>(game.GetScreen().GetGameHeight());
+    m_screenW = screenW;
+    m_screenH = screenH;
+    float gw = static_cast<float>(screenW);
+    float gh = static_cast<float>(screenH);
 
     // Centered panel sized to hold the title and three stacked buttons.
     float panelW = Scaled(240.0f);
@@ -28,12 +30,14 @@ void PauseHUD::Build(Game& game) {
     m_mainMenuBtn.m_rect = { btnX, firstY + spacing * 2.0f, btnW, btnH };
 }
 
-void PauseHUD::OnProcessInput(Game& game) {
-    Vector2 mousePos = game.GetInput().GetMousePosition();
-    bool pressed = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
+void PauseHUD::ProcessInput(Input& input) {
+    if (!m_visible) return;
+
+    Vector2 mousePos = input.GetMousePosition();
+    bool pressed = input.IsMousePressed(MOUSE_LEFT_BUTTON);
 
     // Swallow clicks landing on the panel so they never reach the game grid behind it.
-    ConsumePanelClick(game.GetInput());
+    ConsumePanelClick(input);
 
     m_resumeBtn.Update(mousePos, pressed);
     m_restartBtn.Update(mousePos, pressed);
@@ -44,12 +48,11 @@ void PauseHUD::OnProcessInput(Game& game) {
     if (m_mainMenuBtn.IsClicked()) m_mainMenuSignal.Raise();
 }
 
-void PauseHUD::OnDraw(Game& game) {
-    int gw = game.GetScreen().GetGameWidth();
-    int gh = game.GetScreen().GetGameHeight();
+void PauseHUD::Draw() {
+    if (!m_visible) return;
 
     // Dim the whole screen so the map, towers, and enemies stay visible behind the menu.
-    DrawRectangle(0, 0, gw, gh, {0, 0, 0, 120});
+    DrawRectangle(0, 0, m_screenW, m_screenH, {0, 0, 0, 120});
 
     // Panel background reuses the shared HUD style (dark fill + subtle border).
     DrawPanelBackground(230, true);

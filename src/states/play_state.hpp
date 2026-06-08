@@ -30,6 +30,12 @@ private:
     void SyncHUDState(Game& game);
     void UpgradeSelectedTower(Game& game);
 
+    // Build the per-frame read-only views handed to the HUDs (keeps HUDs off GameData/WaveManager).
+    StatusView MakeStatusView(Game& game);
+    BuildBarView MakeBuildBarView(Game& game);
+    WaveView MakeWaveView();
+    TowerInfoView MakeTowerInfoView(Game& game, const Tower& tower, Vector2 screenPos, bool interactive);
+
     // Pause menu
     void SetPaused(bool paused);
     void HandlePauseSignals(Game& game);

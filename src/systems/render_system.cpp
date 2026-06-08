@@ -1,7 +1,6 @@
 #include <systems/render_system.hpp>
 
 #include <raymath.h>
-#include <algorithm>
 
 void RenderSystem::DrawMap(const Map& map, Resources& assets){
     for (int y = 0; y < map.GetRows(); y++) {
@@ -52,12 +51,12 @@ void RenderSystem::DebugDrawMap(const Map& map){
     for (int y = 0; y < map.GetRows(); y++) {
         for (int x = 0; x < map.GetCols(); x++) {
             // Draw flowfield flow direction and distance
-            if(map.GetPathMesh().Get(x, y).distance != std::numeric_limits<int>::max()){
+            if(map.GetPathMesh().Get(x, y).m_distance != std::numeric_limits<int>::max()){
                 // Distance
-                DrawText(TextFormat("%i", map.GetPathMesh().Get(x, y).distance), map.TileToWorld(x, y).x + 1, map.TileToWorld(x, y).y + 1, 6, BLACK);
+                DrawText(TextFormat("%i", map.GetPathMesh().Get(x, y).m_distance), map.TileToWorld(x, y).x + 1, map.TileToWorld(x, y).y + 1, 6, BLACK);
 
                 // Flow direction
-                std::pair<int, int> end = map.GetPathMesh().Get(x, y).predecessor;;
+                std::pair<int, int> end = map.GetPathMesh().Get(x, y).m_predecessor;;
                 DrawLine(x * tileSize +halfTileSize, y * tileSize +halfTileSize, end.first * tileSize +halfTileSize, end.second * tileSize +halfTileSize, BLACK);
             }
         }
@@ -70,7 +69,7 @@ void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, Resources& asse
         float hw = static_cast<float>(texture.width)  / 2.0f;
         float hh = static_cast<float>(texture.height) / 2.0f;
 
-        float flashRatio = tower.m_attackFlashRatio;
+        float flashRatio = tower.m_animation.m_attackFlashRatio;
         Color tint = (flashRatio > 0.0f) ? ColorLerp(WHITE, ORANGE, flashRatio) : WHITE;
         DrawTextureV(texture, {tower.m_position.x - hw, tower.m_position.y - hh}, tint);
 
@@ -134,20 +133,6 @@ void RenderSystem::DrawEnemies(const DenseSlotMap<Enemy>& enemies, Resources& as
     }
 }
 
-void RenderSystem::DrawEnemyIcon(const std::string& textureKey, Resources& assets, Rectangle dest) const {
-    if (!assets.HasTexture(textureKey)) return; // GetTexture throws on a missing key
-    Texture2D& texture = assets.GetTexture(textureKey);
-    if (texture.width <= 0 || texture.height <= 0) return;
-
-    // Fit the sprite into dest, preserving aspect ratio, and center it.
-    float scale = std::min(dest.width / texture.width, dest.height / texture.height);
-    float w = texture.width  * scale;
-    float h = texture.height * scale;
-    Rectangle src = {0.0f, 0.0f, static_cast<float>(texture.width), static_cast<float>(texture.height)};
-    Rectangle dst = {dest.x + (dest.width - w) * 0.5f, dest.y + (dest.height - h) * 0.5f, w, h};
-    DrawTexturePro(texture, src, dst, {0.0f, 0.0f}, 0.0f, WHITE);
-}
-
 void RenderSystem::DrawAttacks(const std::vector<Attack>& attacks) {
     for (const auto& a : attacks) {
         const AttackVisual& v = a.m_visual;
@@ -180,9 +165,9 @@ void RenderSystem::DebugDrawEnemies(const DenseSlotMap<Enemy>& enemies) {
 }
 
 void RenderSystem::CenterCamera(Map& map, Screen& renderer){
-    camera.target = {-static_cast<float>(renderer.GetGameWidth()) / 2.f, -static_cast<float>(renderer.GetGameHeight()) / 2.f};
-    camera.offset = {-(map.GetCols() * map.GetTileSize()) / 2.f, -(map.GetRows() * map.GetTileSize()) / 2.f};
-    camera.zoom = 1.0f;
+    m_camera.target = {-static_cast<float>(renderer.GetGameWidth()) / 2.f, -static_cast<float>(renderer.GetGameHeight()) / 2.f};
+    m_camera.offset = {-(map.GetCols() * map.GetTileSize()) / 2.f, -(map.GetRows() * map.GetTileSize()) / 2.f};
+    m_camera.zoom = 1.0f;
 }
 
 void RenderSystem::ControlCamera(float& dt, Input& input){
@@ -200,13 +185,13 @@ void RenderSystem::ControlCamera(float& dt, Input& input){
 
     // Move camera by draging
     if(input.IsMouseDown(MOUSE_RIGHT_BUTTON)){
-        direction = (input.GetMousePosition() -mousePositionLast) / camera.zoom;
+        direction = (input.GetMousePosition() -m_mousePositionLast) / m_camera.zoom;
     }
 
-    camera.target -= direction;
+    m_camera.target -= direction;
 
-    // Update mousePositionLast
-    mousePositionLast = input.GetMousePosition();
+    // Update m_mousePositionLast
+    m_mousePositionLast = input.GetMousePosition();
 
     // ------------------------------
     // Zooming Camera
@@ -216,17 +201,17 @@ void RenderSystem::ControlCamera(float& dt, Input& input){
         Vector2 mouseScreen = input.GetMousePosition();
 
         // 1. Where in the world is the mouse RIGHT NOW?
-        Vector2 mouseWorld = input.GetWorldMousePosition(camera);
+        Vector2 mouseWorld = input.GetWorldMousePosition(m_camera);
 
         // 2. Shift offset to mouse (makes mouse the anchor)
-        camera.offset = mouseScreen;
-        camera.target = mouseWorld;
+        m_camera.offset = mouseScreen;
+        m_camera.target = mouseWorld;
 
         // 3. Apply zoom
-        zoomIndex += wheel;
-        zoomIndex = Clamp(zoomIndex, 0, static_cast<int>(sizeof(zoomLevel) / sizeof(zoomLevel[0])) -1);
+        m_zoomIndex += wheel;
+        m_zoomIndex = Clamp(m_zoomIndex, 0, static_cast<int>(sizeof(m_zoomLevel) / sizeof(m_zoomLevel[0])) -1);
 
-        camera.zoom = zoomLevel[zoomIndex];
+        m_camera.zoom = m_zoomLevel[m_zoomIndex];
     }
 }
 

@@ -17,15 +17,26 @@ void PlayingState::OnEnter(Game& game) {
 
     m_renderSystem.CenterCamera(game.GetGameData().m_map, game.GetScreen());
 
-    m_towerHUD.Build(game);
-    m_scoreHUD.Build(game, m_waveManager);
-    m_towerInfoHUD.Build(game);
-    m_waveHUD.Build(game, m_waveManager, m_renderSystem);
-    m_eventLog.Build(game.GetGameConfig().hudScale);
+    float scale   = game.GetGameConfig().hudScale;
+    int   screenW = game.GetScreen().GetGameWidth();
+    int   screenH = game.GetScreen().GetGameHeight();
+
+    // Static build-bar config (names/textures/costs) captured once from the factory.
+    std::vector<TowerBuildOption> towerOptions;
+    for (const auto& name : game.GetTowerFactory().GetNames())
+        towerOptions.push_back({ name,
+                                 game.GetTowerFactory().GetTexture(name),
+                                 game.GetTowerFactory().GetCost(name) });
+
+    m_towerHUD.Build(scale, screenW, screenH, towerOptions);
+    m_scoreHUD.Build(scale, screenW);
+    m_towerInfoHUD.Build(scale);
+    m_waveHUD.Build(scale, screenW);
+    m_eventLog.Build(scale);
 
     m_waveManager.Load(game.GetFileStore(), game.GetEnemyFactory());
 
-    m_pauseHUD.Build(game);
+    m_pauseHUD.Build(scale, screenW, screenH);
 }
 
 void PlayingState::OnExit(Game& game) {
@@ -37,7 +48,7 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     // overlay receives input so clicks never bleed through to the game grid.
     if (game.GetInput().IsPressed("Cancel")) SetPaused(!m_paused);
     if (m_paused) {
-        m_pauseHUD.ProcessInput(game);
+        m_pauseHUD.ProcessInput(game.GetInput());
         HandlePauseSignals(game);
         return;
     }
@@ -49,10 +60,10 @@ void PlayingState::ProcessInput(Game& game, float dt) {
 
     // HUDs consume mouse input first so clicks don't bleed through to the world.
     // Each call is a no-op while that HUD is hidden.
-    m_towerHUD.ProcessInput(game);
-    m_scoreHUD.ProcessInput(game);
-    m_towerInfoHUD.ProcessInput(game);
-    m_waveHUD.ProcessInput(game);
+    m_towerHUD.ProcessInput(game.GetInput());
+    m_scoreHUD.ProcessInput(game.GetInput(), MakeStatusView(game));
+    m_towerInfoHUD.ProcessInput(game.GetInput());
+    m_waveHUD.ProcessInput(game.GetInput());
     HandleHudSignals(game);
 
     Vector2 mouseWorld = game.GetInput().GetWorldMousePosition(m_renderSystem.GetCamera());
@@ -69,9 +80,7 @@ void PlayingState::Update(Game& game, float dt) {
     if (m_gameOver)
         game.ChangeState(std::make_unique<EndState>(false));
 
-    m_scoreHUD.SetAutoSpawn(m_waveManager.IsAutoSpawn());
-    m_scoreHUD.SetSpeed(kSpeedSteps[m_speedIndex]);
-    m_eventLog.Update(game, dt); // HUD fade tracks real time, not game speed
+    m_eventLog.Update(dt); // HUD fade tracks real time, not game speed
 
     // Run the simulation once per speed step. Each sub-step uses the real frame dt so per-frame
     // timing (tower cooldowns, spawn pacing) stays accurate instead of feeding one oversized step.
@@ -80,18 +89,19 @@ void PlayingState::Update(Game& game, float dt) {
 }
 
 void PlayingState::StepSimulation(Game& game, float dt) {
-    m_waveManager.Update(dt, game.GetGameData(), m_worldSystem, game.GetEnemyFactory());
+    GameData& data = game.GetGameData();
+    m_waveManager.Update(dt, data, m_worldSystem, game.GetEnemyFactory());
 
-    m_enemySystem.TickEnemies(dt, game.GetGameData(), game.GetParticles());
-    m_enemySystem.FollowPath(dt, game.GetGameData());
+    m_enemySystem.TickEnemies(dt, data.m_enemies, data.m_map, game.GetParticles());
+    m_enemySystem.FollowPath(dt, data.m_enemies, data.m_map);
 
-    m_towerSystem.Update(dt, game.GetGameData(), game.GetParticles(), game.GetSoundSystem());
-    m_towerSystem.TickAttacks(dt, game.GetGameData(), game.GetParticles());
+    m_towerSystem.Update(dt, data.m_towers, data.m_enemies, data.m_attacks, game.GetParticles(), game.GetSoundSystem());
+    m_towerSystem.TickAttacks(dt, data.m_enemies, data.m_attacks, game.GetParticles());
     game.GetParticles().Tick(dt);
 
-    m_worldSystem.CheckEnemyReachedCore(game.GetGameData());
-    m_worldSystem.CheckEnemyDead(game.GetGameData(), game.GetEnemyFactory(), game.GetParticles(), game.GetSoundSystem());
-    m_worldSystem.CheckGameOver(m_gameOver, game.GetGameData());
+    m_worldSystem.CheckEnemyReachedCore(data);
+    m_worldSystem.CheckEnemyDead(data, game.GetEnemyFactory(), game.GetParticles(), game.GetSoundSystem());
+    m_worldSystem.CheckGameOver(m_gameOver, data);
 }
 
 void PlayingState::Draw(Game& game) {
@@ -125,12 +135,12 @@ void PlayingState::Draw(Game& game) {
     EndMode2D();
 
     // Draw order: info panel last so it sits on top. Hidden HUDs skip themselves.
-    m_towerHUD.Draw(game);
-    m_scoreHUD.Draw(game);
-    m_waveHUD.Draw(game);
-    m_eventLog.Draw(game);
-    m_towerInfoHUD.Draw(game);
-    m_pauseHUD.Draw(game); // last so the overlay dims everything; no-op while not paused
+    m_towerHUD.Draw(MakeBuildBarView(game), game.GetResources());
+    m_scoreHUD.Draw(MakeStatusView(game));
+    m_waveHUD.Draw(MakeWaveView(), game.GetResources());
+    m_eventLog.Draw();
+    m_towerInfoHUD.Draw();
+    m_pauseHUD.Draw(); // last so the overlay dims everything; no-op while not paused
 }
 
 // --- Input helpers ---------------------------------------------------------
@@ -233,7 +243,7 @@ void PlayingState::SyncHUDState(Game& game) {
     if (m_selection.towerKey != DenseSlotMap<Tower>::INVALID_KEY) {
         if (Tower* tower = game.GetGameData().m_towers.Get(m_selection.towerKey)) {
             Vector2 screenPos = GetWorldToScreen2D(tower->m_position, m_renderSystem.GetCamera());
-            m_towerInfoHUD.SetTarget(game, *tower, screenPos, true);
+            m_towerInfoHUD.SetTarget(MakeTowerInfoView(game, *tower, screenPos, true));
         } else {
             m_towerInfoHUD.Hide();
         }
@@ -256,7 +266,7 @@ void PlayingState::SyncHUDState(Game& game) {
         m_hoveredTowerCache = game.GetTowerFactory().Create(hovered);
     }
     Vector2 topCenter = m_towerHUD.GetHoveredButtonTopCenter(mousePos);
-    m_towerInfoHUD.SetTarget(game, m_hoveredTowerCache, topCenter, false);
+    m_towerInfoHUD.SetTarget(MakeTowerInfoView(game, m_hoveredTowerCache, topCenter, false));
 }
 
 // --- Pause menu ------------------------------------------------------------
@@ -276,4 +286,89 @@ void PlayingState::HandlePauseSignals(Game& game) {
 
     if (m_pauseHUD.WasMainMenuRequested())
         game.ChangeState(std::make_unique<MenuState>());
+}
+
+// --- View builders ---------------------------------------------------------
+// Snapshot gameplay state into read-only views so the HUDs never touch GameData/WaveManager.
+
+StatusView PlayingState::MakeStatusView(Game& game) {
+    const GameData& data = game.GetGameData();
+    StatusView view;
+    view.m_lives       = data.m_lives;
+    view.m_gold        = data.m_gold;
+    view.m_waveNumber  = data.m_waveNumber;
+    view.m_victoryWave = m_waveManager.GetVictoryWave();
+    view.m_waveActive  = data.m_waveActive;
+    view.m_autoSpawn   = m_waveManager.IsAutoSpawn();
+    view.m_speed       = kSpeedSteps[m_speedIndex];
+    return view;
+}
+
+BuildBarView PlayingState::MakeBuildBarView(Game& game) {
+    BuildBarView view;
+    view.m_gold = game.GetGameData().m_gold;
+    return view;
+}
+
+WaveView PlayingState::MakeWaveView() {
+    WaveView view;
+    view.m_budget = m_waveManager.GetNextWaveBudget();
+
+    const auto& groups = m_waveManager.GetNextWaveDef().m_groups;
+    const auto& prototypes = m_waveManager.GetPreviewPrototypes();
+    view.m_entries.reserve(groups.size());
+    for (const auto& g : groups) {
+        WaveEnemyEntry entry;
+        entry.m_count = g.m_count;
+        entry.m_name = g.m_enemyType;
+        auto it = prototypes.find(g.m_enemyType);
+        if (it != prototypes.end()) {
+            const Enemy& proto = it->second;
+            entry.m_hasProto = true;
+            entry.m_level = proto.m_level;
+            entry.m_textureKey = proto.m_presentation.m_texture;
+            // Every module appends its rows (Health/Speed, Armor, Regen, Shield, Split, Immune, ...).
+            for (const auto& mod : proto.m_modules)
+                mod->DescribeStats(entry.m_stats);
+        }
+        view.m_entries.push_back(std::move(entry));
+    }
+    return view;
+}
+
+TowerInfoView PlayingState::MakeTowerInfoView(Game& game, const Tower& tower, Vector2 screenPos, bool interactive) {
+    const GameData& data = game.GetGameData();
+    TowerInfoView view;
+    view.m_name = tower.m_name;
+    view.m_description = tower.m_description;
+    // Every module appends its rows: AttackModule core stats, then each effect module's lines.
+    for (const auto& mod : tower.m_modules)
+        mod->DescribeStats(view.m_statLines);
+
+    const AttackModule* attack = tower.GetAttack(); // null = a wall (no combat UI)
+    view.m_hasAttack    = attack != nullptr;
+    view.m_interactive  = interactive;
+    view.m_waveActive   = data.m_waveActive;
+    view.m_sellRefund   = static_cast<int>(tower.m_cost * data.m_sellRefundRate);
+    view.m_level        = tower.m_level;
+    view.m_upgradeCount = tower.m_upgrades ? static_cast<int>(tower.m_upgrades->size()) : 0;
+
+    if (view.m_upgradeCount > 0) {
+        if (tower.m_level >= view.m_upgradeCount) {
+            view.m_upgradeAtMax = true;
+        } else {
+            const TowerUpgrade& up = (*tower.m_upgrades)[tower.m_level];
+            view.m_upgradeCost = up.m_cost;
+            view.m_upgradeReady = data.m_gold >= up.m_cost;
+            up.Describe(view.m_upgradePreview);
+        }
+    }
+
+    if (attack)
+        view.m_targetingName = TargetingModeName(attack->m_targetingMode);
+
+    view.m_screenPos = screenPos;
+    view.m_screenW = game.GetScreen().GetGameWidth();
+    view.m_screenH = game.GetScreen().GetGameHeight();
+    return view;
 }

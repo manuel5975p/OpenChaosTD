@@ -8,7 +8,6 @@
 #include <world/enemy_modules.hpp>
 #include <world/enemy_upgrade.hpp>
 #include <world/enemy_presentation.hpp>
-#include <engine/features/particle_system.hpp>
 
 class Enemy {
 public:

@@ -20,9 +20,9 @@ public:
     int m_cost = 0;
 
     TowerPresentation m_presentation; // set by factory, never modified at runtime
+    TowerAnimation m_animation;       // per-frame visual state (attack flash); driven by TowerSystem
 
-    float m_cooldown         = 0.0f;
-    float m_attackFlashRatio = 0.0f;
+    float m_cooldown = 0.0f;
     std::vector<std::unique_ptr<TowerModule>> m_modules;
 
     int m_level = 0;

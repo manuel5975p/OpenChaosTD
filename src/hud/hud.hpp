@@ -1,7 +1,6 @@
 #pragma once
 #include <raylib.h>
 
-class Game;
 class Input;
 
 // One-shot flag: raised on an event, consumed exactly once.
@@ -14,27 +13,21 @@ private:
 
 void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color);
 
-// Base for every HUD component: uniform lifecycle, shared scaling and panel helpers.
-// Input and draw are skipped automatically while hidden.
+// Base for every HUD component: shared scaling, panel helpers, and visibility state. Concrete
+// HUDs expose their own typed ProcessInput/Draw methods fed by read-only views (see hud_views.hpp)
+// and an Input& for clicks — they never receive Game or query gameplay state directly.
 class HUD {
 public:
     virtual ~HUD() = default;
 
-    virtual void Update(Game& /*game*/, float /*dt*/) {}
-
     // Called once on state enter; concrete HUDs call this then do their own layout.
     void Build(float scale) { m_scale = scale; }
 
-    void ProcessInput(Game& game) { if (m_visible) OnProcessInput(game); }
-    void Draw(Game& game)         { if (m_visible) OnDraw(game); }
-
     void Show() { m_visible = true; }
     void Hide() { m_visible = false; }
+    bool IsVisible() const { return m_visible; }
 
 protected:
-    virtual void OnProcessInput(Game& /*game*/) {}
-    virtual void OnDraw(Game& /*game*/) {}
-
     float Scaled(float base) const { return base * m_scale; }
     int   ScaledInt(float base) const { return static_cast<int>(base * m_scale); }
 

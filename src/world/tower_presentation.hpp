@@ -3,6 +3,12 @@
 #include <string>
 #include <world/attack.hpp>
 
+// Per-frame visual state of a tower (animation), separate from the immutable descriptor below.
+// Lives with the presentation, not the simulation, so the Tower struct holds no rendering fields.
+struct TowerAnimation {
+    float m_attackFlashRatio = 0.0f; // 1.0 on fire, decays to 0 over TowerPresentation::m_attackDuration
+};
+
 // The complete presentation (visuals + audio) of a tower. Set once by TowerFactory, never modified at runtime.
 struct TowerPresentation {
     std::string m_texture; // resource key for the tower sprite

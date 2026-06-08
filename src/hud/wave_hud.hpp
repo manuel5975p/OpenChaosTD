@@ -1,25 +1,25 @@
 #pragma once
 
 #include <hud/hud.hpp>
+#include <hud/hud_views.hpp>
 #include <raylib.h>
 
-class Game;
-class WaveManager;
-class RenderSystem;
+class Input;
+class Resources;
 
 // Compact right-side panel summarising the upcoming wave: total budget plus a card per enemy type
-// showing its sprite, current upgrade level, and fully-upgraded stats (read straight from the
-// WaveManager prototype pool). Hidden by default; toggled by the StatusHUD "Waves" button or the hotkey.
+// showing its sprite, current upgrade level, and fully-upgraded stats. Content comes from a
+// read-only WaveView built by PlayingState. Hidden by default; toggled by the StatusHUD "Waves"
+// button or the hotkey.
 class WaveHUD : public HUD {
 public:
-    void Build(Game& game, const WaveManager& waveManager, const RenderSystem& renderSystem);
+    void Build(float scale, int screenW);
 
     // Flip visibility — driven by the Waves button signal and the WaveInfo hotkey.
     void Toggle() { if (m_visible) Hide(); else Show(); }
 
-protected:
-    void OnProcessInput(Game& game) override;
-    void OnDraw(Game& game) override;
+    void ProcessInput(Input& input);
+    void Draw(const WaveView& view, Resources& assets);
 
 private:
     float m_panelW    = 200.0f;
@@ -32,7 +32,5 @@ private:
     float m_topOffset =  42.0f; // pushes the panel below the top status bar
     int   m_fontSm     = 11;
     int   m_fontHeader = 14;
-
-    const WaveManager* m_waveManager = nullptr;
-    const RenderSystem* m_renderSystem = nullptr;
+    int   m_screenW = 0;
 };

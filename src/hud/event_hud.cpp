@@ -16,15 +16,15 @@ void EventHUD::Add(const std::string& message, float duration) {
     m_entries.push_back({message, duration});
 }
 
-void EventHUD::Update(Game& /*game*/, float dt) {
+void EventHUD::Update(float dt) {
     for (auto& entry : m_entries)
         entry.timeLeft -= dt;
 
     std::erase_if(m_entries, [](const Entry& e) { return e.timeLeft <= 0.0f; });
 }
 
-void EventHUD::OnDraw(Game& /*game*/) {
-    if (m_entries.empty()) return;
+void EventHUD::Draw() {
+    if (!m_visible || m_entries.empty()) return;
 
     const float margin    = Scaled(8.0f);
     const float lineH     = Scaled(20.0f);
@@ -37,8 +37,8 @@ void EventHUD::OnDraw(Game& /*game*/) {
     for (int i = 0; i < n; i++) {
         const Entry& entry = m_entries[i];
 
-        // Fade alpha during the last FADE_TIME seconds
-        float t = std::min(entry.timeLeft / FADE_TIME, 1.0f);
+        // Fade alpha during the last kFadeTime seconds
+        float t = std::min(entry.timeLeft / kFadeTime, 1.0f);
         unsigned char textAlpha = static_cast<unsigned char>(t * 220.0f);
         unsigned char bgAlpha   = static_cast<unsigned char>(t * 160.0f);
 

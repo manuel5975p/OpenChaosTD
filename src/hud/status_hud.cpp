@@ -1,19 +1,17 @@
 #include <hud/status_hud.hpp>
-#include <game.hpp>
-#include <systems/wave_manager.hpp>
+#include <engine/core/input.hpp>
 #include <raylib.h>
 #include <cstdio>
 
-void StatusHUD::Build(Game& game, const WaveManager& waveManager) {
-    HUD::Build(game.GetGameConfig().hudScale);
-    m_waveManager = &waveManager;
+void StatusHUD::Build(float scale, int screenW) {
+    HUD::Build(scale);
     float panelH    = Scaled(36.0f);
     float btnH      = Scaled(24.0f);
     float btnWaveW  = Scaled(90.0f);
     float btnAutoW  = Scaled(48.0f);
     float btnWavesW = Scaled(56.0f);
     float margin    = Scaled(6.0f);
-    float w = static_cast<float>(game.GetScreen().GetGameWidth());
+    float w = static_cast<float>(screenW);
 
     m_panelRect = { 0.0f, 0.0f, w, panelH };
     m_textY = static_cast<int>((panelH - Scaled(16.0f)) / 2.0f);
@@ -30,12 +28,13 @@ void StatusHUD::Build(Game& game, const WaveManager& waveManager) {
                              btnY, btnWavesW, btnH };
 }
 
-void StatusHUD::OnProcessInput(Game& game) {
-    const auto& data = game.GetGameData();
-    Vector2 mousePos = game.GetInput().GetMousePosition();
-    bool pressed = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
+void StatusHUD::ProcessInput(Input& input, const StatusView& view) {
+    if (!m_visible) return;
 
-    ConsumePanelClick(game.GetInput());
+    Vector2 mousePos = input.GetMousePosition();
+    bool pressed = input.IsMousePressed(MOUSE_LEFT_BUTTON);
+
+    ConsumePanelClick(input);
 
     m_autoBtn.Update(mousePos, pressed);
     m_startWaveBtn.Update(mousePos, pressed);
@@ -55,12 +54,12 @@ void StatusHUD::OnProcessInput(Game& game) {
         m_waveInfoSignal.Raise();
 
     // Start wave only when no wave is running
-    if (!data.m_waveActive && m_startWaveBtn.IsClicked())
+    if (!view.m_waveActive && m_startWaveBtn.IsClicked())
         m_waveSignal.Raise();
 }
 
-void StatusHUD::OnDraw(Game& game) {
-    const auto& data = game.GetGameData();
+void StatusHUD::Draw(const StatusView& view) {
+    if (!m_visible) return;
 
     DrawPanelBackground(200);
 
@@ -71,48 +70,46 @@ void StatusHUD::OnDraw(Game& game) {
 
     // Left cluster: lives, then gold placed after the measured lives width so a large value never
     // runs under the centered readout.
-    const char* livesStr = TextFormat("Lives: %d", data.m_lives);
+    const char* livesStr = TextFormat("Lives: %d", view.m_lives);
     DrawText(livesStr, marginX, m_textY, fontMain, RAYWHITE);
     int goldX = marginX + MeasureText(livesStr, fontMain) + gapX;
-    DrawText(TextFormat("Gold: %d", data.m_gold), goldX, m_textY, fontMain, GOLD);
+    DrawText(TextFormat("Gold: %d", view.m_gold), goldX, m_textY, fontMain, GOLD);
 
     // Center: wave progress and win target folded into one readout (endless => infinity).
-    DrawWaveReadout(game, static_cast<int>(m_panelRect.width / 2.0f));
+    DrawWaveReadout(view, static_cast<int>(m_panelRect.width / 2.0f));
 
     // Wave info panel toggle
     m_waveInfoBtn.Draw();
     m_waveInfoBtn.DrawLabel(fontBtn, RAYWHITE);
 
     // Speed cycle — highlighted when faster than 1x
-    m_speedBtn.Draw(m_speed > 1);
-    m_speedBtn.DrawLabel(fontBtn, m_speed > 1 ? GOLD : RAYWHITE);
+    m_speedBtn.m_label = TextFormat("%dx", view.m_speed);
+    m_speedBtn.Draw(view.m_speed > 1);
+    m_speedBtn.DrawLabel(fontBtn, view.m_speed > 1 ? GOLD : RAYWHITE);
 
     // Auto toggle — highlighted when active
-    m_autoBtn.Draw(m_autoSpawn);
-    m_autoBtn.DrawLabel(fontBtn, m_autoSpawn ? GOLD : RAYWHITE);
+    m_autoBtn.Draw(view.m_autoSpawn);
+    m_autoBtn.DrawLabel(fontBtn, view.m_autoSpawn ? GOLD : RAYWHITE);
 
     // Start wave button — greyed out while a wave is running
-    const WidgetStyle& waveStyle = data.m_waveActive ? kDisabledStyle : kDefaultStyle;
+    const WidgetStyle& waveStyle = view.m_waveActive ? kDisabledStyle : kDefaultStyle;
     m_startWaveBtn.Draw(false, waveStyle);
-    m_startWaveBtn.DrawLabel(fontBtn, data.m_waveActive ? DARKGRAY : RAYWHITE);
+    m_startWaveBtn.DrawLabel(fontBtn, view.m_waveActive ? DARKGRAY : RAYWHITE);
 }
 
-void StatusHUD::DrawWaveReadout(Game& game, int centerX) {
-    const auto& data = game.GetGameData();
+void StatusHUD::DrawWaveReadout(const StatusView& view, int centerX) {
     int font = ScaledInt(16.0f);
 
     // Current wave number ("--" before the first wave).
     char num[16];
-    if (data.m_waveNumber == 0)
+    if (view.m_waveNumber == 0)
         snprintf(num, sizeof(num), "--");
     else
-        snprintf(num, sizeof(num), "%d", data.m_waveNumber);
-
-    int victoryWave = m_waveManager ? m_waveManager->GetVictoryWave() : 0;
+        snprintf(num, sizeof(num), "%d", view.m_waveNumber);
 
     // Numeric win target: one plain centered string.
-    if (victoryWave > 0) {
-        DrawTextCenteredX(TextFormat("Wave: %s / %d", num, victoryWave),
+    if (view.m_victoryWave > 0) {
+        DrawTextCenteredX(TextFormat("Wave: %s / %d", num, view.m_victoryWave),
                           centerX, m_textY, font, RAYWHITE);
         return;
     }

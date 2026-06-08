@@ -110,7 +110,7 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory,
         std::vector<SpawnRequest> requests;
         for (const auto& mod : enemy->m_modules) {
             auto req = mod->OnDeath();
-            if (req && enemyFactory.Has(req->type))
+            if (req && enemyFactory.Has(req->m_type))
                 requests.push_back(*req);
         }
 
@@ -134,12 +134,12 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory,
         }
         float tileSize = static_cast<float>(gameData.m_map.GetTileSize());
 
-        // Spawn children after parent is removed, staggered backward along the path by req.spacing so
-        // they spread out instead of stacking on the exact death position.
+        // Spawn children after parent is removed, staggered backward along the path by req.m_spacing
+        // so they spread out instead of stacking on the exact death position.
         for (const auto& req : requests) {
-            for (int i = 0; i < req.count; i++) {
-                float offset = i * req.spacing;
-                Enemy child = enemyFactory.Create(req.type);
+            for (int i = 0; i < req.m_count; i++) {
+                float offset = i * req.m_spacing;
+                Enemy child = enemyFactory.Create(req.m_type);
                 child.m_position     = Vector2Add(pos, Vector2Scale(back, offset));
                 child.m_spawnedNest  = nest;
                 child.m_waypointIndex = waypoint;

@@ -12,9 +12,9 @@ class Enemy;
 class BaseStatsModule;
 
 struct SpawnRequest {
-    std::string type;
-    int count;
-    float spacing = 0.0f; // world-unit gap between consecutive children so they don't perfectly overlap
+    std::string m_type;
+    int m_count;
+    float m_spacing = 0.0f; // world-unit gap between consecutive children so they don't perfectly overlap
 };
 
 class EnemyModule {

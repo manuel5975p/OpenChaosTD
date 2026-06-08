@@ -12,8 +12,8 @@ constexpr float kIdleRetryCooldown = 0.05f;  // short retry while no target is i
 constexpr float kInactiveCooldown  = 999.0f; // shotsPerMinute == 0: effectively never fires
 constexpr float kSecondsPerMinute  = 60.0f;  // shot interval = 60 / shotsPerMinute
 
-void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles, SoundSystem& sound){
-    for (Tower& tower : gameData.m_towers) {
+void TowerSystem::Update(float dt, DenseSlotMap<Tower>& towers, DenseSlotMap<Enemy>& enemies, std::vector<Attack>& attacks, ParticleSystem& particles, SoundSystem& sound){
+    for (Tower& tower : towers) {
         RecomputeStats(tower, dt); // runs for walls too (ticks their modules)
 
         AttackModule* attack = tower.GetAttack();
@@ -24,13 +24,13 @@ void TowerSystem::Update(float dt, GameData& gameData, ParticleSystem& particles
 
         if (tower.m_cooldown > 0.0f) continue; // not ready to fire yet
 
-        std::vector<DenseSlotMap<Enemy>::Key> targetKeys = FindTargets(tower, gameData.m_enemies, attack->m_liveTargetCount);
+        std::vector<DenseSlotMap<Enemy>::Key> targetKeys = FindTargets(tower, enemies, attack->m_liveTargetCount);
         if (targetKeys.empty()) {
             tower.m_cooldown = kIdleRetryCooldown;
             continue;
         }
 
-        Fire(tower, targetKeys, gameData, particles, sound);
+        Fire(tower, targetKeys, enemies, attacks, particles, sound);
     }
 }
 
@@ -47,23 +47,23 @@ void TowerSystem::RecomputeStats(Tower& tower, float dt) {
 // Decay the attack flash over the visual's m_attackDuration; guard against a zero duration.
 void TowerSystem::DecayAttackFlash(Tower& tower, float dt) {
     if (tower.m_presentation.m_attackDuration > 0.0f)
-        tower.m_attackFlashRatio = std::max(0.0f, tower.m_attackFlashRatio - dt / tower.m_presentation.m_attackDuration);
+        tower.m_animation.m_attackFlashRatio = std::max(0.0f, tower.m_animation.m_attackFlashRatio - dt / tower.m_presentation.m_attackDuration);
     else
-        tower.m_attackFlashRatio = 0.0f;
+        tower.m_animation.m_attackFlashRatio = 0.0f;
 }
 
 // Execute one shot: reset cooldown/flash, notify modules, and enqueue the damage payload + VFX.
-void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>& targetKeys, GameData& gameData, ParticleSystem& particles, SoundSystem& sound) {
+void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>& targetKeys, DenseSlotMap<Enemy>& enemies, std::vector<Attack>& attacks, ParticleSystem& particles, SoundSystem& sound) {
     float shotsPerMinute     = tower.GetAttack()->m_liveShotsPerMinute;
-    tower.m_cooldown         = (shotsPerMinute > 0.0f) ? kSecondsPerMinute / shotsPerMinute : kInactiveCooldown;
-    tower.m_attackFlashRatio = 1.0f;
+    tower.m_cooldown = (shotsPerMinute > 0.0f) ? kSecondsPerMinute / shotsPerMinute : kInactiveCooldown;
+    tower.m_animation.m_attackFlashRatio = 1.0f;
     for (auto& mod : tower.m_modules) // note: after the cooldown reset, so a new stack affects the next-but-one shot
         mod->OnFire();
 
     std::vector<Vector2> targetPositions;
     targetPositions.reserve(targetKeys.size());
     for (auto& key : targetKeys) {
-        if (Enemy* e = gameData.m_enemies.Get(key))
+        if (Enemy* e = enemies.Get(key))
             targetPositions.push_back(e->m_position);
     }
 
@@ -78,7 +78,7 @@ void TowerSystem::Fire(Tower& tower, const std::vector<DenseSlotMap<Enemy>::Key>
 
     sound.PlaySfx(tower.m_presentation.m_attackSound); // no-op when the key is empty
 
-    gameData.m_attacks.push_back(std::move(attack));
+    attacks.push_back(std::move(attack));
 }
 
 AttackVisual TowerSystem::BuildVisual(const Tower& tower, std::vector<Vector2> targetPositions) {
@@ -91,7 +91,7 @@ AttackVisual TowerSystem::BuildVisual(const Tower& tower, std::vector<Vector2> t
     return visual;
 }
 
-std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(const Tower& tower, DenseSlotMap<Enemy>& enemies, int max_targets) {
+std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(const Tower& tower, DenseSlotMap<Enemy>& enemies, int maxTargets) {
     std::vector<Enemy*> inRange = FindEnemiesInRange(tower, enemies);
 
     std::sort(inRange.begin(), inRange.end(), [&](const Enemy* a, const Enemy* b) {
@@ -99,7 +99,7 @@ std::vector<DenseSlotMap<Enemy>::Key> TowerSystem::FindTargets(const Tower& towe
     });
 
     int size = static_cast<int>(inRange.size());
-    int count = (max_targets == 0) ? size : std::min(size, max_targets); // 0 = target all in range
+    int count = (maxTargets == 0) ? size : std::min(size, maxTargets); // 0 = target all in range
 
     std::vector<DenseSlotMap<Enemy>::Key> result;
     result.reserve(count);
@@ -177,12 +177,12 @@ static void EmitImpact(ParticleSystem& particles, const Enemy& enemy, bool crit,
 // Resolve combat once on the fire frame, then decay the shared lifetime that drives the visual
 // fade. An attack is erased only once it has resolved and its lifetime has fully drained, so an
 // instant (zero-duration) attack still lands its damage before being culled.
-void TowerSystem::TickAttacks(float dt, GameData& gameData, ParticleSystem& particles) {
-    for (auto& attack : gameData.m_attacks) {
+void TowerSystem::TickAttacks(float dt, DenseSlotMap<Enemy>& enemies, std::vector<Attack>& attacks, ParticleSystem& particles) {
+    for (auto& attack : attacks) {
         AttackPayload& payload = attack.m_combat;
         if (!payload.m_resolved) {
             for (auto& key : payload.m_targetKeys) {
-                Enemy* enemy = gameData.m_enemies.Get(key);
+                Enemy* enemy = enemies.Get(key);
                 if (!enemy) continue;
 
                 bool crit = false;
@@ -198,7 +198,7 @@ void TowerSystem::TickAttacks(float dt, GameData& gameData, ParticleSystem& part
         }
         attack.m_duration -= dt;
     }
-    std::erase_if(gameData.m_attacks, [](const Attack& a) {
+    std::erase_if(attacks, [](const Attack& a) {
         return a.m_combat.m_resolved && a.m_duration <= 0.0f;
     });
 }

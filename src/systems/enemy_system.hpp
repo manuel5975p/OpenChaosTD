@@ -1,14 +1,12 @@
 #pragma once
 
-#include <world/game_data.hpp>
+#include <engine/lib/dense_slotmap.hpp>
 #include <engine/features/particle_system.hpp>
+#include <world/enemy.hpp>
+#include <world/map.hpp>
 
 class EnemySystem{
 public:
-
-    void FollowPath(float dt, GameData& gameData);
-    void TickEnemies(float dt, GameData& gameData, ParticleSystem& particles);
-
-private:
-    
+    void FollowPath(float dt, DenseSlotMap<Enemy>& enemies, const Map& map);
+    void TickEnemies(float dt, DenseSlotMap<Enemy>& enemies, const Map& map, ParticleSystem& particles);
 };

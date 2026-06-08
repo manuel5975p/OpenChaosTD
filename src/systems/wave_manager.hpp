@@ -20,15 +20,15 @@ public:
 
     // A group of enemies sharing the same type and spawn timing within a wave
     struct SpawnGroup {
-        std::string enemyType;
-        int count = 1;
-        int nest = -1;       // -1 = round-robin across all nests
-        float interval = 1.0f; // seconds between enemies in this group
-        float delay = 0.0f;    // offset from wave start before first enemy
+        std::string m_enemyType;
+        int m_count = 1;
+        int m_nest = -1;       // -1 = round-robin across all nests
+        float m_interval = 1.0f; // seconds between enemies in this group
+        float m_delay = 0.0f;    // offset from wave start before first enemy
     };
 
     struct WaveDef {
-        std::vector<SpawnGroup> groups;
+        std::vector<SpawnGroup> m_groups;
     };
 
     void Load(FileStore& fileStore, const EnemyFactory& enemyFactory);
@@ -55,17 +55,17 @@ public:
 private:
     // One enemy type the procedural generator may draw from, with its threat cost and pacing.
     struct PoolEntry {
-        std::string enemy;
-        int cost = 1;
-        int minWave = 1;        // earliest wave this type may appear in
-        float interval = 1.0f;  // seconds between spawns of this type within a wave
+        std::string m_enemy;
+        int m_cost = 1;
+        int m_minWave = 1;        // earliest wave this type may appear in
+        float m_interval = 1.0f;  // seconds between spawns of this type within a wave
     };
 
     // A single resolved spawn event in the active wave's queue
     struct PendingSpawn {
-        std::string type;
-        int nest;
-        float time; // seconds after wave start when this enemy should spawn
+        std::string m_type;
+        int m_nest;
+        float m_time; // seconds after wave start when this enemy should spawn
     };
 
     // Procedurally compose a wave from the threat budget for that wave number.
