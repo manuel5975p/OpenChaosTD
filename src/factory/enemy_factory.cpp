@@ -3,8 +3,6 @@
 #include <stdexcept>
 #include <iostream>
 
-using json = nlohmann::json;
-
 static EffectType ParseEffectType(const std::string& name) {
     if (name == "Slow")       return EffectType::Slow;
     if (name == "ArmorShred") return EffectType::ArmorShred;
@@ -13,56 +11,60 @@ static EffectType ParseEffectType(const std::string& name) {
     return EffectType::Burn;
 }
 
-static EnemyPresentation ParsePresentation(const json& j, const EmitterPresets& presets) {
+static EnemyPresentation ParsePresentation(const toml::table& j, const EmitterPresets& presets) {
     EnemyPresentation v;
-    v.m_texture = j.value("texture", "");
-    v.m_deathSound = j.value("deathSound", "enemy_death");
-    if (j.contains("deathEmitter")) v.m_deathDescPtr = presets.GetPtr(j["deathEmitter"]);
+    v.m_texture = j["texture"].value_or(std::string{});
+    v.m_deathSound = j["deathSound"].value_or(std::string("enemy_death"));
+    if (auto e = j["deathEmitter"].value<std::string>()) v.m_deathDescPtr = presets.GetPtr(*e);
     return v;
 }
 
-static EnemyUpgrade ParseUpgrade(const json& j) {
+static EnemyUpgrade ParseUpgrade(const toml::table& j) {
     EnemyUpgrade up;
-    if (j.contains("add"))
-        for (auto& [k, v] : j["add"].items()) up.m_adds.push_back({k, v.get<float>()});
-    if (j.contains("mul"))
-        for (auto& [k, v] : j["mul"].items()) up.m_muls.push_back({k, v.get<float>()});
+    if (auto add = j["add"].as_table())
+        for (auto&& [k, v] : *add) up.m_adds.push_back({std::string(k.str()), v.value_or(0.0f)});
+    if (auto mul = j["mul"].as_table())
+        for (auto&& [k, v] : *mul) up.m_muls.push_back({std::string(k.str()), v.value_or(0.0f)});
     // Added modules live under "modules" (unified upgrade schema across towers and enemies).
-    if (j.contains("modules"))
-        for (auto& m : j["modules"]) up.m_addModules.push_back(m);
+    if (auto mods = j["modules"].as_array())
+        for (auto&& m : *mods)
+            if (auto mt = m.as_table()) up.m_addModules.push_back(*mt);
     return up;
 }
 
 void EnemyFactory::Load(FileStore& fileStore, const EmitterPresets& presets) {
-    m_builders["Regeneration"] = [](const json& j){ return std::make_unique<RegenerationModule>(j.value("regenRate", 0.0f)); };
-    m_builders["Armor"]        = [](const json& j){ return std::make_unique<ArmorModule>(j.value("armor", 0.0f)); };
-    m_builders["Immune"]       = [](const json& j){ return std::make_unique<ImmuneModule>(ParseEffectType(j.value("effect", ""))); };
-    m_builders["Shield"]       = [](const json& j){ return std::make_unique<ShieldModule>(j.value("shield", 0.0f)); };
-    m_builders["Split"]        = [](const json& j){ return std::make_unique<SplitModule>(j.value("child", ""), j.value("splitCount", 0), j.value("spacing", 12.0f)); };
+    m_builders["Regeneration"] = [](const toml::table& j){ return std::make_unique<RegenerationModule>(j["regenRate"].value_or(0.0f)); };
+    m_builders["Armor"]        = [](const toml::table& j){ return std::make_unique<ArmorModule>(j["armor"].value_or(0.0f)); };
+    m_builders["Immune"]       = [](const toml::table& j){ return std::make_unique<ImmuneModule>(ParseEffectType(j["effect"].value_or(std::string{}))); };
+    m_builders["Shield"]       = [](const toml::table& j){ return std::make_unique<ShieldModule>(j["shield"].value_or(0.0f)); };
+    m_builders["Split"]        = [](const toml::table& j){ return std::make_unique<SplitModule>(j["child"].value_or(std::string{}), j["splitCount"].value_or(0), j["spacing"].value_or(12.0f)); };
 
-    auto data = fileStore.LoadJson("data/enemies.json");
-    if (data.is_null() || !data.contains("enemies")) {
+    auto data = fileStore.LoadToml("data/enemies.toml");
+    auto enemies = data["enemies"].as_array();
+    if (!enemies) {
         std::cerr << "EnemyFactory: failed to load enemies data\n";
         return;
     }
 
-    for (auto& entry : data["enemies"]) {
+    for (auto&& entryNode : *enemies) {
+        auto entry = entryNode.as_table();
+        if (!entry) continue;
+
         EnemyTemplate tmpl;
-        tmpl.name        = entry["name"];
-        tmpl.description = entry.value("description", "");
-        tmpl.maxHealth   = entry.value("maxHealth", 10.0f);
-        tmpl.speed       = entry.value("speed", 50.0f);
-        tmpl.reward      = entry.value("reward", 5);
-        tmpl.livesOnReach = entry.value("livesOnReach", 1);
-        if (entry.contains("visual")) tmpl.visual = ParsePresentation(entry["visual"], presets);
+        tmpl.name        = (*entry)["name"].value_or(std::string{});
+        tmpl.description = (*entry)["description"].value_or(std::string{});
+        tmpl.maxHealth   = (*entry)["maxHealth"].value_or(10.0f);
+        tmpl.speed       = (*entry)["speed"].value_or(50.0f);
+        tmpl.reward      = (*entry)["reward"].value_or(5);
+        tmpl.livesOnReach = (*entry)["livesOnReach"].value_or(1);
+        if (auto vis = (*entry)["visual"].as_table()) tmpl.visual = ParsePresentation(*vis, presets);
 
-        if (entry.contains("modules")) {
-            for (auto& mod : entry["modules"])
-                tmpl.modules.push_back(mod);
-        }
+        if (auto mods = (*entry)["modules"].as_array())
+            for (auto&& m : *mods)
+                if (auto mod = m.as_table()) tmpl.modules.push_back(*mod);
 
-        if (entry.contains("upgrade"))
-            tmpl.upgrade = ParseUpgrade(entry["upgrade"]);
+        if (auto up = (*entry)["upgrade"].as_table())
+            tmpl.upgrade = ParseUpgrade(*up);
 
         std::string name = tmpl.name;
         m_templates[name] = std::move(tmpl);
@@ -104,8 +106,8 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     return enemy;
 }
 
-std::unique_ptr<EnemyModule> EnemyFactory::BuildModule(const json& mod) const {
-    std::string type = mod.value("type", "");
+std::unique_ptr<EnemyModule> EnemyFactory::BuildModule(const toml::table& mod) const {
+    std::string type = mod["type"].value_or(std::string{});
     auto bit = m_builders.find(type);
     if (bit != m_builders.end())
         return bit->second(mod);

@@ -5,7 +5,7 @@
 #include <utility>
 #include <cstdio>
 #include <unordered_map>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.hpp>
 #include <world/tower_modules.hpp>
 
 // Readable name for an enemy upgrade key (base stats and module parameters); falls back to the raw key.
@@ -39,7 +39,7 @@ inline std::string FormatEnemyMulDelta(const std::string& key, float v) {
 struct EnemyUpgrade {
     std::vector<std::pair<std::string, float>> m_adds; // stat key -> additive delta
     std::vector<std::pair<std::string, float>> m_muls; // stat key -> multiplicative factor
-    std::vector<nlohmann::json> m_addModules;          // new modules built via EnemyFactory
+    std::vector<toml::table> m_addModules;             // new modules built via EnemyFactory
 
     // Append this level's deltas as display lines, mirroring TowerUpgrade::Describe.
     void Describe(std::vector<DescLine>& out) const;
@@ -51,7 +51,7 @@ inline void EnemyUpgrade::Describe(std::vector<DescLine>& out) const {
     for (const auto& [key, v] : m_muls)
         out.push_back({FormatEnemyMulDelta(key, v), RAYWHITE});
     for (const auto& mod : m_addModules) {
-        std::string type = mod.value("type", "");
+        std::string type = mod["type"].value_or(std::string{});
         if (!type.empty()) out.push_back({"Adds " + type, RAYWHITE});
     }
 }

@@ -2,14 +2,14 @@
 #include <engine/util/file_store.hpp>
 
 void GameData::Load(FileStore& fileStore) {
-    if (!fileStore.Exists("data/gameplay.json"))
+    if (!fileStore.Exists("data/gameplay.toml"))
         return;
 
-    auto j = fileStore.LoadJson("data/gameplay.json");
-    if (j.contains("startingLives")) m_startingLives = j["startingLives"].get<int>();
-    if (j.contains("startingGold")) m_startingGold = j["startingGold"].get<int>();
-    if (j.contains("sellRefundRate")) m_sellRefundRate = j["sellRefundRate"].get<float>();
-    if (j.contains("autoSpawnDelay")) m_autoSpawnDelay = j["autoSpawnDelay"].get<float>();
+    auto data = fileStore.LoadToml("data/gameplay.toml");
+    m_startingLives  = data["startingLives"].value_or(m_startingLives);
+    m_startingGold   = data["startingGold"].value_or(m_startingGold);
+    m_sellRefundRate = data["sellRefundRate"].value_or(m_sellRefundRate);
+    m_autoSpawnDelay = data["autoSpawnDelay"].value_or(m_autoSpawnDelay);
 
     m_lives = m_startingLives;
     m_gold = m_startingGold;

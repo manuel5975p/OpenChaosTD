@@ -1,0 +1,83 @@
+[[towers]]
+name = "wall"
+description = "Blocks enemy paths. Cannot attack."
+cost = 20
+modules = [
+    { type = "Passive" },
+]
+visual = { texture = "tower_wall" }
+
+[[towers]]
+name = "zapper"
+description = "Fast, low-damage shots. Strong against swarms."
+cost = 150
+modules = [
+    { type = "Attack", damage = 2, shotsPerMinute = 120, range = 60, targetCount = 1, targetingMode = "First" },
+]
+visual = { texture = "tower_zapper", attackSound = "zapper", style = "Line", attackDuration = 0.08, color = [120, 200, 255, 255], muzzle = "zapper_muzzle", impact = "zapper_impact" }
+upgrades = [
+    { cost = 200, add = { targetCount = 1, range = 20 } },
+    { cost = 300, add = { damage = 1, range = 20 } },
+    { cost = 400, modules = [ { type = "RampUp", bonusPerStack = 2, maxStacks = 60, idleTime = 1.0 } ] },
+]
+
+[[towers]]
+name = "freezer"
+description = "Slows nearby enemies. Pairs well with high-damage towers."
+cost = 100
+modules = [
+    { type = "Attack", damage = 0, shotsPerMinute = 30, range = 60, targetCount = 0, targetingMode = "First" },
+    { type = "Slow", slowPercent = 25, slowDuration = 1.0, effect = "slow_effect" },
+]
+visual = { texture = "tower_freezer", attackSound = "freezer", style = "Ring", attackDuration = 0.3, color = [80, 190, 255, 255], muzzle = "freezer_muzzle", impact = "freezer_impact" }
+upgrades = [
+    { cost = 200, add = { slowPercent = 10, range = 10 } },
+    { cost = 300, add = { slowPercent = 10, slowDuration = 1.0, range = 10 } },
+    { cost = 400, modules = [ { type = "Weakness", weaknessAmount = 1, weaknessDuration = 1.0, effect = "weakness_effect" } ] },
+]
+
+[[towers]]
+name = "sniper"
+description = "Long range, high burst. Targets the toughest enemy."
+cost = 200
+modules = [
+    { type = "Attack", damage = 15, shotsPerMinute = 25, range = 120, targetCount = 1, targetingMode = "MostHealth" },
+    { type = "Crit", critChance = 0.2, critMultiplier = 2.0 },
+]
+visual = { texture = "tower_sniper", attackSound = "sniper", style = "Line", attackDuration = 0.4, color = [240, 240, 255, 255], muzzle = "sniper_muzzle", impact = "sniper_impact", critImpact = "crit_impact" }
+upgrades = [
+    { cost = 250, add = { damage = 10, range = 30 } },
+    { cost = 350, add = { critChance = 0.3, range = 30 } },
+    { cost = 450, add = { range = 30 }, modules = [ { type = "Stun", stunDuration = 1.0, effect = "stun_effect" } ] },
+]
+
+[[towers]]
+name = "flamer"
+description = "Short range. Ignites nearby enemies for damage over time."
+cost = 200
+modules = [
+    { type = "Attack", damage = 0, shotsPerMinute = 60, range = 50, targetCount = 0, targetingMode = "First" },
+    { type = "Burn", burnDamage = 0.5, burnDuration = 6.0, effect = "burn_effect" },
+]
+visual = { texture = "tower_flamer", attackSound = "flamer", style = "Ring", attackDuration = 0.25, color = [255, 100, 20, 255], muzzle = "flamer_muzzle", impact = "flamer_impact" }
+upgrades = [
+    { cost = 300, add = { burnDamage = 0.5, range = 10 } },
+    { cost = 400, add = { damage = 1, range = 10 } },
+    { cost = 500, add = { damage = 1, range = 10 } },
+]
+
+[[towers]]
+name = "piercer"
+description = "Pierces armor. Targets the most armored enemy."
+cost = 175
+modules = [
+    { type = "Attack", damage = 5, shotsPerMinute = 90, range = 60, targetCount = 1, targetingMode = "MostArmor" },
+    { type = "ArmorPierce", armorPierce = 2.0 },
+    { type = "ArmorShred", shredAmount = 2, shredDuration = 1.0, effect = "shred_effect" },
+]
+visual = { texture = "tower_piercer", attackSound = "piercer", style = "Line", attackDuration = 0.15, color = [210, 220, 230, 255], muzzle = "piercer_muzzle", impact = "piercer_impact" }
+upgrades = [
+    { cost = 200, add = { targetCount = 1, armorPierce = 1.0, range = 10 } },
+    { cost = 300, add = { shotsPerMinute = 30, range = 10 } },
+    { cost = 400, add = { targetCount = 1 } },
+]

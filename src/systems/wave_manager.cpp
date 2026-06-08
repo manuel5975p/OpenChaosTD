@@ -7,47 +7,47 @@
 void WaveManager::Load(FileStore& fileStore, const EnemyFactory& enemyFactory) {
     m_rng.seed(std::random_device{}());
 
-    if (!fileStore.Exists("data/waves.json")) {
-        std::cerr << "WaveManager: data/waves.json not found\n";
+    if (!fileStore.Exists("data/waves.toml")) {
+        std::cerr << "WaveManager: data/waves.toml not found\n";
         return;
     }
 
-    auto json = fileStore.LoadJson("data/waves.json");
+    auto data = fileStore.LoadToml("data/waves.toml");
 
     // Budget scaling and win condition
-    if (json.contains("budget")) {
-        const auto& b = json["budget"];
-        m_baseBudget = b.value("base_budget", m_baseBudget);
+    if (auto b = data["budget"].as_table()) {
+        m_baseBudget = (*b)["base_budget"].value_or(m_baseBudget);
 
         // Scaling model: "step_linear" or "exponential" (the default for an absent/unknown type).
-        std::string type = b.value("type", "");
+        std::string type = (*b)["type"].value_or(std::string{});
         m_budgetType = (type == "step_linear") ? BudgetType::StepLinear : BudgetType::Exponential;
-        m_growthRate = b.value("growth_rate", m_growthRate);
-        m_linearStep = b.value("linear_step", m_linearStep);
-        m_tierAdjustment = b.value("tier_adjustment", m_tierAdjustment);
+        m_growthRate = (*b)["growth_rate"].value_or(m_growthRate);
+        m_linearStep = (*b)["linear_step"].value_or(m_linearStep);
+        m_tierAdjustment = (*b)["tier_adjustment"].value_or(m_tierAdjustment);
 
-        m_victoryWave = b.value("victory_wave", m_victoryWave);
+        m_victoryWave = (*b)["victory_wave"].value_or(m_victoryWave);
     }
 
     // Periodic boss waves
-    if (json.contains("boss")) {
-        const auto& boss = json["boss"];
-        m_bossInterval = boss.value("interval", m_bossInterval);
-        if (boss.contains("boss_enemies"))
-            for (const auto& name : boss["boss_enemies"])
-                m_bossEnemies.push_back(name.get<std::string>());
+    if (auto boss = data["boss"].as_table()) {
+        m_bossInterval = (*boss)["interval"].value_or(m_bossInterval);
+        if (auto names = (*boss)["boss_enemies"].as_array())
+            for (auto&& name : *names)
+                if (auto s = name.value<std::string>()) m_bossEnemies.push_back(*s);
     }
 
-    m_upgradeInterval = json.value("upgrade_interval", m_upgradeInterval);
+    m_upgradeInterval = data["upgrade_interval"].value_or(m_upgradeInterval);
 
     // Enemy pool the generator draws from
-    if (json.contains("enemy_pool")) {
-        for (const auto& e : json["enemy_pool"]) {
+    if (auto pool = data["enemy_pool"].as_array()) {
+        for (auto&& eNode : *pool) {
+            auto e = eNode.as_table();
+            if (!e) continue;
             PoolEntry entry;
-            entry.enemy = e["enemy"].get<std::string>();
-            entry.cost = e.value("cost", 1);
-            entry.minWave = e.value("min_wave", 1);
-            entry.interval = e.value("interval", 1.0f);
+            entry.enemy = (*e)["enemy"].value_or(std::string{});
+            entry.cost = (*e)["cost"].value_or(1);
+            entry.minWave = (*e)["min_wave"].value_or(1);
+            entry.interval = (*e)["interval"].value_or(1.0f);
             m_enemyPool.push_back(std::move(entry));
         }
     }

@@ -1,0 +1,66 @@
+upgrade_interval = 11
+
+[budget]
+type = "step_linear"
+base_budget = 20
+linear_step = 10
+tier_adjustment = 30
+victory_wave = 0
+
+[boss]
+interval = 20
+boss_enemies = ["sovereign"]
+
+[[enemy_pool]]
+enemy = "shade"
+cost = 3
+min_wave = 1
+interval = 0.8
+
+[[enemy_pool]]
+enemy = "flicker"
+cost = 4
+min_wave = 3
+interval = 0.5
+
+[[enemy_pool]]
+enemy = "cinder"
+cost = 6
+min_wave = 7
+interval = 1.2
+
+[[enemy_pool]]
+enemy = "glacius"
+cost = 5
+min_wave = 11
+interval = 1.2
+
+[[enemy_pool]]
+enemy = "golem"
+cost = 10
+min_wave = 15
+interval = 1.8
+
+[[enemy_pool]]
+enemy = "brood"
+cost = 8
+min_wave = 21
+interval = 2.5
+
+[[enemy_pool]]
+enemy = "sentinel"
+cost = 9
+min_wave = 21
+interval = 1.2
+
+[[enemy_pool]]
+enemy = "titan"
+cost = 14
+min_wave = 31
+interval = 1.6
+
+[[enemy_pool]]
+enemy = "sovereign"
+cost = 40
+min_wave = 999
+interval = 1.0
