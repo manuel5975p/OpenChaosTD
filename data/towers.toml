@@ -1,3 +1,8 @@
+# Mod: Default OpenChaosTD DataPack
+# Author: Lufu251
+# Version: 1.0.0
+# Compatibility: Game Version 1.0+
+
 [[towers]]
 name = "wall"
 description = "Blocks enemy paths. Cannot attack."

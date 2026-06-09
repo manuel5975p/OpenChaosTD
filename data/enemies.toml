@@ -1,3 +1,8 @@
+# Mod: Default OpenChaosTD DataPack
+# Author: Lufu251
+# Version: 1.0.0
+# Compatibility: Game Version 1.0+
+
 [[enemies]]
 name = "shade"
 description = "Standard void creature. Balanced speed and health."
