@@ -2,6 +2,7 @@
 
 #include <states/end_state.hpp>
 #include <states/menu_state.hpp>
+#include <world/map_serialization.hpp>
 #include <game.hpp>
 #include <raylib.h>
 #include <raymath.h>
@@ -17,11 +18,23 @@ void PlayingState::OnEnter(Game& game) {
     game.GetParticles().Clear();
     game.GetSoundSystem().PlayMusic("openchaostd_main");
 
+    GameData& gd = game.GetGameData();
+
     // Resume a save when launched in continue mode; fall back to a fresh map if it fails.
     bool loaded = m_loadFromSave &&
-        game.GetGameData().LoadState(game.GetFileStore(), kSaveGamePath, game.GetTowerFactory());
-    if (!loaded)
-        m_mapGenerator.Generate(game.GetGameData().m_map, 15, 19, 3, 40);
+        gd.LoadState(game.GetFileStore(), kSaveGamePath, game.GetTowerFactory());
+    if (loaded) {
+        // A loaded save embeds its own map; drop any custom selection so a later
+        // Restart of this continued game regenerates procedurally.
+        gd.m_selectedMapDir.clear();
+    } else if (!gd.m_selectedMapDir.empty()) {
+        // Build the chosen custom map; fall back to generation if it can't be parsed.
+        MapSerialization::MapMeta meta;
+        if (!MapSerialization::Load(game.GetFileStore(), gd.m_selectedMapDir, gd.m_map, meta))
+            m_mapGenerator.Generate(gd.m_map, 15, 19, 3, 40);
+    } else {
+        m_mapGenerator.Generate(gd.m_map, 15, 19, 3, 40);
+    }
 
     m_renderSystem.CenterCamera(game.GetGameData().m_map, game.GetScreen());
 

@@ -30,6 +30,8 @@ void GameData::Reset() {
     m_towers = DenseSlotMap<Tower>();
     m_enemies = DenseSlotMap<Enemy>();
     m_attacks.clear();
+    // m_selectedMapDir is intentionally left untouched: it is the cross-restart map
+    // choice, not per-playthrough state, so Restart / Play Again replay the same map.
 }
 
 void GameData::SaveState(FileStore& fileStore, const std::string& path, const std::string& datapack) const {

@@ -3,6 +3,7 @@
 #include <states/play_state.hpp>
 #include <states/particle_editor_state.hpp>
 #include <states/map_editor_state.hpp>
+#include <states/map_select_state.hpp>
 #include <datapack/datapack.hpp>
 #include <engine/core/text.hpp>
 #include <game.hpp>
@@ -80,7 +81,8 @@ void DatapackSelectState::SelectPack(Game& game, int index) {
     else if (m_intent == Intent::Continue)
         game.ChangeState(std::make_unique<PlayingState>(true));
     else
-        game.ChangeState(std::make_unique<PlayingState>());
+        // A new game first goes through map selection (custom map or auto-generated).
+        game.ChangeState(std::make_unique<MapSelectState>());
 }
 
 void DatapackSelectState::ProcessInput(Game& game, float /*dt*/) {

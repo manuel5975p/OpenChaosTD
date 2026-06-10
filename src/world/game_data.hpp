@@ -29,6 +29,12 @@ struct GameData {
     DenseSlotMap<Enemy> m_enemies;
     std::vector<Attack> m_attacks;
 
+    // Which map a fresh game should build: empty = procedural generation, otherwise the
+    // relative dir of a custom map (e.g. "datapacks/default/maps/test"). Set by the map
+    // selection screen; deliberately survives Reset() so Restart / Play Again replay the
+    // same map. Not part of the save (a save embeds its own map geometry).
+    std::string m_selectedMapDir;
+
     // dataDir is the active datapack's data directory (relative to the project root).
     void Load(FileStore& fileStore, const std::string& dataDir);
     void Reset();

@@ -27,6 +27,10 @@ public:
     void           SaveToml(const std::string& path, const toml::table& data);
     toml::table    LoadToml(const std::string& path);
 
+    // Raw binary read (e.g. images). Empty vector if missing/unreadable. On web,
+    // reads the preloaded VFS file if present, else base64 data from localStorage.
+    std::vector<unsigned char> LoadBytes(const std::string& path);
+
     // Format-agnostic (operate on the path, regardless of file contents)
     bool           Exists(const std::string& path);
     void           Delete(const std::string& path);

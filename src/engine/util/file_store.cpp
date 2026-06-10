@@ -224,6 +224,60 @@ toml::table FileStore::LoadToml(const std::string& path) {
 #endif
 }
 
+// LoadBytes — raw binary read
+std::vector<unsigned char> FileStore::LoadBytes(const std::string& path) {
+    auto readStream = [](std::ifstream& file) -> std::vector<unsigned char> {
+        file.seekg(0, std::ios::end);
+        std::streamsize size = file.tellg();
+        if (size <= 0) return {};
+        file.seekg(0, std::ios::beg);
+        std::vector<unsigned char> bytes(static_cast<size_t>(size));
+        file.read(reinterpret_cast<char*>(bytes.data()), size);
+        return bytes;
+    };
+
+#if defined(PLATFORM_WEB)
+
+    // Preloaded VFS file first (shipped datapack assets)…
+    {
+        std::ifstream vfsFile(path, std::ios::binary);
+        if (vfsFile.is_open())
+            return readStream(vfsFile);
+    }
+
+    // …then localStorage, where runtime-authored binaries are stored base64-encoded.
+    int len = 0;
+    unsigned char* buf = (unsigned char*)EM_ASM_PTR({
+        var b64 = localStorage.getItem(UTF8ToString($0));
+        if (b64 === null) return 0;
+        var bin = atob(b64);
+        var n = bin.length;
+        var p = _malloc(n);
+        for (var i = 0; i < n; i++) HEAPU8[p + i] = bin.charCodeAt(i);
+        setValue($1, n, 'i32');
+        return p;
+    }, path.c_str(), &len);
+
+    if (!buf || len <= 0) {
+        std::cout << "filestore: no bytes found for '" << path << "'\n";
+        return {};
+    }
+    std::vector<unsigned char> bytes(buf, buf + len);
+    free(buf);
+    return bytes;
+
+#else
+
+    std::ifstream file(ResolvePath(path), std::ios::binary);
+    if (!file.is_open()) {
+        std::cout << "filestore: no file found at '" << ResolvePath(path) << "'\n";
+        return {};
+    }
+    return readStream(file);
+
+#endif
+}
+
 // Exists
 bool FileStore::Exists(const std::string& path) {
 #if defined(PLATFORM_WEB)
