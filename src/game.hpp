@@ -41,6 +41,7 @@ public:
     FileStore& GetFileStore(){return m_fileStore;}
     ParticleSystem& GetParticles() {return m_particles;}
     SoundSystem& GetSoundSystem() {return m_soundSystem;}
+    EmitterPresets& GetEmitterPresets() {return m_emitterPresets;}
     TowerFactory& GetTowerFactory() {return m_towerFactory;}
     EnemyFactory& GetEnemyFactory() {return m_enemyFactory;}
 

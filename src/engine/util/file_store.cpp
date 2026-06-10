@@ -7,6 +7,7 @@
     #include <sstream>
 #else
     #include <fstream>
+    #include <sstream>
     #include <filesystem>
 #endif
 
@@ -129,10 +130,15 @@ nlohmann::json FileStore::LoadJson(const std::string& path) {
 
 // SaveToml
 void FileStore::SaveToml(const std::string& path, const toml::table& data) {
+    // Relaxed float precision: prints shortest 6-significant-digit form (0.28
+    // instead of 0.28000000000000003 — GCC builds lack float charconv in toml++).
+    toml::toml_formatter formatter{data,
+        toml::toml_formatter::default_flags | toml::format_flags::relaxed_float_precision};
+
 #if defined(PLATFORM_WEB)
 
     std::stringstream ss;
-    ss << data;
+    ss << formatter;
     std::string tomlStr = ss.str();
     EM_ASM({
         localStorage.setItem(UTF8ToString($0), UTF8ToString($1));
@@ -151,7 +157,7 @@ void FileStore::SaveToml(const std::string& path, const toml::table& data) {
         std::cerr << "filestore: could not write '" << fullPath << "'\n";
         return;
     }
-    file << data << "\n";
+    file << formatter << "\n";
     std::cout << "filestore: saved '" << fullPath << "'\n";
 
 #endif
@@ -213,6 +219,83 @@ toml::table FileStore::LoadToml(const std::string& path) {
         std::cerr << "filestore: parse error loading '" << fullPath << "': " << e.description() << "\n";
         return {};
     }
+
+#endif
+}
+
+// SaveText
+void FileStore::SaveText(const std::string& path, const std::string& text) {
+#if defined(PLATFORM_WEB)
+
+    EM_ASM({
+        localStorage.setItem(UTF8ToString($0), UTF8ToString($1));
+    }, path.c_str(), text.c_str());
+    std::cout << "filestore: saved '" << path << "' to localStorage\n";
+
+#else
+
+    std::string fullPath = ResolvePath(path);
+    std::filesystem::create_directories(
+        std::filesystem::path(fullPath).parent_path()
+    );
+
+    // Binary mode + no appended newline: the caller controls the exact bytes.
+    std::ofstream file(fullPath, std::ios::binary);
+    if (!file.is_open()) {
+        std::cerr << "filestore: could not write '" << fullPath << "'\n";
+        return;
+    }
+    file << text;
+    std::cout << "filestore: saved '" << fullPath << "'\n";
+
+#endif
+}
+
+// LoadText
+std::string FileStore::LoadText(const std::string& path) {
+#if defined(PLATFORM_WEB)
+
+    // Try VFS first (preloaded read-only game data)
+    {
+        std::ifstream vfsFile(path, std::ios::binary);
+        if (vfsFile.is_open()) {
+            std::stringstream ss;
+            ss << vfsFile.rdbuf();
+            return ss.str();
+        }
+    }
+
+    // Fall back to localStorage (runtime save data)
+    char* raw = (char*)EM_ASM_PTR({
+        var value = localStorage.getItem(UTF8ToString($0));
+        if (!value) return 0;
+        var len = lengthBytesUTF8(value) + 1;
+        var buf = _malloc(len);
+        stringToUTF8(value, buf, len);
+        return buf;
+    }, path.c_str());
+
+    if (!raw) {
+        std::cout << "filestore: no data found for '" << path << "'\n";
+        return {};
+    }
+
+    std::string text(raw);
+    free(raw);
+    return text;
+
+#else
+
+    std::string fullPath = ResolvePath(path);
+    std::ifstream file(fullPath, std::ios::binary);
+    if (!file.is_open()) {
+        std::cout << "filestore: no file found at '" << fullPath << "'\n";
+        return {};
+    }
+
+    std::stringstream ss;
+    ss << file.rdbuf();
+    return ss.str();
 
 #endif
 }
