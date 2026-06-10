@@ -1,25 +1,13 @@
 #include <engine/core/screen.hpp>
-#include <stdexcept>
 
-// Init / Shutdown
+#include <rlgl.h>
+
+// Init
 void Screen::Init(int virtualWidth, int virtualHeight) {
     m_virtualWidth  = virtualWidth;
     m_virtualHeight = virtualHeight;
 
-    m_target = LoadRenderTexture(m_virtualWidth, m_virtualHeight);
-    if (m_target.id == 0)
-        throw std::runtime_error("Screen: failed to create RenderTexture");
-
-    SetTextureFilter(m_target.texture, TEXTURE_FILTER_POINT);
-
     UpdateScale();
-}
-
-void Screen::Shutdown() {
-    if (m_target.id != 0) {
-        UnloadRenderTexture(m_target);
-        m_target = {};
-    }
 }
 
 // Resize
@@ -49,25 +37,46 @@ void Screen::UpdateScale() {
 
 // Frame
 void Screen::BeginFrame() {
-    BeginTextureMode(m_target);
+    BeginDrawing();
+    ClearBackground(BLACK); // fills letterbox bars
+
+    // Replace raylib's screen-space ortho with one spanning the window in
+    // virtual units, placing the virtual rect at the letterboxed destination.
+    // Game code keeps drawing in virtual coordinates; the GPU rasterizes at
+    // native resolution. Modelview is untouched, so Camera2D nests as usual.
+    rlMatrixMode(RL_PROJECTION);
+    rlLoadIdentity();
+    const double left = -m_destRect.x / m_scale;
+    const double top  = -m_destRect.y / m_scale;
+    rlOrtho(left, left + GetScreenWidth() / m_scale,
+            top + GetScreenHeight() / m_scale, top, 0.0, 1.0);
+    rlMatrixMode(RL_MODELVIEW);
+    rlLoadIdentity();
+
+    // Confine all game drawing (incl. ClearBackground) to the letterboxed area.
+    BeginScissor({0.0f, 0.0f,
+                  static_cast<float>(m_virtualWidth),
+                  static_cast<float>(m_virtualHeight)});
 }
 
 void Screen::EndFrame() {
-    EndTextureMode();
-
-    BeginDrawing();
-        ClearBackground(BLACK); // fills letterbox bars
-
-        // RenderTexture is stored upside-down in OpenGL — flip Y with negative height
-        const Rectangle src = {
-            0.0f, 0.0f,
-            static_cast<float>(m_virtualWidth),
-            static_cast<float>(-m_virtualHeight)  // negative = flip
-        };
-        
-        DrawTexturePro(m_target.texture, src, m_destRect, { 0.0f, 0.0f }, 0.0f, WHITE);
-
+    EndScissorMode();
     EndDrawing();
+}
+
+// Scissor in virtual coordinates
+void Screen::BeginScissor(Rectangle virtualRect) const {
+    BeginScissorMode(static_cast<int>(m_destRect.x + virtualRect.x * m_scale),
+                     static_cast<int>(m_destRect.y + virtualRect.y * m_scale),
+                     static_cast<int>(virtualRect.width * m_scale),
+                     static_cast<int>(virtualRect.height * m_scale));
+}
+
+void Screen::EndScissor() const {
+    // Fall back to the letterbox clip rather than disabling clipping outright.
+    BeginScissor({0.0f, 0.0f,
+                  static_cast<float>(m_virtualWidth),
+                  static_cast<float>(m_virtualHeight)});
 }
 
 // Virtual mouse

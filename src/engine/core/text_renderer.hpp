@@ -40,7 +40,8 @@ public:
     std::expected<FontId, std::string> LoadFontFromMemory(const void* data, std::size_t size);
 
     // Shapes UTF-8 text (kerning, ligatures, multi-line via '\n') and draws it
-    // with the top-left corner at position. font must come from LoadFont.
+    // with the top-left corner at position; each line's cap height is centered
+    // within its fontSize-tall box. font must come from LoadFont.
     void DrawText(FontId font, std::string_view text, Vector2 position, float fontSize, Color color);
 
     // Logical extents of the shaped text (width of widest line, total height).
