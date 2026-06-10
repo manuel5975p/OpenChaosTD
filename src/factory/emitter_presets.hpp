@@ -10,7 +10,11 @@
 // Passed by const-ref to any factory that needs to resolve preset names.
 class EmitterPresets {
 public:
-    void Load(FileStore& fileStore);
+    // dataDir is the active datapack's data directory (relative to the project
+    // root); presets load from and save to <dataDir>/particle_effects.toml.
+    void Load(FileStore& fileStore, const std::string& dataDir);
+    // Drop all loaded presets (called when the active datapack is unloaded).
+    void Clear();
 
     // Returns the named preset by value. Logs and returns a count=0 default if not found.
     EmitterDesc Get(const std::string& name) const;
@@ -40,5 +44,6 @@ public:
     bool DeletePreset(FileStore& fileStore, const std::string& name);
 
 private:
+    std::string m_presetPath; // <dataDir>/particle_effects.toml for the active pack
     std::unordered_map<std::string, EmitterDesc> m_presets;
 };

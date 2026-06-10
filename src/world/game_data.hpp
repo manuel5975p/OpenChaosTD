@@ -28,6 +28,7 @@ struct GameData {
     DenseSlotMap<Enemy> m_enemies;
     std::vector<Attack> m_attacks;
 
-    void Load(FileStore& fileStore);
+    // dataDir is the active datapack's data directory (relative to the project root).
+    void Load(FileStore& fileStore, const std::string& dataDir);
     void Reset();
 };

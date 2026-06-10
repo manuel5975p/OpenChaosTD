@@ -1,11 +1,12 @@
 #include <world/game_data.hpp>
 #include <engine/util/file_store.hpp>
 
-void GameData::Load(FileStore& fileStore) {
-    if (!fileStore.Exists("data/gameplay.toml"))
+void GameData::Load(FileStore& fileStore, const std::string& dataDir) {
+    std::string path = dataDir + "/gameplay.toml";
+    if (!fileStore.Exists(path))
         return;
 
-    auto data = fileStore.LoadToml("data/gameplay.toml");
+    auto data = fileStore.LoadToml(path);
     m_startingLives  = data["startingLives"].value_or(m_startingLives);
     m_startingGold   = data["startingGold"].value_or(m_startingGold);
     m_sellRefundRate = data["sellRefundRate"].value_or(m_sellRefundRate);

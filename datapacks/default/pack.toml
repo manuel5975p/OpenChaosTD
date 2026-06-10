@@ -1,0 +1,8 @@
+# Datapack metadata — read by the datapack selection screen.
+# Required keys: name, author, version, description, icon.
+
+name        = "Default OpenChaosTD DataPack"
+author      = "Lufu251"
+version     = "1.0.0"
+description = "The base OpenChaosTD scenario: the full set of towers, enemies, waves and particle effects shipped with the game."
+icon        = "icon.png"

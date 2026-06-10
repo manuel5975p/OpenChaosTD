@@ -31,7 +31,8 @@ public:
         std::vector<SpawnGroup> m_groups;
     };
 
-    void Load(FileStore& fileStore, const EnemyFactory& enemyFactory);
+    // dataDir is the active datapack's data directory (relative to the project root).
+    void Load(FileStore& fileStore, const EnemyFactory& enemyFactory, const std::string& dataDir);
 
     // Advance wave state: tick timer, process spawn queue, detect wave end, trigger auto-spawn
     void Update(float dt, GameData& data, WorldSystem& worldSystem, EnemyFactory& enemyFactory);

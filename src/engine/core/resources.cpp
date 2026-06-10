@@ -6,17 +6,41 @@
 #include <unordered_set>
 
 
-// Set Asset Path
-void Resources::SetAssetPath(const std::string& assetPath){
-    m_assetPath = assetPath;
+// Search paths
+void Resources::SetAssetPath(const std::string& root) {
+    m_searchPaths.assign(1, root);
+}
+
+void Resources::PushSearchPath(const std::string& root) {
+    // Front = highest priority, shadows assets of the same key in lower roots.
+    m_searchPaths.insert(m_searchPaths.begin(), root);
+}
+
+void Resources::PopSearchPath() {
+    // Never remove the base root (the last entry).
+    if (m_searchPaths.size() > 1)
+        m_searchPaths.erase(m_searchPaths.begin());
+}
+
+const std::string& Resources::GetAssetPath() const {
+    static const std::string empty;
+    return m_searchPaths.empty() ? empty : m_searchPaths.back();
 }
 
 // Path resolution
 std::string Resources::ResolvePath(const std::string& relativePath) const {
-    if (m_assetPath.empty())
+    if (m_searchPaths.empty())
         throw std::runtime_error("Resources: SetAssetPath() must be called before loading resources");
 
-    return (std::filesystem::path(m_assetPath) / relativePath).string();
+    // First search root that actually holds the file wins.
+    for (const auto& root : m_searchPaths) {
+        std::filesystem::path candidate = std::filesystem::path(root) / relativePath;
+        if (std::filesystem::exists(candidate))
+            return candidate.string();
+    }
+
+    // None matched: resolve against the base root so the error names a real path.
+    return (std::filesystem::path(m_searchPaths.back()) / relativePath).string();
 }
 
 // Load
@@ -31,82 +55,108 @@ void Resources::LoadTexture(const std::string& key, const std::string& relativeP
     m_textures[key] = tex;
 }
 
-void Resources::LoadTexturesFromDir(const std::string& relativeDir) {
+std::vector<std::string> Resources::LoadTexturesFromDir(const std::string& relativeDir) {
     static const std::unordered_set<std::string> imageExts = { ".png", ".jpg", ".jpeg", ".bmp", ".tga" };
 
-    std::filesystem::path dir = std::filesystem::path(m_assetPath) / relativeDir;
-    if (!std::filesystem::is_directory(dir)) {
-        std::cerr << "Resources: texture directory not found: " << dir << "\n";
-        return;
-    }
+    std::vector<std::string> addedKeys;
+    bool foundDir = false;
 
-    for (const auto& entry : std::filesystem::directory_iterator(dir)) {
-        if (!entry.is_regular_file()) continue;
-        if (!imageExts.count(entry.path().extension().string())) continue;
+    // Walk every search root, highest priority first, so a pack texture shadows a
+    // global texture of the same filename stem.
+    for (const auto& root : m_searchPaths) {
+        std::filesystem::path dir = std::filesystem::path(root) / relativeDir;
+        if (!std::filesystem::is_directory(dir)) continue;
+        foundDir = true;
 
-        std::string key = entry.path().stem().string();
-        if (m_textures.count(key)) continue; // already loaded
+        for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+            if (!entry.is_regular_file()) continue;
+            if (!imageExts.count(entry.path().extension().string())) continue;
 
-        Texture2D tex = ::LoadTexture(entry.path().string().c_str());
-        if (tex.id == 0) {
-            std::cerr << "Resources: failed to load texture '" << entry.path() << "'\n";
-            continue;
+            std::string key = entry.path().stem().string();
+            if (m_textures.count(key)) continue; // already loaded (higher-priority root won)
+
+            Texture2D tex = ::LoadTexture(entry.path().string().c_str());
+            if (tex.id == 0) {
+                std::cerr << "Resources: failed to load texture '" << entry.path() << "'\n";
+                continue;
+            }
+            m_textures[key] = tex;
+            addedKeys.push_back(key);
+            std::cout << "Resources: loaded texture '" << key << "'\n";
         }
-        m_textures[key] = tex;
-        std::cout << "Resources: loaded texture '" << key << "'\n";
     }
+
+    if (!foundDir)
+        std::cerr << "Resources: texture directory not found: '" << relativeDir << "'\n";
+    return addedKeys;
 }
 
-void Resources::LoadMusicFromDir(const std::string& relativeDir) {
+std::vector<std::string> Resources::LoadMusicFromDir(const std::string& relativeDir) {
     static const std::unordered_set<std::string> musicExts = { ".wav", ".ogg", ".mp3", ".flac", ".xm", ".mod" };
 
-    std::filesystem::path dir = std::filesystem::path(m_assetPath) / relativeDir;
-    if (!std::filesystem::is_directory(dir)) {
-        std::cerr << "Resources: music directory not found: " << dir << "\n";
-        return;
-    }
+    std::vector<std::string> addedKeys;
+    bool foundDir = false;
 
-    for (const auto& entry : std::filesystem::directory_iterator(dir)) {
-        if (!entry.is_regular_file()) continue;
-        if (!musicExts.count(entry.path().extension().string())) continue;
+    for (const auto& root : m_searchPaths) {
+        std::filesystem::path dir = std::filesystem::path(root) / relativeDir;
+        if (!std::filesystem::is_directory(dir)) continue;
+        foundDir = true;
 
-        std::string key = entry.path().stem().string();
-        if (m_music.count(key)) continue;
+        for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+            if (!entry.is_regular_file()) continue;
+            if (!musicExts.count(entry.path().extension().string())) continue;
 
-        Music music = ::LoadMusicStream(entry.path().string().c_str());
-        if (music.frameCount == 0) {
-            std::cerr << "Resources: failed to load music '" << entry.path() << "'\n";
-            continue;
+            std::string key = entry.path().stem().string();
+            if (m_music.count(key)) continue;
+
+            Music music = ::LoadMusicStream(entry.path().string().c_str());
+            if (music.frameCount == 0) {
+                std::cerr << "Resources: failed to load music '" << entry.path() << "'\n";
+                continue;
+            }
+            m_music[key] = music;
+            addedKeys.push_back(key);
+            std::cout << "Resources: loaded music '" << key << "'\n";
         }
-        m_music[key] = music;
-        std::cout << "Resources: loaded music '" << key << "'\n";
     }
+
+    if (!foundDir)
+        std::cerr << "Resources: music directory not found: '" << relativeDir << "'\n";
+    return addedKeys;
 }
 
-void Resources::LoadSoundsFromDir(const std::string& relativeDir) {
+std::vector<std::string> Resources::LoadSoundsFromDir(const std::string& relativeDir) {
     static const std::unordered_set<std::string> soundExts = { ".wav", ".ogg", ".mp3", ".flac" };
 
-    std::filesystem::path dir = std::filesystem::path(m_assetPath) / relativeDir;
-    if (!std::filesystem::is_directory(dir)) {
-        std::cerr << "Resources: sound directory not found: " << dir << "\n";
-        return;
-    }
+    std::vector<std::string> addedKeys;
+    bool foundDir = false;
 
-    for (const auto& entry : std::filesystem::directory_iterator(dir)) {
-        if (!entry.is_regular_file()) continue;
-        if (!soundExts.count(entry.path().extension().string())) continue;
+    for (const auto& root : m_searchPaths) {
+        std::filesystem::path dir = std::filesystem::path(root) / relativeDir;
+        if (!std::filesystem::is_directory(dir)) continue;
+        foundDir = true;
 
-        std::string key = entry.path().stem().string();
-        if (m_sounds.count(key)) continue;
+        for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+            if (!entry.is_regular_file()) continue;
+            if (!soundExts.count(entry.path().extension().string())) continue;
 
-        Sound sfx = ::LoadSound(entry.path().string().c_str());
-        if (sfx.frameCount == 0) {
-            std::cerr << "Resources: failed to load sound '" << entry.path() << "'\n";
-            continue;
+            std::string key = entry.path().stem().string();
+            if (m_sounds.count(key)) continue;
+
+            Sound sfx = ::LoadSound(entry.path().string().c_str());
+            if (sfx.frameCount == 0) {
+                std::cerr << "Resources: failed to load sound '" << entry.path() << "'\n";
+                continue;
+            }
+            m_sounds[key] = sfx;
+            addedKeys.push_back(key);
+            std::cout << "Resources: loaded sound '" << key << "'\n";
         }
-        m_sounds[key] = sfx;
-        std::cout << "Resources: loaded sound '" << key << "'\n";
     }
+
+    if (!foundDir)
+        std::cerr << "Resources: sound directory not found: '" << relativeDir << "'\n";
+    return addedKeys;
 }
 
 void Resources::LoadSound(const std::string& key, const std::string& relativePath) {
@@ -176,6 +226,35 @@ bool Resources::HasTexture(const std::string& key) const { return m_textures.cou
 bool Resources::HasSound(const std::string& key)   const { return m_sounds.count(key)   > 0; }
 bool Resources::HasFont(const std::string& key)    const { return m_fonts.count(key)    > 0; }
 bool Resources::HasMusic(const std::string& key)   const { return m_music.count(key)    > 0; }
+
+// Per-key unload
+void Resources::UnloadTextureKey(const std::string& key) {
+    auto it = m_textures.find(key);
+    if (it == m_textures.end()) return;
+    UnloadTexture(it->second);
+    m_textures.erase(it);
+}
+
+void Resources::UnloadSoundKey(const std::string& key) {
+    auto it = m_sounds.find(key);
+    if (it == m_sounds.end()) return;
+    UnloadSound(it->second);
+    m_sounds.erase(it);
+}
+
+void Resources::UnloadFontKey(const std::string& key) {
+    auto it = m_fonts.find(key);
+    if (it == m_fonts.end()) return;
+    UnloadFont(it->second);
+    m_fonts.erase(it);
+}
+
+void Resources::UnloadMusicKey(const std::string& key) {
+    auto it = m_music.find(key);
+    if (it == m_music.end()) return;
+    UnloadMusicStream(it->second);
+    m_music.erase(it);
+}
 
 // Shutdown
 void Resources::Shutdown() {

@@ -4,15 +4,16 @@
 #include <unordered_map>
 #include <iostream>
 
-void WaveManager::Load(FileStore& fileStore, const EnemyFactory& enemyFactory) {
+void WaveManager::Load(FileStore& fileStore, const EnemyFactory& enemyFactory, const std::string& dataDir) {
     m_rng.seed(std::random_device{}());
 
-    if (!fileStore.Exists("data/waves.toml")) {
-        std::cerr << "WaveManager: data/waves.toml not found\n";
+    std::string path = dataDir + "/waves.toml";
+    if (!fileStore.Exists(path)) {
+        std::cerr << "WaveManager: " << path << " not found\n";
         return;
     }
 
-    auto data = fileStore.LoadToml("data/waves.toml");
+    auto data = fileStore.LoadToml(path);
 
     // Budget scaling and win condition
     if (auto b = data["budget"].as_table()) {

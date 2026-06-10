@@ -13,7 +13,11 @@
 
 class EnemyFactory {
 public:
-    void Load(FileStore& fileStore, const EmitterPresets& presets);
+    // dataDir is the active datapack's data directory (relative to the project
+    // root), e.g. "datapacks/default/data".
+    void Load(FileStore& fileStore, const EmitterPresets& presets, const std::string& dataDir);
+    // Drop all loaded templates (called when the active datapack is unloaded).
+    void Clear();
     Enemy Create(const std::string& name) const;
     bool Has(const std::string& name) const;
 

@@ -14,6 +14,8 @@
 #include <factory/emitter_presets.hpp>
 #include <factory/tower_factory.hpp>
 #include <factory/enemy_factory.hpp>
+#include <datapack/datapack.hpp>
+#include <datapack/datapack_registry.hpp>
 #include <world/game_data.hpp>
 
 class Game {
@@ -25,6 +27,16 @@ public:
 
     // Search path of a directory
     std::filesystem::path SearchFolderParentPath(const std::string& folderName, size_t searchDepth);
+
+    // Datapack lifecycle
+    // Activating a pack mounts its resources (highest priority) and loads its
+    // gameplay data/factories; deactivating frees everything the pack loaded and
+    // is safe to call when no pack is active. The selection screen drives this.
+    void ActivateDatapack(const Datapack& pack);
+    void DeactivateDatapack();
+    bool HasActiveDatapack() const { return m_packActive; }
+    const std::string& GetActiveDataDir() const { return m_activeDataDir; }
+    DatapackRegistry& GetDatapackRegistry() { return m_registry; }
 
     // State machine
     void ChangeState(std::unique_ptr<GameState> newState);
@@ -49,6 +61,15 @@ private:
     bool m_running = true;
 
     void LoadResources();
+
+    // Active datapack state
+    DatapackRegistry m_registry;
+    bool m_packActive = false;
+    std::string m_activeDataDir; // relative data dir of the active pack, for loaders
+    // Asset keys loaded from the active pack, tracked for scoped unload on deactivate.
+    std::vector<std::string> m_packTextureKeys;
+    std::vector<std::string> m_packSoundKeys;
+    std::vector<std::string> m_packMusicKeys;
 
     // Data and config
     GameConfig m_gameConfig;

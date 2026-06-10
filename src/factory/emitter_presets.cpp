@@ -5,8 +5,6 @@
 #include <cstdio>
 #include <iostream>
 
-static constexpr const char* kPresetPath = "data/particle_effects.toml";
-
 static Color ParseColor(const toml::array& a) {
     return {
         (unsigned char)a[0].value_or(0), (unsigned char)a[1].value_or(0),
@@ -119,11 +117,18 @@ static toml::table BuildPresetTable(const EmitterDesc& d) {
     return t;
 }
 
-void EmitterPresets::Load(FileStore& fileStore) {
-    auto data = fileStore.LoadToml(kPresetPath);
+void EmitterPresets::Clear() {
+    m_presets.clear();
+}
+
+void EmitterPresets::Load(FileStore& fileStore, const std::string& dataDir) {
+    Clear(); // replace any previously loaded pack's presets
+    m_presetPath = dataDir + "/particle_effects.toml";
+
+    auto data = fileStore.LoadToml(m_presetPath);
     auto presets = data["presets"].as_table();
     if (!presets) {
-        std::cerr << "EmitterPresets: failed to load particle_effects.toml\n";
+        std::cerr << "EmitterPresets: failed to load " << m_presetPath << "\n";
         return;
     }
     for (auto&& [name, descNode] : *presets) {
@@ -168,12 +173,12 @@ std::vector<std::string> EmitterPresets::Names() const {
 
 bool EmitterPresets::SavePreset(FileStore& fileStore, const std::string& name,
                                 const EmitterDesc& desc) {
-    toml::table data = fileStore.LoadToml(kPresetPath);
+    toml::table data = fileStore.LoadToml(m_presetPath);
 
     // An existing file that parses to an empty table means the read failed —
     // abort rather than clobbering every other preset. Empty + missing = new file.
-    if (data.empty() && fileStore.Exists(kPresetPath)) {
-        std::cerr << "EmitterPresets: could not read '" << kPresetPath << "', save aborted\n";
+    if (data.empty() && fileStore.Exists(m_presetPath)) {
+        std::cerr << "EmitterPresets: could not read '" << m_presetPath << "', save aborted\n";
         return false;
     }
 
@@ -184,25 +189,25 @@ bool EmitterPresets::SavePreset(FileStore& fileStore, const std::string& name,
     }
     presets->insert_or_assign(name, BuildPresetTable(desc));
 
-    fileStore.SaveToml(kPresetPath, data);
+    fileStore.SaveToml(m_presetPath, data);
     Set(name, desc);
     std::cout << "EmitterPresets: saved '" << name << "'\n";
     return true;
 }
 
 bool EmitterPresets::DeletePreset(FileStore& fileStore, const std::string& name) {
-    toml::table data = fileStore.LoadToml(kPresetPath);
+    toml::table data = fileStore.LoadToml(m_presetPath);
 
     // Same don't-clobber guard as SavePreset.
-    if (data.empty() && fileStore.Exists(kPresetPath)) {
-        std::cerr << "EmitterPresets: could not read '" << kPresetPath << "', delete aborted\n";
+    if (data.empty() && fileStore.Exists(m_presetPath)) {
+        std::cerr << "EmitterPresets: could not read '" << m_presetPath << "', delete aborted\n";
         return false;
     }
 
     if (auto presets = data["presets"].as_table())
         presets->erase(name);
 
-    fileStore.SaveToml(kPresetPath, data);
+    fileStore.SaveToml(m_presetPath, data);
     m_presets.erase(name);
     std::cout << "EmitterPresets: deleted '" << name << "'\n";
     return true;

@@ -1,11 +1,14 @@
 #include <states/menu_state.hpp>
 #include <game.hpp>
 #include <raylib.h>
-#include <states/play_state.hpp>
+#include <states/datapack_select_state.hpp>
 #include <states/settings_state.hpp>
-#include <states/particle_editor_state.hpp>
 
 void MenuState::OnEnter(Game& game) {
+    // Returning to the menu is the single choke point that frees any active pack's
+    // assets, templates and mounted resource path (idempotent if none is active).
+    game.DeactivateDatapack();
+
     int cx = game.GetScreen().GetGameWidth()  / 2;
     int cy = game.GetScreen().GetGameHeight() / 2;
     m_playButton.m_label = "PLAY";
@@ -34,14 +37,16 @@ void MenuState::ProcessInput(Game& game, float /*dt*/) {
     m_particleEditorButton.Update(mousePos, clicked);
     m_exitButton.Update(mousePos, clicked);
 
+    // Play and the particle editor both need an active datapack, so they route
+    // through the selection screen first (carrying where to go once a pack is chosen).
     if (m_playButton.IsClicked() || game.GetInput().IsPressed("Confirm"))
-        game.ChangeState(std::make_unique<PlayingState>());
+        game.ChangeState(std::make_unique<DatapackSelectState>(DatapackSelectState::Intent::Play));
 
     if (m_settingsButton.IsClicked())
         game.ChangeState(std::make_unique<SettingsState>());
 
     if (m_particleEditorButton.IsClicked())
-        game.ChangeState(std::make_unique<ParticleEditorState>());
+        game.ChangeState(std::make_unique<DatapackSelectState>(DatapackSelectState::Intent::EditParticles));
 
     if (m_exitButton.IsClicked() || game.GetInput().IsPressed("Cancel"))
         game.Quit();

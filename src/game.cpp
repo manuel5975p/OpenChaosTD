@@ -19,15 +19,15 @@ Game::Game() {
 
     m_screen.Init(m_gameConfig.gameWidth, m_gameConfig.gameHeight);
 
-    m_gameData.Load(m_fileStore);
-    m_emitterPresets.Load(m_fileStore);
-    m_towerFactory.Load(m_fileStore, m_emitterPresets);
-    m_enemyFactory.Load(m_fileStore, m_emitterPresets);
-
+    // Gameplay data and assets are no longer loaded here — they belong to a
+    // datapack and load only once the player selects one (see ActivateDatapack).
     LoadResources();
     m_soundSystem.SetMusicVolume(m_gameConfig.musicVolume);
     m_soundSystem.SetSfxVolume(m_gameConfig.sfxVolume);
     m_input.Load(m_fileStore);
+
+    // Discover installed datapacks for the selection screen.
+    m_registry.Scan(m_fileStore);
 
     // Init initial state
     m_currentState = std::make_unique<MenuState>();
@@ -91,16 +91,63 @@ std::filesystem::path Game::SearchFolderParentPath(const std::string& folderName
 
 // Asset loading
 void Game::LoadResources() {
-    // Walk up the directory tree to find the "resources" folder
+    // The global "resources" folder is the lowest-priority (fallback) search root
+    // and holds only engine/menu-level assets. Gameplay assets live in datapacks
+    // and are mounted on top of this root when a pack is activated.
     m_resources.SetAssetPath(SearchFolderParentPath("resources", 5));
-
-    // Load all images from the textures folder; key = filename stem
-    m_resources.LoadTexturesFromDir("textures");
-    // Load all music from the music folder; key = filename stem
-    m_resources.LoadMusicFromDir("music");
-    // Load all sound effects from the sounds folder; key = filename stem
-    m_resources.LoadSoundsFromDir("sounds");
     m_soundSystem.Init(m_resources);
+}
+
+// Datapack lifecycle
+void Game::ActivateDatapack(const Datapack& pack) {
+    // Switching packs: tear the current one down first so nothing leaks or stacks.
+    if (m_packActive)
+        DeactivateDatapack();
+
+    m_activeDataDir = pack.DataDir();
+
+    // Mount the pack's resources as the highest-priority search root so its assets
+    // shadow any global asset of the same key, then load them (tracking keys for unload).
+    std::string resourcesRoot =
+        (std::filesystem::path(m_fileStore.GetRootPath()) / pack.ResourcesDir()).string();
+    m_resources.PushSearchPath(resourcesRoot);
+    m_packTextureKeys = m_resources.LoadTexturesFromDir("textures");
+    m_packSoundKeys   = m_resources.LoadSoundsFromDir("sounds");
+    m_packMusicKeys   = m_resources.LoadMusicFromDir("music");
+
+    // Load gameplay data from the pack. Presets first: the factories resolve
+    // emitter preset names while building their templates.
+    m_emitterPresets.Load(m_fileStore, m_activeDataDir);
+    m_gameData.Load(m_fileStore, m_activeDataDir);
+    m_towerFactory.Load(m_fileStore, m_emitterPresets, m_activeDataDir);
+    m_enemyFactory.Load(m_fileStore, m_emitterPresets, m_activeDataDir);
+
+    m_packActive = true;
+}
+
+void Game::DeactivateDatapack() {
+    if (!m_packActive) return;
+
+    // Stop any pack music before freeing the streams it points into.
+    m_soundSystem.StopMusic();
+
+    for (const auto& key : m_packTextureKeys) m_resources.UnloadTextureKey(key);
+    for (const auto& key : m_packSoundKeys)   m_resources.UnloadSoundKey(key);
+    for (const auto& key : m_packMusicKeys)   m_resources.UnloadMusicKey(key);
+    m_packTextureKeys.clear();
+    m_packSoundKeys.clear();
+    m_packMusicKeys.clear();
+
+    // Unmount the pack's resource root (the global base root stays).
+    m_resources.PopSearchPath();
+
+    // Drop loaded templates/presets.
+    m_towerFactory.Clear();
+    m_enemyFactory.Clear();
+    m_emitterPresets.Clear();
+
+    m_activeDataDir.clear();
+    m_packActive = false;
 }
 
 // State machine

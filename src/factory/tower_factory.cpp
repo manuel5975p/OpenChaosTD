@@ -65,7 +65,13 @@ static TowerUpgrade ParseUpgrade(const toml::table& j) {
     return up;
 }
 
-void TowerFactory::Load(FileStore& fileStore, const EmitterPresets& presets) {
+void TowerFactory::Clear() {
+    m_templates.clear();
+    m_order.clear();
+}
+
+void TowerFactory::Load(FileStore& fileStore, const EmitterPresets& presets, const std::string& dataDir) {
+    Clear(); // replace any previously loaded pack's templates
     m_presets = &presets;
 
     m_builders["Attack"] = [](const toml::table& j){
@@ -99,7 +105,7 @@ void TowerFactory::Load(FileStore& fileStore, const EmitterPresets& presets) {
         return std::make_unique<CritModule>(j["critChance"].value_or(0.0f), j["critMultiplier"].value_or(1.0f));
     };
 
-    auto data = fileStore.LoadToml("data/towers.toml");
+    auto data = fileStore.LoadToml(dataDir + "/towers.toml");
     auto towers = data["towers"].as_array();
     if (!towers) {
         std::cerr << "TowerFactory: failed to load towers data\n";

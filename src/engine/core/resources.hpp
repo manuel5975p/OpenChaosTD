@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 #include <string>
+#include <vector>
 #include <unordered_map>
 
 class Resources {
@@ -13,18 +14,29 @@ public:
     Resources(const Resources&) = delete;
     Resources& operator=(const Resources&) = delete;
 
-    // Asset path
-    void SetAssetPath(const std::string& folderName);
-    const std::string& GetAssetPath() const { return m_assetPath; }
+    // Search paths
+    // The loader resolves relative paths against an ordered list of search roots,
+    // highest priority first. SetAssetPath resets the list to a single base root
+    // (the lowest-priority fallback). PushSearchPath adds a higher-priority root
+    // on top of it (its assets shadow same-key assets in lower roots); PopSearchPath
+    // removes the most recently pushed root, never the base.
+    void SetAssetPath(const std::string& root);
+    void PushSearchPath(const std::string& root);
+    void PopSearchPath();
+    const std::string& GetAssetPath() const; // the base (lowest-priority) root
 
     // Load
     void LoadTexture(const std::string& key, const std::string& relativePath);
-    void LoadTexturesFromDir(const std::string& relativeDir); // loads all images in a directory; key = filename stem
     void LoadSound(const std::string& key, const std::string& relativePath);
     void LoadFont(const std::string& key, const std::string& relativePath, int fontSize = 20);
     void LoadMusic(const std::string& key, const std::string& relativePath);
-    void LoadMusicFromDir(const std::string& relativeDir);
-    void LoadSoundsFromDir(const std::string& relativeDir); // loads all sounds in a directory; key = filename stem
+
+    // Bulk load from a subdirectory across every search root (key = filename stem).
+    // Higher-priority roots win on key collisions. Returns the keys newly added by
+    // this call so the caller can scope-unload exactly what it loaded.
+    std::vector<std::string> LoadTexturesFromDir(const std::string& relativeDir);
+    std::vector<std::string> LoadMusicFromDir(const std::string& relativeDir);
+    std::vector<std::string> LoadSoundsFromDir(const std::string& relativeDir);
 
     // Retrieve
     Texture2D& GetTexture(const std::string& key);
@@ -38,14 +50,23 @@ public:
     bool HasFont(const std::string& key)    const;
     bool HasMusic(const std::string& key)   const;
 
+    // Per-key unload — frees a single asset so a caller can release the subset it
+    // loaded without tearing down everything else. No-op for an unknown key.
+    void UnloadTextureKey(const std::string& key);
+    void UnloadSoundKey(const std::string& key);
+    void UnloadFontKey(const std::string& key);
+    void UnloadMusicKey(const std::string& key);
+
     // Lifecycle
     void Shutdown();
 
 private:
-    // Prepends the resolved asset root to a relative path
+    // Resolves a relative path against the search roots, returning the first that
+    // exists. Falls back to the base root so error messages stay meaningful.
     std::string ResolvePath(const std::string& relativePath) const;
 
-    std::string m_assetPath; // Set by SearchAssetPath()
+    // Ordered highest priority first; the last entry is the base root.
+    std::vector<std::string> m_searchPaths;
 
     std::unordered_map<std::string, Texture2D> m_textures;
     std::unordered_map<std::string, Sound>     m_sounds;

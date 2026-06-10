@@ -32,14 +32,19 @@ static EnemyUpgrade ParseUpgrade(const toml::table& j) {
     return up;
 }
 
-void EnemyFactory::Load(FileStore& fileStore, const EmitterPresets& presets) {
+void EnemyFactory::Clear() {
+    m_templates.clear();
+}
+
+void EnemyFactory::Load(FileStore& fileStore, const EmitterPresets& presets, const std::string& dataDir) {
+    Clear(); // replace any previously loaded pack's templates
     m_builders["Regeneration"] = [](const toml::table& j){ return std::make_unique<RegenerationModule>(j["regenRate"].value_or(0.0f)); };
     m_builders["Armor"]        = [](const toml::table& j){ return std::make_unique<ArmorModule>(j["armor"].value_or(0.0f)); };
     m_builders["Immune"]       = [](const toml::table& j){ return std::make_unique<ImmuneModule>(ParseEffectType(j["effect"].value_or(std::string{}))); };
     m_builders["Shield"]       = [](const toml::table& j){ return std::make_unique<ShieldModule>(j["shield"].value_or(0.0f)); };
     m_builders["Split"]        = [](const toml::table& j){ return std::make_unique<SplitModule>(j["child"].value_or(std::string{}), j["splitCount"].value_or(0), j["spacing"].value_or(12.0f)); };
 
-    auto data = fileStore.LoadToml("data/enemies.toml");
+    auto data = fileStore.LoadToml(dataDir + "/enemies.toml");
     auto enemies = data["enemies"].as_array();
     if (!enemies) {
         std::cerr << "EnemyFactory: failed to load enemies data\n";
