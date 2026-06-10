@@ -28,6 +28,11 @@ public:
     // Build one effect module from a TOML definition (shared by Create and upgrades).
     std::unique_ptr<TowerModule> BuildModule(const toml::table& mod) const;
 
+    // Apply one upgrade tier's stat deltas and new modules to a tower. Purely mechanical:
+    // it does NOT touch gold, m_cost or m_level — callers own that policy. Shared by the
+    // live upgrade path (PlayingState) and the save loader (which replays tiers 0..level-1).
+    void ApplyUpgradeStats(Tower& tower, const TowerUpgrade& up) const;
+
 private:
     using ModuleBuilder = std::function<std::unique_ptr<TowerModule>(const toml::table&)>;
 

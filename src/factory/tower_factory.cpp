@@ -160,6 +160,15 @@ std::unique_ptr<TowerModule> TowerFactory::BuildModule(const toml::table& mod) c
     return nullptr;
 }
 
+void TowerFactory::ApplyUpgradeStats(Tower& tower, const TowerUpgrade& up) const {
+    // Each key is broadcast to every module; each consumer applies only the keys it owns
+    // (AttackModule -> core combat stats, effect modules -> their own params).
+    for (auto& [k, v] : up.m_adds) tower.PatchStats(k, v, false);
+    for (auto& [k, v] : up.m_muls) tower.PatchStats(k, v, true);
+    for (auto& mod : up.m_addModules)
+        if (auto m = BuildModule(mod)) tower.AddModule(std::move(m));
+}
+
 Tower TowerFactory::Create(const std::string& name) const {
     auto it = m_templates.find(name);
     if (it == m_templates.end())

@@ -1,27 +1,41 @@
 #include <states/menu_state.hpp>
 #include <game.hpp>
 #include <raylib.h>
+#include <memory>
+#include <string>
 #include <states/datapack_select_state.hpp>
+#include <states/play_state.hpp>
 #include <states/settings_state.hpp>
+
+namespace {
+    constexpr const char* kSaveGamePath = "saves/savegame.json";
+}
 
 void MenuState::OnEnter(Game& game) {
     // Returning to the menu is the single choke point that frees any active pack's
     // assets, templates and mounted resource path (idempotent if none is active).
     game.DeactivateDatapack();
 
+    // Continue is only offered when a save exists; otherwise it shows grayed and inert.
+    m_hasSave = game.GetFileStore().Exists(kSaveGamePath);
+
     int cx = game.GetScreen().GetGameWidth()  / 2;
     int cy = game.GetScreen().GetGameHeight() / 2;
+
     m_playButton.m_label = "PLAY";
     m_playButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 20), 160.0f, 44.0f };
 
+    m_continueButton.m_label = "CONTINUE";
+    m_continueButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 74), 160.0f, 44.0f };
+
     m_settingsButton.m_label = "SETTINGS";
-    m_settingsButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 74), 160.0f, 44.0f };
+    m_settingsButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 128), 160.0f, 44.0f };
 
     m_particleEditorButton.m_label = "PARTICLE EDITOR";
-    m_particleEditorButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 128), 160.0f, 44.0f };
+    m_particleEditorButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 182), 160.0f, 44.0f };
 
     m_exitButton.m_label = "EXIT";
-    m_exitButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 182), 160.0f, 44.0f };
+    m_exitButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 236), 160.0f, 44.0f };
 }
 
 void MenuState::OnExit(Game& /*game*/) {
@@ -36,6 +50,15 @@ void MenuState::ProcessInput(Game& game, float /*dt*/) {
     m_settingsButton.Update(mousePos, clicked);
     m_particleEditorButton.Update(mousePos, clicked);
     m_exitButton.Update(mousePos, clicked);
+
+    // Continue resumes the last save; only interactive when one exists.
+    if (m_hasSave) {
+        m_continueButton.Update(mousePos, clicked);
+        if (m_continueButton.IsClicked()) {
+            HandleContinue(game);
+            return;
+        }
+    }
 
     // Play and the particle editor both need an active datapack, so they route
     // through the selection screen first (carrying where to go once a pack is chosen).
@@ -52,6 +75,24 @@ void MenuState::ProcessInput(Game& game, float /*dt*/) {
         game.Quit();
 }
 
+void MenuState::HandleContinue(Game& game) {
+    // Loading needs the save's datapack active so tower names resolve in the factory.
+    nlohmann::json j = game.GetFileStore().LoadJson(kSaveGamePath); // {} if missing/corrupt
+    std::string dataDir = j.value("datapack", std::string{});
+
+    game.GetDatapackRegistry().Scan(game.GetFileStore());
+    for (const auto& pack : game.GetDatapackRegistry().Packs()) {
+        if (pack.DataDir() == dataDir) {
+            game.ActivateDatapack(pack);
+            game.ChangeState(std::make_unique<PlayingState>(true));
+            return;
+        }
+    }
+
+    // Pack missing/renamed (or a legacy save with no id): let the player pick one, then load.
+    game.ChangeState(std::make_unique<DatapackSelectState>(DatapackSelectState::Intent::Continue));
+}
+
 void MenuState::Update(Game& /*game*/, float /*dt*/) {}
 
 void MenuState::Draw(Game& game){
@@ -60,6 +101,11 @@ void MenuState::Draw(Game& game){
 
     ClearBackground(DARKGRAY);
     DrawText("OPEN CHAOS TD", cx - 180, cy - 80, 40, RAYWHITE);
+
+    // Continue is grayed and unlabeled-bright when no save is present.
+    const WidgetStyle& continueStyle = m_hasSave ? kDefaultStyle : kDisabledStyle;
+    m_continueButton.Draw(false, continueStyle);
+    m_continueButton.DrawLabel(24, continueStyle.m_text);
 
     m_playButton.Draw();
     m_playButton.DrawLabel(24, RAYWHITE);

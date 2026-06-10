@@ -32,7 +32,7 @@ public:
 private:
     Vector2 m_mousePositionLast;
 
-    Camera2D m_camera;
+    Camera2D m_camera{}; // zero-init: rotation/zoom/etc. start defined, never indeterminate
     int m_zoomIndex = 1;
     float m_zoomLevel[4] = {0.5, 1, 2, 4};
 

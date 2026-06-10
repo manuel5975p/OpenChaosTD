@@ -52,6 +52,21 @@ void Map::SetBuff(int cols, int rows, std::string statKey, float value, bool mul
     tile.m_modifier = {std::move(statKey), value, mul};
 }
 
+void Map::RestoreFromSave(Grid2D<Tile> grid, int tileSize,
+                          std::pair<int, int> core,
+                          std::vector<std::pair<int, int>> nests) {
+    m_grid     = std::move(grid);
+    m_tileSize = tileSize;
+    m_core     = core;
+    m_nests    = std::move(nests);
+
+    // ConstructPaths iterates m_paths and indexes m_nests in lock-step, so reserve one
+    // (empty) path slot per nest — mirroring what AddNest does incrementally during setup.
+    m_paths.assign(m_nests.size(), {});
+
+    BuildPathMesh(); // regenerates m_pathMesh + m_paths from the restored walkability
+}
+
 void Map::BuildPathMesh() {
     // Adapt the tile grid into an abstract walkability mask, then let the Pathfinder solve on it.
     // The Pathfinder stays free of any Tile/Map knowledge.

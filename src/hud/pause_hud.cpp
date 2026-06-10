@@ -11,23 +11,27 @@ void PauseHUD::Build(float scale, int screenW, int screenH) {
     float gw = static_cast<float>(screenW);
     float gh = static_cast<float>(screenH);
 
-    // Centered panel sized to hold the title and three stacked buttons.
+    // Centered panel sized to hold the title and five stacked buttons.
     float panelW = Scaled(240.0f);
-    float panelH = Scaled(260.0f);
+    float panelH = Scaled(400.0f);
     m_panelRect = { (gw - panelW) / 2.0f, (gh - panelH) / 2.0f, panelW, panelH };
 
     float btnW = Scaled(180.0f);
     float btnH = Scaled(44.0f);
     float btnX = (gw - btnW) / 2.0f;
     float spacing = Scaled(56.0f);
-    float firstY = m_panelRect.y + Scaled(88.0f);
+    float firstY = m_panelRect.y + Scaled(80.0f);
 
     m_resumeBtn.m_label = "RESUME";
     m_resumeBtn.m_rect = { btnX, firstY, btnW, btnH };
+    m_saveBtn.m_label = "SAVE";
+    m_saveBtn.m_rect = { btnX, firstY + spacing, btnW, btnH };
+    m_loadBtn.m_label = "LOAD";
+    m_loadBtn.m_rect = { btnX, firstY + spacing * 2.0f, btnW, btnH };
     m_restartBtn.m_label = "RESTART";
-    m_restartBtn.m_rect = { btnX, firstY + spacing, btnW, btnH };
+    m_restartBtn.m_rect = { btnX, firstY + spacing * 3.0f, btnW, btnH };
     m_mainMenuBtn.m_label = "MAIN MENU";
-    m_mainMenuBtn.m_rect = { btnX, firstY + spacing * 2.0f, btnW, btnH };
+    m_mainMenuBtn.m_rect = { btnX, firstY + spacing * 4.0f, btnW, btnH };
 }
 
 void PauseHUD::ProcessInput(Input& input) {
@@ -40,10 +44,14 @@ void PauseHUD::ProcessInput(Input& input) {
     ConsumePanelClick(input);
 
     m_resumeBtn.Update(mousePos, pressed);
+    m_saveBtn.Update(mousePos, pressed);
+    m_loadBtn.Update(mousePos, pressed);
     m_restartBtn.Update(mousePos, pressed);
     m_mainMenuBtn.Update(mousePos, pressed);
 
     if (m_resumeBtn.IsClicked())   m_resumeSignal.Raise();
+    if (m_saveBtn.IsClicked())     m_saveSignal.Raise();
+    if (m_loadBtn.IsClicked())     m_loadSignal.Raise();
     if (m_restartBtn.IsClicked())  m_restartSignal.Raise();
     if (m_mainMenuBtn.IsClicked()) m_mainMenuSignal.Raise();
 }
@@ -64,6 +72,10 @@ void PauseHUD::Draw() {
     int fontBtn = ScaledInt(18.0f);
     m_resumeBtn.Draw();
     m_resumeBtn.DrawLabel(fontBtn, RAYWHITE);
+    m_saveBtn.Draw();
+    m_saveBtn.DrawLabel(fontBtn, RAYWHITE);
+    m_loadBtn.Draw();
+    m_loadBtn.DrawLabel(fontBtn, RAYWHITE);
     m_restartBtn.Draw();
     m_restartBtn.DrawLabel(fontBtn, RAYWHITE);
     m_mainMenuBtn.Draw();

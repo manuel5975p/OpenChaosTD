@@ -40,6 +40,10 @@ public:
     // Start the next wave; no-op if one is already active
     void StartWave(GameData& data, const EnemyFactory& enemyFactory);
 
+    // (Re)prime the 1-wave lookahead so the next wave to launch is currentWaveNumber + 1.
+    // Called with 0 on a fresh load and with the restored wave number when continuing a save.
+    void PrepareForWave(int currentWaveNumber, const EnemyFactory& enemyFactory);
+
     void ToggleAutoSpawn() { m_autoSpawn = !m_autoSpawn; }
     bool IsAutoSpawn() const { return m_autoSpawn; }
 

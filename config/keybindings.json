@@ -1,6 +1,8 @@
 {
     "Game": {
         "Debug": "GRAVE",
+        "LoadGame": "F9",
+        "SaveGame": "F5",
         "Speed": "SPACE"
     },
     "Interface": {

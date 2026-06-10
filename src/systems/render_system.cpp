@@ -168,6 +168,8 @@ void RenderSystem::CenterCamera(Map& map, Screen& renderer){
     m_camera.target = {-static_cast<float>(renderer.GetGameWidth()) / 2.f, -static_cast<float>(renderer.GetGameHeight()) / 2.f};
     m_camera.offset = {-(map.GetCols() * map.GetTileSize()) / 2.f, -(map.GetRows() * map.GetTileSize()) / 2.f};
     m_camera.zoom = 1.0f;
+    m_camera.rotation = 0.0f; // never rotated; reset defensively so the map can't render tilted
+    m_zoomIndex = 1;          // keep the wheel-zoom index in sync with the reset zoom level
 }
 
 void RenderSystem::ControlCamera(float& dt, Input& input){

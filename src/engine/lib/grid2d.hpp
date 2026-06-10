@@ -38,6 +38,10 @@ public:
         return m_data;
     }
 
+    const std::vector<T>& GetVector() const {
+        return m_data;
+    }
+
     T& Get(int x, int y) {
         CheckBounds(x, y);
         return m_data[y * m_width + x];

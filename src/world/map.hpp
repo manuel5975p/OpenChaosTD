@@ -20,6 +20,7 @@ public:
     const std::vector<std::pair<int, int>>& GetNests() const { return m_nests; }
     const std::vector<std::vector<Vector2>>& GetPaths() const { return m_paths; }
     const Grid2D<Node>& GetPathMesh() const {return m_pathMesh;}
+    const Grid2D<Tile>& GetGrid() const { return m_grid; }
 
     // Coordinate conversion
     Vector2 TileToWorld(int x, int y) const;
@@ -29,6 +30,13 @@ public:
     void SetCore(int cols, int rows);
     void AddNest(int cols, int rows);
     void SetBuff(int cols, int rows, std::string statKey, float value, bool mul);
+
+    // Install a fully-formed grid/geometry from a save and regenerate derived data.
+    // The grid already encodes tile types, modifiers and walkability (incl. tiles under
+    // towers), so paths are rebuilt to match exactly. m_pathMesh/m_paths are never persisted.
+    void RestoreFromSave(Grid2D<Tile> grid, int tileSize,
+                         std::pair<int, int> core,
+                         std::vector<std::pair<int, int>> nests);
 
     // Pathfinding
     void BuildPathMesh();

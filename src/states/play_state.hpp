@@ -16,6 +16,9 @@
 #include <systems/wave_manager.hpp>
 class PlayingState : public GameState {
 public:
+    // loadFromSave: resume saves/savegame.json on enter instead of generating a fresh map.
+    explicit PlayingState(bool loadFromSave = false) : m_loadFromSave(loadFromSave) {}
+
     void OnEnter(Game& game) override;
     void OnExit(Game& game) override;
 
@@ -29,6 +32,9 @@ private:
     void HandleTowerPlacement(Game& game, Vector2 mouseWorld);
     void SyncHUDState(Game& game);
     void UpgradeSelectedTower(Game& game);
+    void HandleSaveLoad(Game& game); // F5 save / F9 load, only valid between waves
+    void SaveGame(Game& game);       // write the save slot (+ event-log feedback)
+    bool LoadGame(Game& game);       // restore the save slot; false if none/invalid
 
     // Build the per-frame read-only views handed to the HUDs (keeps HUDs off GameData/WaveManager).
     StatusView MakeStatusView(Game& game);
@@ -52,6 +58,7 @@ private:
         std::string hoveredTowerName; // name of the tower-bar button being previewed
     };
 
+    bool m_loadFromSave = false; // set by the constructor; consumed once in OnEnter
     bool m_debug = false;
     bool m_gameOver = false;
     bool m_paused = false;

@@ -16,13 +16,15 @@ public:
 
     static constexpr Key INVALID_KEY = { UINT32_MAX, 0 };
 
-private:
+    // Public so external (non-intrusive) serializers can persist and restore the exact
+    // sparse bookkeeping needed for key/handle stability. The map itself stays IO-agnostic.
     struct Slot {
         uint32_t generation = 0;
         uint32_t dense_index = 0;  // where in m_values this element lives
         bool occupied = false;
     };
 
+private:
     std::vector<Slot> m_slots; // sparse — indexed by Key.index
     std::vector<T> m_values; // dense — iterate this for rendering/updates
     std::vector<uint32_t> m_erase; // dense — maps m_values[i] back to its slot index
@@ -116,6 +118,24 @@ public:
     const T* end() const { return m_values.data() + m_values.size(); }
 
     size_t Size() const { return m_values.size(); }
+
+    // --- Serialization support (generic; no IO/json dependency here) ---
+    // Raw access to the internal state. An external serializer reads these to persist the
+    // container and calls RawAssign to restore it, preserving exact key/handle stability.
+    const std::vector<Slot>&     RawSlots()    const { return m_slots; }
+    const std::vector<T>&        RawValues()   const { return m_values; }
+    const std::vector<uint32_t>& RawErase()    const { return m_erase; }
+    const std::vector<uint32_t>& RawFreeList() const { return m_freeList; }
+
+    // Restore exact internal state (deserialization only). The caller guarantees the four
+    // vectors are mutually consistent (occupied slots point at valid dense indices, etc.).
+    void RawAssign(std::vector<Slot> slots, std::vector<T> values,
+                   std::vector<uint32_t> erase, std::vector<uint32_t> freeList) {
+        m_slots    = std::move(slots);
+        m_values   = std::move(values);
+        m_erase    = std::move(erase);
+        m_freeList = std::move(freeList);
+    }
 
     // Clears everything
     void Clear() {

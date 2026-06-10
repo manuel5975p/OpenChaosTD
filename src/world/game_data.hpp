@@ -8,6 +8,7 @@
 #include <vector>
 
 class FileStore;
+class TowerFactory;
 
 struct GameData {
     // Gameplay config — loaded from gameplay.json, not reset between games
@@ -31,4 +32,11 @@ struct GameData {
     // dataDir is the active datapack's data directory (relative to the project root).
     void Load(FileStore& fileStore, const std::string& dataDir);
     void Reset();
+
+    // Persist/restore an in-progress game to/from a JSON file. Saving is only valid between
+    // waves, so enemies and active attacks are intentionally not part of the state. LoadState
+    // reconstructs towers through `factory` and commits atomically: on any error it returns
+    // false and leaves the current game untouched.
+    void SaveState(FileStore& fileStore, const std::string& path, const std::string& datapack) const;
+    bool LoadState(FileStore& fileStore, const std::string& path, const TowerFactory& factory);
 };

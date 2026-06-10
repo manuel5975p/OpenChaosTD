@@ -73,6 +73,8 @@ void DatapackSelectState::SelectPack(Game& game, int index) {
 
     if (m_intent == Intent::EditParticles)
         game.ChangeState(std::make_unique<ParticleEditorState>());
+    else if (m_intent == Intent::Continue)
+        game.ChangeState(std::make_unique<PlayingState>(true));
     else
         game.ChangeState(std::make_unique<PlayingState>());
 }

@@ -6,6 +6,10 @@
 #include <raylib.h>
 #include <raymath.h>
 
+namespace {
+    constexpr const char* kSaveGamePath = "saves/savegame.json";
+}
+
 // --- Base overrides --------------------------------------------------------
 
 void PlayingState::OnEnter(Game& game) {
@@ -13,7 +17,11 @@ void PlayingState::OnEnter(Game& game) {
     game.GetParticles().Clear();
     game.GetSoundSystem().PlayMusic("openchaostd_main");
 
-    m_mapGenerator.Generate(game.GetGameData().m_map, 15, 19, 3, 40);
+    // Resume a save when launched in continue mode; fall back to a fresh map if it fails.
+    bool loaded = m_loadFromSave &&
+        game.GetGameData().LoadState(game.GetFileStore(), kSaveGamePath, game.GetTowerFactory());
+    if (!loaded)
+        m_mapGenerator.Generate(game.GetGameData().m_map, 15, 19, 3, 40);
 
     m_renderSystem.CenterCamera(game.GetGameData().m_map, game.GetScreen());
 
@@ -36,6 +44,11 @@ void PlayingState::OnEnter(Game& game) {
 
     m_waveManager.Load(game.GetFileStore(), game.GetEnemyFactory(), game.GetActiveDataDir());
 
+    // A resumed game restarts the wave lookahead from the saved wave number so the next wave
+    // (and the HUD preview) match where the player left off, rather than always wave 1.
+    if (loaded)
+        m_waveManager.PrepareForWave(game.GetGameData().m_waveNumber, game.GetEnemyFactory());
+
     m_pauseHUD.Build(scale, screenW, screenH);
 }
 
@@ -56,6 +69,7 @@ void PlayingState::ProcessInput(Game& game, float dt) {
     if (game.GetInput().IsPressed("Debug")) m_debug = !m_debug;
     if (game.GetInput().IsPressed("Speed")) CycleSpeed();
     if (game.GetInput().IsPressed("WaveInfo")) m_waveHUD.Toggle();
+    HandleSaveLoad(game);
     m_renderSystem.ControlCamera(dt, game.GetInput());
 
     // HUDs consume mouse input first so clicks don't bleed through to the world.
@@ -189,15 +203,38 @@ void PlayingState::UpgradeSelectedTower(Game& game) {
     if (game.GetGameData().m_gold < up.m_cost) return;
 
     game.GetGameData().m_gold -= up.m_cost;
-    // Each key is broadcast to every module; each consumer applies only the keys it recognizes
-    // (the AttackModule handles core combat stats, effect modules handle their own params).
-    for (auto& [k, v] : up.m_adds) tower->PatchStats(k, v, false);
-    for (auto& [k, v] : up.m_muls) tower->PatchStats(k, v, true);
-    for (auto& mod : up.m_addModules)
-        if (auto m = game.GetTowerFactory().BuildModule(mod)) tower->AddModule(std::move(m));
+    game.GetTowerFactory().ApplyUpgradeStats(*tower, up);
 
     tower->m_cost += up.m_cost; // sell refund reflects total invested
     tower->m_level++;
+}
+
+void PlayingState::SaveGame(Game& game) {
+    game.GetGameData().SaveState(game.GetFileStore(), kSaveGamePath, game.GetActiveDataDir());
+    m_eventLog.Add("Game saved");
+}
+
+bool PlayingState::LoadGame(Game& game) {
+    if (!game.GetGameData().LoadState(game.GetFileStore(), kSaveGamePath, game.GetTowerFactory())) {
+        m_eventLog.Add("No valid save to load");
+        return false;
+    }
+
+    // Restored tower keys are stable, but drop the inspection selection defensively, recentre on
+    // the installed map, and re-prime the wave lookahead to the restored wave number.
+    m_selection.towerKey = DenseSlotMap<Tower>::INVALID_KEY;
+    m_renderSystem.CenterCamera(game.GetGameData().m_map, game.GetScreen());
+    m_waveManager.PrepareForWave(game.GetGameData().m_waveNumber, game.GetEnemyFactory());
+    m_eventLog.Add("Game loaded");
+    return true;
+}
+
+void PlayingState::HandleSaveLoad(Game& game) {
+    // The F-key shortcuts are only offered between waves (no live enemies or attacks to persist).
+    if (game.GetGameData().m_waveActive) return;
+
+    if (game.GetInput().IsPressed("SaveGame")) SaveGame(game);
+    if (game.GetInput().IsPressed("LoadGame")) LoadGame(game);
 }
 
 void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
@@ -279,6 +316,13 @@ void PlayingState::SetPaused(bool paused) {
 
 void PlayingState::HandlePauseSignals(Game& game) {
     if (m_pauseHUD.WasResumeRequested())
+        SetPaused(false);
+
+    if (m_pauseHUD.WasSaveRequested())
+        SaveGame(game);
+
+    // A successful load installs a fresh between-waves state, so leave the pause overlay.
+    if (m_pauseHUD.WasLoadRequested() && LoadGame(game))
         SetPaused(false);
 
     if (m_pauseHUD.WasRestartRequested())

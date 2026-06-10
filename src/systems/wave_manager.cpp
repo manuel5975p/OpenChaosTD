@@ -53,17 +53,30 @@ void WaveManager::Load(FileStore& fileStore, const EnemyFactory& enemyFactory, c
         }
     }
 
-    // 1-wave lookahead: pre-generate the active wave (1) and its lookahead (2) before the first start.
-    m_pendingDef = GenerateWave(1);
-    m_lookaheadDef = GenerateWave(2);
-    m_pendingBudget = BudgetForWave(1);
-    m_lookaheadBudget = BudgetForWave(2);
-
-    // Build the prototype pool previewing wave 1 (the next wave to launch).
-    RebuildPreviewPrototypes(1, enemyFactory);
+    // Prime the 1-wave lookahead for a fresh game (next wave to launch is wave 1).
+    PrepareForWave(0, enemyFactory);
 
     std::cout << "WaveManager: loaded " << m_enemyPool.size() << " pool entries, victory_wave="
               << m_victoryWave << "\n";
+}
+
+void WaveManager::PrepareForWave(int currentWaveNumber, const EnemyFactory& enemyFactory) {
+    int next = currentWaveNumber + 1;
+
+    // 1-wave lookahead: pre-generate the next wave and the one after it before any start.
+    m_pendingDef = GenerateWave(next);
+    m_lookaheadDef = GenerateWave(next + 1);
+    m_pendingBudget = BudgetForWave(next);
+    m_lookaheadBudget = BudgetForWave(next + 1);
+
+    // Build the prototype pool previewing the next wave to launch.
+    RebuildPreviewPrototypes(next, enemyFactory);
+
+    // No wave is in progress yet.
+    m_pendingSpawns.clear();
+    m_nextSpawn = 0;
+    m_elapsed = 0.0f;
+    m_activeTier = 0;
 }
 
 const WaveManager::PoolEntry* WaveManager::FindPoolEntry(const std::string& name) const {

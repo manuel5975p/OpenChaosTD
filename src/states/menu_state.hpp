@@ -13,6 +13,12 @@ public:
     void Draw(Game& game) override;
 
 private:
+    // Resume the saved game: re-activate the pack it was saved with, then load it.
+    void HandleContinue(Game& game);
+
+    bool m_hasSave = false; // whether saves/savegame.json exists (Continue enabled)
+
+    Button m_continueButton;
     Button m_playButton;
     Button m_settingsButton;
     Button m_particleEditorButton;
