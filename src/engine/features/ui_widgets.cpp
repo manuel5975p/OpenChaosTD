@@ -1,4 +1,5 @@
 #include <engine/features/ui_widgets.hpp>
+#include <engine/core/text.hpp>
 #include <algorithm>
 #include <cmath>
 
@@ -20,8 +21,8 @@ void Button::Draw(bool selected, const WidgetStyle& style) const {
 
 void Button::DrawLabel(int fontSize, Color color) const {
     if (m_label.empty()) return;
-    int lw = MeasureText(m_label.c_str(), fontSize);
-    DrawText(m_label.c_str(),
+    int lw = Text::Measure(m_label.c_str(), fontSize);
+    Text::Draw(m_label.c_str(),
         static_cast<int>(m_rect.x + (m_rect.width - lw) / 2.0f),
         static_cast<int>(m_rect.y + (m_rect.height - fontSize) / 2.0f),
         fontSize, color);
@@ -78,7 +79,7 @@ void Toggle::Draw(const WidgetStyle& style) const {
 
     if (!m_label.empty()) {
         int fontSize = static_cast<int>(m_rect.height * 0.65f);
-        DrawText(m_label.c_str(),
+        Text::Draw(m_label.c_str(),
             static_cast<int>(m_rect.x + m_rect.width + 6.0f),
             static_cast<int>(m_rect.y + (m_rect.height - fontSize) / 2.0f),
             fontSize, style.m_text);
@@ -130,7 +131,7 @@ void TextInput::Draw(const WidgetStyle& style) const {
     int fontSize = static_cast<int>(m_rect.height * 0.6f);
     float padding = m_rect.height * 0.2f;
     std::string display = m_text + (m_focused ? "_" : "");
-    DrawText(display.c_str(),
+    Text::Draw(display.c_str(),
         static_cast<int>(m_rect.x + padding),
         static_cast<int>(m_rect.y + (m_rect.height - fontSize) / 2.0f),
         fontSize, style.m_text);

@@ -1,4 +1,5 @@
 #include <hud/wave_enemy_card.hpp>
+#include <engine/core/text.hpp>
 #include <engine/core/resources.hpp>
 #include <raylib.h>
 #include <algorithm>
@@ -49,18 +50,18 @@ void WaveEnemyCard::Draw(Rectangle bounds, Resources& assets) const {
     float textRight = bounds.x + bounds.width - m_pad;
 
     // Header row: "Nx Name" on the left, "Lv N" badge right-aligned.
-    DrawText(TextFormat("%dx %s", m_count, m_name.c_str()),
+    Text::Draw(TextFormat("%dx %s", m_count, m_name.c_str()),
              static_cast<int>(tx), static_cast<int>(ty), m_fontSm, RAYWHITE);
     if (m_hasProto) {
         const char* lvlText = TextFormat("Lv %d", m_level);
-        int lw = MeasureText(lvlText, m_fontSm);
-        DrawText(lvlText, static_cast<int>(textRight) - lw, static_cast<int>(ty), m_fontSm, GOLD);
+        int lw = Text::Measure(lvlText, m_fontSm);
+        Text::Draw(lvlText, static_cast<int>(textRight) - lw, static_cast<int>(ty), m_fontSm, GOLD);
     }
     ty += m_lineH;
 
     // One stat row per module, colored by the module (RAYWHITE core, Shield/Immune accents).
     for (const auto& line : m_stats) {
-        DrawText(line.m_text.c_str(), static_cast<int>(tx), static_cast<int>(ty), m_fontSm, line.m_color);
+        Text::Draw(line.m_text.c_str(), static_cast<int>(tx), static_cast<int>(ty), m_fontSm, line.m_color);
         ty += m_lineH;
     }
 }
