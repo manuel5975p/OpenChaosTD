@@ -30,6 +30,7 @@ Vector2 TextRenderer::MeasureText(FontId, std::string_view, float) { return {0, 
 #include <external/glad.h>
 
 #include <hb-gpu.h>
+#include <hb-ot.h>
 #include <hb.h>
 
 #include <algorithm>
@@ -115,8 +116,8 @@ struct GlyphEntry {
 struct FontEntry {
     hb_face_t* face = nullptr;
     hb_font_t* font = nullptr;
-    int upem      = 0;
-    int ascender  = 0;  // font units above baseline
+    int upem     = 0;
+    int baseline = 0;  // font units from line top to baseline
     std::unordered_map<hb_codepoint_t, GlyphEntry> glyphs;
 };
 
@@ -369,10 +370,14 @@ std::expected<TextRenderer::FontId, std::string> TextRenderer::LoadFontBlob(hb_b
     entry.font = hb_font_create(face);  // default scale: upem, font units
     entry.upem = static_cast<int>(hb_face_get_upem(face));
 
-    hb_font_extents_t ext = {};
-    entry.ascender = hb_font_get_h_extents(entry.font, &ext)
-                         ? ext.ascender
-                         : entry.upem*4/5;
+    // Center the cap height inside the em box so a line of caps optically
+    // fills [y, y+fontSize]. Raw ascenders are unreliable for placement —
+    // e.g. Victor Mono declares 1.1 em — and would sink text in UI boxes.
+    hb_position_t capHeight = 0;
+    if (!hb_ot_metrics_get_position(entry.font, HB_OT_METRICS_TAG_CAP_HEIGHT, &capHeight) ||
+        capHeight <= 0 || capHeight > entry.upem)
+        capHeight = entry.upem*7/10;
+    entry.baseline = (entry.upem + capHeight)/2;
 
     Impl& impl = *m_impl;
     impl.fonts.push_back(entry);
@@ -388,7 +393,7 @@ void TextRenderer::DrawText(FontId font, std::string_view text, Vector2 position
     const float scale = fontSize/static_cast<float>(fe.upem);
 
     impl.scratch.clear();
-    float penY = position.y + scale*static_cast<float>(fe.ascender);
+    float penY = position.y + scale*static_cast<float>(fe.baseline);
     for (std::string_view rest = text; !rest.empty() || rest.data() == text.data();) {
         const std::size_t nl = rest.find('\n');
         impl.ShapeLine(fe, rest.substr(0, nl), position.x, penY, scale, true);

@@ -57,7 +57,7 @@ private:
     // --- Draw sub-parts ---
     void DrawBrowser();
     void DrawParams();
-    void DrawPreview();
+    void DrawPreview(Game& game);
     void DrawBottomBar(Game& game);
     void DrawRow(const SliderRow& row) const;
 

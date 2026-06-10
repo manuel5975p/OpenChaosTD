@@ -2,15 +2,11 @@
 
 #include <raylib.h>
 
+// Letterboxed virtual-resolution presenter: maps the fixed virtual coordinate
+// space onto the window via the projection matrix, so everything rasterizes at
+// native resolution (no intermediate render texture — vector text stays crisp).
 class Screen {
 public:
-    Screen() = default;
-    ~Screen() { Shutdown(); }
-
-    // Non-copyable — owns a RenderTexture2D handle
-    Screen(const Screen&)            = delete;
-    Screen& operator=(const Screen&) = delete;
-
     // Call after InitWindow()
     void Init(int virtualWidth, int virtualHeight);
 
@@ -21,6 +17,11 @@ public:
     void BeginFrame();
     void EndFrame();
 
+    // Clips drawing to a rect in virtual coordinates (use instead of raylib's
+    // BeginScissorMode inside a frame); EndScissor restores the letterbox clip.
+    void BeginScissor(Rectangle virtualRect) const;
+    void EndScissor() const;
+
     // Converts real screen mouse coords to virtual game coords
     Vector2 GetVirtualMouse() const;
 
@@ -30,16 +31,12 @@ public:
     float GetScale() const { return m_scale; }
     Rectangle GetDestRect() const { return m_destRect; }
 
-    void Shutdown();
-
 private:
-    // Recalculates the destination rectangle and black bar fills
+    // Recalculates the letterboxed destination rectangle and scale
     void UpdateScale();
 
     int m_virtualWidth = 1280;
     int m_virtualHeight = 720;
-
-    RenderTexture2D m_target = {};  // Game renders into this
 
     Rectangle m_destRect = {};  // destination rect on the real screen (letterboxed)
     float m_scale = 1.0f;

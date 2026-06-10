@@ -3,6 +3,7 @@
 #include <states/play_state.hpp>
 #include <states/particle_editor_state.hpp>
 #include <datapack/datapack.hpp>
+#include <engine/core/text.hpp>
 #include <game.hpp>
 #include <raylib.h>
 #include <algorithm>
@@ -14,15 +15,15 @@ namespace {
     constexpr Color kSubtle     = {160, 160, 170, 255};
 
     void DrawCenteredText(const char* text, float centerX, float y, int fontSize, Color color) {
-        int w = MeasureText(text, fontSize);
-        DrawText(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
+        int w = Text::Measure(text, fontSize);
+        Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
     }
 
     // Trims text with a trailing ellipsis so it fits within maxWidth pixels.
     std::string TruncateToWidth(const std::string& text, int fontSize, float maxWidth) {
-        if (MeasureText(text.c_str(), fontSize) <= maxWidth) return text;
+        if (Text::Measure(text.c_str(), fontSize) <= maxWidth) return text;
         std::string out = text;
-        while (!out.empty() && MeasureText((out + "...").c_str(), fontSize) > maxWidth)
+        while (!out.empty() && Text::Measure((out + "...").c_str(), fontSize) > maxWidth)
             out.pop_back();
         return out + "...";
     }
@@ -158,14 +159,14 @@ void DatapackSelectState::Draw(Game& game) {
         float textRight = card.x + card.width - 20.0f;
         float textW = textRight - textX;
 
-        DrawText(pack.m_name.c_str(), static_cast<int>(textX), static_cast<int>(card.y + 16.0f),
-                 26, kDefaultStyle.m_text);
+        Text::Draw(pack.m_name.c_str(), static_cast<int>(textX), static_cast<int>(card.y + 16.0f),
+                   26, kDefaultStyle.m_text);
 
         std::string meta = "by " + pack.m_author + "    v" + pack.m_version;
-        DrawText(meta.c_str(), static_cast<int>(textX), static_cast<int>(card.y + 50.0f), 16, kDefaultStyle.m_accent);
+        Text::Draw(meta.c_str(), static_cast<int>(textX), static_cast<int>(card.y + 50.0f), 16, kDefaultStyle.m_accent);
 
         std::string desc = TruncateToWidth(pack.m_description, 16, textW);
-        DrawText(desc.c_str(), static_cast<int>(textX), static_cast<int>(card.y + 78.0f), 16, kSubtle);
+        Text::Draw(desc.c_str(), static_cast<int>(textX), static_cast<int>(card.y + 78.0f), 16, kSubtle);
     }
 
     // Scrollbar (only when there is something to scroll).

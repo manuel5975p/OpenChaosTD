@@ -1,5 +1,6 @@
 #include <states/particle_editor_state.hpp>
 #include <states/menu_state.hpp>
+#include <engine/core/text.hpp>
 #include <game.hpp>
 #include <raylib.h>
 #include <algorithm>
@@ -13,13 +14,13 @@ namespace {
 
     // Centered text helper (states draw at raw virtual coords, no HUD scaling).
     void DrawCenteredText(const char* text, float centerX, float y, int fontSize, Color color) {
-        int w = MeasureText(text, fontSize);
-        DrawText(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
+        int w = Text::Measure(text, fontSize);
+        Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
     }
 
     // Vertically center a label inside a row of the given height.
     void DrawLabelInRow(const char* text, float x, float rowY, float rowH, int fontSize, Color color) {
-        DrawText(text, static_cast<int>(x), static_cast<int>(rowY + (rowH - fontSize) / 2.0f), fontSize, color);
+        Text::Draw(text, static_cast<int>(x), static_cast<int>(rowY + (rowH - fontSize) / 2.0f), fontSize, color);
     }
 
     // Color swatch over a dark backing so low-alpha values stay readable.
@@ -498,12 +499,12 @@ void ParticleEditorState::Draw(Game& game) {
 
     DrawBrowser();
     DrawParams();
-    DrawPreview();
+    DrawPreview(game);
     DrawBottomBar(game);
 }
 
 void ParticleEditorState::DrawBrowser() {
-    DrawText("PRESETS", static_cast<int>(kBrowserX), static_cast<int>(kTopY), 28, kAccentColor);
+    Text::Draw("PRESETS", static_cast<int>(kBrowserX), static_cast<int>(kTopY), 28, kAccentColor);
 
     m_newBtn.Draw();
     m_newBtn.DrawLabel(14, RAYWHITE);
@@ -512,7 +513,7 @@ void ParticleEditorState::DrawBrowser() {
     m_deleteBtn.DrawLabel(14, canDelete ? RAYWHITE : Color{120, 120, 120, 255});
 
     if (m_presetNames.empty()) {
-        DrawText("No presets found", static_cast<int>(kBrowserX),
+        Text::Draw("No presets found", static_cast<int>(kBrowserX),
             static_cast<int>(m_browserRect.y), 16, LIGHTGRAY);
         return;
     }
@@ -551,7 +552,7 @@ void ParticleEditorState::DrawRow(const SliderRow& row) const {
 
 void ParticleEditorState::DrawParams() {
     for (const Header& h : m_headers)
-        DrawText(h.m_text, static_cast<int>(h.m_pos.x), static_cast<int>(h.m_pos.y), 24, kAccentColor);
+        Text::Draw(h.m_text, static_cast<int>(h.m_pos.x), static_cast<int>(h.m_pos.y), 24, kAccentColor);
 
     for (const SliderRow* row : m_allRows)
         DrawRow(*row);
@@ -566,13 +567,12 @@ void ParticleEditorState::DrawParams() {
     }
 }
 
-void ParticleEditorState::DrawPreview() {
+void ParticleEditorState::DrawPreview(Game& game) {
     // Near-black backdrop so bright particles read well; clip to the rect.
     DrawRectangleRec(m_previewRect, {14, 14, 18, 255});
-    BeginScissorMode(static_cast<int>(m_previewRect.x), static_cast<int>(m_previewRect.y),
-        static_cast<int>(m_previewRect.width), static_cast<int>(m_previewRect.height));
+    game.GetScreen().BeginScissor(m_previewRect);
     m_previewParticles.Draw();
-    EndScissorMode();
+    game.GetScreen().EndScissor();
     DrawRectangleLinesEx(m_previewRect, 1.0f, {80, 80, 80, 255});
 
     float cx = m_previewRect.x + m_previewRect.width / 2.0f;
