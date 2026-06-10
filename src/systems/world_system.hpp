@@ -1,8 +1,11 @@
 #pragma once
 
-#include <world/game_data.hpp>
+#include <engine/lib/dense_slotmap.hpp>
 #include <engine/features/particle_system.hpp>
 
+struct GameData;
+class Tower;
+class Enemy;
 class EnemyFactory;
 class SoundSystem;
 

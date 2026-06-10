@@ -10,7 +10,8 @@
 #include <raylib.h>
 #include <nlohmann/json.hpp>
 
-#include <world/tile.hpp>          // pulls in Tower (move-only) and DenseSlotMap
+#include <world/tile.hpp>          // Tile + DenseSlotMap<Tower>::Key
+#include <world/tower.hpp>         // Tower (move-only) — serialized by value below
 #include <engine/lib/grid2d.hpp>
 #include <engine/lib/dense_slotmap.hpp>
 

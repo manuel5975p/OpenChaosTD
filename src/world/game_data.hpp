@@ -11,7 +11,7 @@ class FileStore;
 class TowerFactory;
 
 struct GameData {
-    // Gameplay config — loaded from gameplay.json, not reset between games
+    // Gameplay config — loaded from gameplay.toml, not reset between games
     int m_startingLives = 20;
     int m_startingGold = 150;
     float m_sellRefundRate = 0.5f;

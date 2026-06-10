@@ -2,8 +2,11 @@
 
 #include <string>
 
-#include <world/tower.hpp>
 #include <engine/lib/dense_slotmap.hpp>
+
+// m_towerKey only references DenseSlotMap<Tower>::Key / INVALID_KEY, both available from the
+// template alone; consumers that dereference a tower include <world/tower.hpp> directly.
+class Tower;
 
 enum class TileType {
     Grass,

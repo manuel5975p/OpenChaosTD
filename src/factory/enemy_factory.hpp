@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <toml++/toml.hpp>
+#include <world/module_def.hpp>
 #include <world/enemy.hpp>
 #include <engine/util/file_store.hpp>
 #include <factory/emitter_presets.hpp>
@@ -21,8 +22,8 @@ public:
     Enemy Create(const std::string& name) const;
     bool Has(const std::string& name) const;
 
-    // Build a single module from its TOML description (also used to append upgrade modules).
-    std::unique_ptr<EnemyModule> BuildModule(const toml::table& mod) const;
+    // Build a single module from its definition (also used to append upgrade modules).
+    std::unique_ptr<EnemyModule> BuildModule(const ModuleDef& mod) const;
 
     // Apply one upgrade step to an enemy: broadcast deltas via Enemy::PatchStats and, when
     // includeModules is set, append any new modules. The enemy analogue of
@@ -30,7 +31,7 @@ public:
     void ApplyUpgrade(Enemy& enemy, const EnemyUpgrade& up, bool includeModules = true) const;
 
 private:
-    using ModuleBuilder = std::function<std::unique_ptr<EnemyModule>(const toml::table&)>;
+    using ModuleBuilder = std::function<std::unique_ptr<EnemyModule>(const ModuleDef&)>;
 
     struct EnemyTemplate {
         std::string name;
@@ -40,7 +41,7 @@ private:
         int reward = 5;
         int livesOnReach = 1;
         EnemyPresentation presentation;
-        std::vector<toml::table> modules;
+        std::vector<ModuleDef> modules;
         std::optional<EnemyUpgrade> upgrade; // single upgrade option, applied once per upgrade tier
     };
 

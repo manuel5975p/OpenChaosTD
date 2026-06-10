@@ -1,5 +1,6 @@
 #include <factory/enemy_factory.hpp>
 #include <world/enemy_modules.hpp>
+#include <cassert>
 #include <stdexcept>
 #include <iostream>
 
@@ -9,6 +10,11 @@ static EffectType ParseEffectType(const std::string& name) {
     if (name == "Stun")       return EffectType::Stun;
     if (name == "Weakness")   return EffectType::Weakness;
     return EffectType::Burn;
+}
+
+// Wrap a parsed module sub-tree with its cached "type" string for the world layer.
+static ModuleDef MakeModuleDef(const toml::table& t) {
+    return ModuleDef{t["type"].value_or(std::string{}), t};
 }
 
 static EnemyPresentation ParsePresentation(const toml::table& j, const EmitterPresets& presets) {
@@ -28,7 +34,7 @@ static EnemyUpgrade ParseUpgrade(const toml::table& j) {
     // Added modules live under "modules" (unified upgrade schema across towers and enemies).
     if (auto mods = j["modules"].as_array())
         for (auto&& m : *mods)
-            if (auto mt = m.as_table()) up.m_addModules.push_back(*mt);
+            if (auto mt = m.as_table()) up.m_addModules.push_back(MakeModuleDef(*mt));
     return up;
 }
 
@@ -38,11 +44,11 @@ void EnemyFactory::Clear() {
 
 void EnemyFactory::Load(FileStore& fileStore, const EmitterPresets& presets, const std::string& dataDir) {
     Clear(); // replace any previously loaded pack's templates
-    m_builders["Regeneration"] = [](const toml::table& j){ return std::make_unique<RegenerationModule>(j["regenRate"].value_or(0.0f)); };
-    m_builders["Armor"]        = [](const toml::table& j){ return std::make_unique<ArmorModule>(j["armor"].value_or(0.0f)); };
-    m_builders["Immune"]       = [](const toml::table& j){ return std::make_unique<ImmuneModule>(ParseEffectType(j["effect"].value_or(std::string{}))); };
-    m_builders["Shield"]       = [](const toml::table& j){ return std::make_unique<ShieldModule>(j["shield"].value_or(0.0f)); };
-    m_builders["Split"]        = [](const toml::table& j){ return std::make_unique<SplitModule>(j["child"].value_or(std::string{}), j["splitCount"].value_or(0), j["spacing"].value_or(12.0f)); };
+    m_builders["Regeneration"] = [](const ModuleDef& def){ const toml::table& j = def.m_table; return std::make_unique<RegenerationModule>(j["regenRate"].value_or(0.0f)); };
+    m_builders["Armor"]        = [](const ModuleDef& def){ const toml::table& j = def.m_table; return std::make_unique<ArmorModule>(j["armor"].value_or(0.0f)); };
+    m_builders["Immune"]       = [](const ModuleDef& def){ const toml::table& j = def.m_table; return std::make_unique<ImmuneModule>(ParseEffectType(j["effect"].value_or(std::string{}))); };
+    m_builders["Shield"]       = [](const ModuleDef& def){ const toml::table& j = def.m_table; return std::make_unique<ShieldModule>(j["shield"].value_or(0.0f)); };
+    m_builders["Split"]        = [](const ModuleDef& def){ const toml::table& j = def.m_table; return std::make_unique<SplitModule>(j["child"].value_or(std::string{}), j["splitCount"].value_or(0), j["spacing"].value_or(12.0f)); };
 
     auto data = fileStore.LoadToml(dataDir + "/enemies.toml");
     auto enemies = data["enemies"].as_array();
@@ -66,7 +72,7 @@ void EnemyFactory::Load(FileStore& fileStore, const EmitterPresets& presets, con
 
         if (auto mods = (*entry)["modules"].as_array())
             for (auto&& m : *mods)
-                if (auto mod = m.as_table()) tmpl.modules.push_back(*mod);
+                if (auto mod = m.as_table()) tmpl.modules.push_back(MakeModuleDef(*mod));
 
         if (auto up = (*entry)["upgrade"].as_table())
             tmpl.upgrade = ParseUpgrade(*up);
@@ -97,6 +103,9 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     base->m_reward       = tmpl.reward;
     base->m_livesOnReach = tmpl.livesOnReach;
     enemy.AddModule(std::move(base));
+    // BaseStatsModule must be the first module added so it owns the core stats and GetBaseStats()
+    // caches it; everything below (and every appended upgrade module) relies on it already existing.
+    assert(enemy.GetBaseStats() != nullptr && "BaseStatsModule must be added first");
     enemy.m_currentHealth = enemy.GetBaseStats()->m_maxHealth;
 
     // Build every other module; AddModule caches the ShieldModule.
@@ -111,12 +120,11 @@ Enemy EnemyFactory::Create(const std::string& name) const {
     return enemy;
 }
 
-std::unique_ptr<EnemyModule> EnemyFactory::BuildModule(const toml::table& mod) const {
-    std::string type = mod["type"].value_or(std::string{});
-    auto bit = m_builders.find(type);
+std::unique_ptr<EnemyModule> EnemyFactory::BuildModule(const ModuleDef& mod) const {
+    auto bit = m_builders.find(mod.m_type);
     if (bit != m_builders.end())
         return bit->second(mod);
-    std::cerr << "EnemyFactory: unknown module type '" << type << "'\n";
+    std::cerr << "EnemyFactory: unknown module type '" << mod.m_type << "'\n";
     return nullptr;
 }
 
@@ -128,6 +136,8 @@ void EnemyFactory::ApplyUpgrade(Enemy& enemy, const EnemyUpgrade& up, bool inclu
     // Scalar deltas stack per tier, but added modules are appended only once across all tiers
     // (unlike tower upgrades, where each distinct level adds its modules once). The tier loop in
     // WaveManager::ApplyTierUpgrades passes includeModules=true on the first tier only.
+    // Appended upgrade modules are always effect/aux modules (never a BaseStatsModule), so the
+    // cached GetBaseStats() pointer set when the enemy was created stays valid and correct.
     if (includeModules)
         for (auto& mod : up.m_addModules)
             if (auto m = BuildModule(mod)) enemy.AddModule(std::move(m));

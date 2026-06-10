@@ -3,9 +3,13 @@
 #include <raylib.h>
 #include <vector>
 #include <world/effect.hpp>
-#include <world/enemy.hpp>
+#include <world/attack_style.hpp>
 #include <engine/features/particle_system.hpp>
 #include <engine/lib/dense_slotmap.hpp>
+
+// m_targetKeys only references DenseSlotMap<Enemy>::Key, which the template provides without the
+// full Enemy definition; consumers that resolve a key to an Enemy include <world/enemy.hpp> directly.
+class Enemy;
 
 // Combat half of an attack: resolved once against each target, then left inert until the
 // owning Attack's visual lifetime expires.
@@ -23,8 +27,6 @@ struct AttackPayload {
 
     bool m_resolved = false; // damage applied once; combat goes inert after this is set
 };
-
-enum class AttackStyle { Line, Ring };
 
 // Visual half of an attack: how it is drawn. Target positions are a fire-time snapshot so lines
 // keep rendering for the full lifetime even after the enemy moves or dies. Lifetime lives on Attack.

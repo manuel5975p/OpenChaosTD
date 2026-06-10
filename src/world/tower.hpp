@@ -5,12 +5,14 @@
 #include <raylib.h>
 #include <string>
 
-#include <engine/lib/dense_slotmap.hpp>
-#include <world/enemy.hpp>
 #include <world/tower_modules.hpp>
 #include <world/tower_presentation.hpp>
 #include <world/tower_upgrade.hpp>
 
+// Unlike Enemy, Tower has no Clone(): a tower is built exactly once by TowerFactory::Create and
+// then moved into the world's slotmap, never spawned from a prototype. It is move-only (its modules
+// are unique_ptr) and intentionally stays that way — there is no spawn-from-prototype path that would
+// need a deep copy, so no Clone()/sizeof tripwire is needed (contrast Enemy::Clone()).
 class Tower {
 public:
     std::string m_name;

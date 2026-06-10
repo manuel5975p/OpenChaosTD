@@ -1,6 +1,5 @@
 #pragma once
 
-#include <world/game_data.hpp>
 #include <systems/world_system.hpp>
 #include <factory/enemy_factory.hpp>
 #include <engine/util/file_store.hpp>
@@ -9,10 +8,12 @@
 #include <vector>
 #include <unordered_map>
 
+struct GameData;
+
 class WaveManager {
 public:
     // How a wave's threat budget scales with the wave number (selected by the "type" field in the
-    // budget block of waves.json).
+    // budget block of waves.toml).
     enum class BudgetType {
         Exponential, // base_budget * (1 + growth_rate)^(wave - 1)
         StepLinear   // base_budget + linear_step * wave - tier_adjustment * tier, clamped to >= base
@@ -94,7 +95,7 @@ private:
     // Expands a WaveDef into a sorted PendingSpawn list.
     void BuildSpawnQueue(const WaveDef& def, int nestCount);
 
-    // --- Configuration parsed from waves.json ---
+    // --- Configuration parsed from waves.toml ---
     float m_baseBudget = 20.0f;
     BudgetType m_budgetType = BudgetType::Exponential; // scaling model; default when "type" is absent
     float m_growthRate = 0.15f;     // Exponential: per-wave growth fraction

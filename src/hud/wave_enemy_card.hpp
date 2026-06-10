@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <hud/hud_views.hpp>       // WaveEnemyEntry
-#include <world/tower_modules.hpp> // DescLine (shared by tower + enemy modules)
+#include <world/desc_line.hpp> // DescLine (shared by tower + enemy modules)
 
 class Resources;
 

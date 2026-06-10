@@ -3,7 +3,7 @@
 #include <raylib.h>
 #include <string>
 #include <vector>
-#include <world/tower_modules.hpp> // DescLine (shared by tower + enemy modules)
+#include <world/desc_line.hpp> // DescLine (shared by tower + enemy modules)
 
 // Read-only data structures handed to the HUD each frame by PlayingState. They carry a snapshot
 // of gameplay state so the HUD never queries GameData / WaveManager / factories directly — the

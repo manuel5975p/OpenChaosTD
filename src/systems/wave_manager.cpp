@@ -1,4 +1,5 @@
 #include <systems/wave_manager.hpp>
+#include <world/game_data.hpp>
 #include <algorithm>
 #include <cmath>
 #include <unordered_map>
@@ -236,7 +237,7 @@ void WaveManager::Update(float dt, GameData& data, WorldSystem& worldSystem, Ene
             data.m_waveActive = false;
             m_autoSpawnTimer = 0.0f;
 
-            // Win condition is driven entirely by waves.json (victory_wave); 0 = endless.
+            // Win condition is driven entirely by waves.toml (victory_wave); 0 = endless.
             if (m_victoryWave > 0 && data.m_waveNumber >= m_victoryWave)
                 data.m_victory = true;
         }

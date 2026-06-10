@@ -1,5 +1,6 @@
 #include <factory/tower_factory.hpp>
 #include <world/tower_modules.hpp>
+#include <world/attack_style.hpp>
 #include <stdexcept>
 #include <iostream>
 
@@ -14,11 +15,9 @@ static TargetingMode ParseTargetingMode(const std::string& s) {
     return TargetingMode::First;
 }
 
-static Color ParseColor(const toml::array& a) {
-    return {
-        (unsigned char)a[0].value_or(0), (unsigned char)a[1].value_or(0),
-        (unsigned char)a[2].value_or(0), (unsigned char)a[3].value_or(0)
-    };
+// Wrap a parsed module sub-tree with its cached "type" string for the world layer.
+static ModuleDef MakeModuleDef(const toml::table& t) {
+    return ModuleDef{t["type"].value_or(std::string{}), t};
 }
 
 static AttackStyle ParseAttackStyle(const std::string& s) {
@@ -44,7 +43,7 @@ static TowerPresentation ParsePresentation(const toml::table& j, const EmitterPr
     v.m_attackSound = j["attackSound"].value_or(std::string{});
     v.m_style = ParseAttackStyle(j["style"].value_or(std::string("Line")));
     v.m_attackDuration = j["attackDuration"].value_or(0.0f);
-    if (auto c = j["color"].as_array())            v.m_color          = ParseColor(*c);
+    if (auto c = j["color"].as_array())            v.m_color          = ParseTomlColor(*c);
     if (auto m = j["muzzle"].value<std::string>()) v.m_muzzleDesc     = presets.Get(*m);
     if (auto m = j["impact"].value<std::string>()) v.m_impactDesc     = presets.Get(*m);
     if (auto m = j["critImpact"].value<std::string>()) v.m_critImpactDesc = presets.Get(*m);
@@ -61,7 +60,7 @@ static TowerUpgrade ParseUpgrade(const toml::table& j) {
     // Added modules live under "modules" (unified upgrade schema across towers and enemies).
     if (auto mods = j["modules"].as_array())
         for (auto&& m : *mods)
-            if (auto mt = m.as_table()) up.m_addModules.push_back(*mt);
+            if (auto mt = m.as_table()) up.m_addModules.push_back(MakeModuleDef(*mt));
     return up;
 }
 
@@ -74,34 +73,42 @@ void TowerFactory::Load(FileStore& fileStore, const EmitterPresets& presets, con
     Clear(); // replace any previously loaded pack's templates
     m_presets = &presets;
 
-    m_builders["Attack"] = [](const toml::table& j){
-        return BuildAttackModule(j);
+    m_builders["Attack"] = [](const ModuleDef& def){
+        return BuildAttackModule(def.m_table);
     };
-    m_builders["Passive"] = [](const toml::table&){
+    m_builders["Passive"] = [](const ModuleDef&){
         return std::make_unique<PassiveModule>();
     };
-    m_builders["ArmorPierce"] = [](const toml::table& j){
+    m_builders["ArmorPierce"] = [](const ModuleDef& def){
+        const toml::table& j = def.m_table;
         return std::make_unique<ArmorPierceModule>(j["armorPierce"].value_or(0.0f));
     };
-    m_builders["Slow"] = [this](const toml::table& j){
+    m_builders["Slow"] = [this](const ModuleDef& def){
+        const toml::table& j = def.m_table;
         return std::make_unique<SlowModule>(j["slowPercent"].value_or(0.0f), j["slowDuration"].value_or(0.0f), ResolveEmitter(j));
     };
-    m_builders["Burn"] = [this](const toml::table& j){
+    m_builders["Burn"] = [this](const ModuleDef& def){
+        const toml::table& j = def.m_table;
         return std::make_unique<BurnModule>(j["burnDamage"].value_or(0.0f), j["burnDuration"].value_or(0.0f), ResolveEmitter(j));
     };
-    m_builders["ArmorShred"] = [this](const toml::table& j){
+    m_builders["ArmorShred"] = [this](const ModuleDef& def){
+        const toml::table& j = def.m_table;
         return std::make_unique<ArmorShredModule>(j["shredAmount"].value_or(0.0f), j["shredDuration"].value_or(0.0f), ResolveEmitter(j));
     };
-    m_builders["Weakness"] = [this](const toml::table& j){
+    m_builders["Weakness"] = [this](const ModuleDef& def){
+        const toml::table& j = def.m_table;
         return std::make_unique<WeaknessModule>(j["weaknessAmount"].value_or(0.0f), j["weaknessDuration"].value_or(0.0f), ResolveEmitter(j));
     };
-    m_builders["Stun"] = [this](const toml::table& j){
+    m_builders["Stun"] = [this](const ModuleDef& def){
+        const toml::table& j = def.m_table;
         return std::make_unique<StunModule>(j["stunDuration"].value_or(0.0f), ResolveEmitter(j));
     };
-    m_builders["RampUp"] = [](const toml::table& j){
+    m_builders["RampUp"] = [](const ModuleDef& def){
+        const toml::table& j = def.m_table;
         return std::make_unique<RampUpModule>(j["bonusPerStack"].value_or(0.0f), j["maxStacks"].value_or(0), j["idleTime"].value_or(1.0f));
     };
-    m_builders["Crit"] = [](const toml::table& j){
+    m_builders["Crit"] = [](const ModuleDef& def){
+        const toml::table& j = def.m_table;
         return std::make_unique<CritModule>(j["critChance"].value_or(0.0f), j["critMultiplier"].value_or(1.0f));
     };
 
@@ -130,7 +137,7 @@ void TowerFactory::Load(FileStore& fileStore, const EmitterPresets& presets, con
                 if (auto mod = m.as_table()) {
                     if ((*mod)["type"].value_or(std::string{}) == "Attack")
                         tmpl.range = (*mod)["range"].value_or(0.0f); // cached for GetRange
-                    tmpl.modules.push_back(*mod);
+                    tmpl.modules.push_back(MakeModuleDef(*mod));
                 }
 
         if (auto ups = (*entry)["upgrades"].as_array())
@@ -151,12 +158,11 @@ EmitterDesc TowerFactory::ResolveEmitter(const toml::table& j) const {
     return effect;
 }
 
-std::unique_ptr<TowerModule> TowerFactory::BuildModule(const toml::table& mod) const {
-    std::string type = mod["type"].value_or(std::string{});
-    auto bit = m_builders.find(type);
+std::unique_ptr<TowerModule> TowerFactory::BuildModule(const ModuleDef& mod) const {
+    auto bit = m_builders.find(mod.m_type);
     if (bit != m_builders.end())
         return bit->second(mod);
-    std::cerr << "TowerFactory: unknown module type '" << type << "'\n";
+    std::cerr << "TowerFactory: unknown module type '" << mod.m_type << "'\n";
     return nullptr;
 }
 

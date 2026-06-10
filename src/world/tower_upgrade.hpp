@@ -5,8 +5,8 @@
 #include <utility>
 #include <cstdio>
 #include <unordered_map>
-#include <toml++/toml.hpp>
-#include <world/tower_modules.hpp>
+#include <world/module_def.hpp>
+#include <world/desc_line.hpp>
 
 // Readable name for an upgrade key (combat stats and module parameters); falls back to the raw key.
 inline const char* StatLabel(const std::string& key) {
@@ -56,7 +56,7 @@ struct TowerUpgrade {
     int m_cost = 0;
     std::vector<std::pair<std::string, float>> m_adds; // stat key -> additive delta
     std::vector<std::pair<std::string, float>> m_muls; // stat key -> multiplicative factor
-    std::vector<toml::table> m_addModules;             // new effect modules built via TowerFactory
+    std::vector<ModuleDef> m_addModules;               // new effect modules built via TowerFactory
 
     // Append this level's deltas as display lines, mirroring TowerModule::Describe.
     void Describe(std::vector<DescLine>& out) const;
@@ -68,7 +68,6 @@ inline void TowerUpgrade::Describe(std::vector<DescLine>& out) const {
     for (const auto& [key, v] : m_muls)
         out.push_back({FormatMulDelta(key, v), RAYWHITE});
     for (const auto& mod : m_addModules) {
-        std::string type = mod["type"].value_or(std::string{});
-        if (!type.empty()) out.push_back({"Adds " + type, RAYWHITE});
+        if (!mod.m_type.empty()) out.push_back({"Adds " + mod.m_type, RAYWHITE});
     }
 }

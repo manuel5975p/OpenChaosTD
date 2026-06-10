@@ -1,6 +1,7 @@
 #pragma once
 
 #include <raylib.h>
+#include <cstddef>
 #include <string>
 #include <vector>
 #include <memory>
@@ -49,6 +50,9 @@ public:
     // preserved). m_upgrade is a stable pointer into the factory template, so a shallow copy is
     // correct (mirrors EnemyFactory::Create); m_level is copied as-is.
     Enemy Clone() const {
+        // When adding a field to Enemy, add the matching copy line below. The static_assert on
+        // kExpectedEnemySize (just after the class) fires when sizeof(Enemy) changes, forcing a
+        // visit here so a new field is never silently dropped from the clone.
         Enemy copy;
         copy.m_name          = m_name;
         copy.m_description    = m_description;
@@ -125,3 +129,11 @@ private:
     BaseStatsModule* m_baseStats = nullptr; // points into m_modules; set in AddModule
     ShieldModule* m_shield = nullptr;       // points into m_modules; set in AddModule
 };
+
+// Tripwire for Clone(): adding/removing/reordering an Enemy field changes sizeof(Enemy) and trips
+// this assert, forcing a look at Clone() so the new field gets a copy line. Update the constant
+// once Clone() is handled. (64-bit layout; adjust the value if the layout legitimately changes.)
+inline constexpr std::size_t kExpectedEnemySize = 240;
+static_assert(sizeof(Enemy) == kExpectedEnemySize,
+              "Enemy layout changed: update Enemy::Clone() for the new field, then set "
+              "kExpectedEnemySize to sizeof(Enemy).");

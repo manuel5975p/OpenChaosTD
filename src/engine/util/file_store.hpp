@@ -26,11 +26,6 @@ public:
     void           SaveToml(const std::string& path, const toml::table& data);
     toml::table    LoadToml(const std::string& path);
 
-    // Raw text I/O — byte-exact, no parsing. For content the structured savers
-    // can't round-trip (e.g. TOML files whose comments must survive a rewrite).
-    void           SaveText(const std::string& path, const std::string& text);
-    std::string    LoadText(const std::string& path);
-
     // Format-agnostic (operate on the path, regardless of file contents)
     bool           Exists(const std::string& path);
     void           Delete(const std::string& path);

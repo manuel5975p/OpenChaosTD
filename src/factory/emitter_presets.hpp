@@ -6,6 +6,10 @@
 #include <engine/features/particle_system.hpp>
 #include <engine/util/file_store.hpp>
 
+// Parse a 4-element TOML array [r, g, b, a] into a Color (missing/short entries default to 0).
+// Shared by the emitter and tower factories, which both read color arrays from datapack TOML.
+Color ParseTomlColor(const toml::array& a);
+
 // Loads all EmitterDesc presets from data/particle_effects.toml.
 // Passed by const-ref to any factory that needs to resolve preset names.
 class EmitterPresets {

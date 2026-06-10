@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <iostream>
 
-static Color ParseColor(const toml::array& a) {
+Color ParseTomlColor(const toml::array& a) {
     return {
         (unsigned char)a[0].value_or(0), (unsigned char)a[1].value_or(0),
         (unsigned char)a[2].value_or(0), (unsigned char)a[3].value_or(0)
@@ -22,8 +22,8 @@ static SpawnShape ParseShape(const std::string& s) {
 
 static EmitterDesc ParseEmitterDesc(const toml::table& j) {
     EmitterDesc d;
-    if (auto c = j["color"].as_array())    d.m_color    = ParseColor(*c);
-    if (auto c = j["endColor"].as_array()) d.m_endColor = ParseColor(*c);
+    if (auto c = j["color"].as_array())    d.m_color    = ParseTomlColor(*c);
+    if (auto c = j["endColor"].as_array()) d.m_endColor = ParseTomlColor(*c);
     d.m_count         = j["count"].value_or(0);
     d.m_speed         = j["speed"].value_or(50.0f);
     d.m_speedVariance = j["speedVariance"].value_or(20.0f);

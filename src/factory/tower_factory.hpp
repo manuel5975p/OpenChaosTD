@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <toml++/toml.hpp>
+#include <world/module_def.hpp>
 #include <world/tower.hpp>
 #include <engine/util/file_store.hpp>
 #include <factory/emitter_presets.hpp>
@@ -25,8 +26,8 @@ public:
     float GetRange(const std::string& name) const;
     const std::string& GetTexture(const std::string& name) const;
 
-    // Build one effect module from a TOML definition (shared by Create and upgrades).
-    std::unique_ptr<TowerModule> BuildModule(const toml::table& mod) const;
+    // Build one effect module from a module definition (shared by Create and upgrades).
+    std::unique_ptr<TowerModule> BuildModule(const ModuleDef& mod) const;
 
     // Apply one upgrade tier's stat deltas and new modules to a tower. Purely mechanical:
     // it does NOT touch gold, m_cost or m_level — callers own that policy. Shared by the
@@ -34,7 +35,7 @@ public:
     void ApplyUpgradeStats(Tower& tower, const TowerUpgrade& up) const;
 
 private:
-    using ModuleBuilder = std::function<std::unique_ptr<TowerModule>(const toml::table&)>;
+    using ModuleBuilder = std::function<std::unique_ptr<TowerModule>(const ModuleDef&)>;
 
     // Look up the optional "effect" emitter preset on a module definition (default if absent).
     EmitterDesc ResolveEmitter(const toml::table& j) const;
@@ -45,7 +46,7 @@ private:
         int cost = 100;
         float range = 0.0f; // cached from the Attack module def for GetRange (build preview/ghost)
         TowerPresentation presentation;
-        std::vector<toml::table> modules; // all module defs (Attack/Passive/effects), built per Create
+        std::vector<ModuleDef> modules; // all module defs (Attack/Passive/effects), built per Create
         std::vector<TowerUpgrade> upgrades;
     };
 
