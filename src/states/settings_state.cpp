@@ -417,7 +417,7 @@ void SettingsState::DrawControls(Game& game) {
     float gw = static_cast<float>(game.GetScreen().GetGameWidth());
 
     // ----- Left column: audio -----
-    Text::Draw("AUDIO", static_cast<int>(kLeftLabelX), static_cast<int>(kAudioHeaderY), 28, kWarnColor);
+    Text::Draw("AUDIO", static_cast<int>(kLeftLabelX), static_cast<int>(kAudioHeaderY), 28, kWarnColor, Text::Kind::Heading);
 
     DrawLabelInRow("Music", kLeftLabelX, kMusicY, kSliderH, 20, RAYWHITE);
     m_musicSlider.Draw();
@@ -430,7 +430,7 @@ void SettingsState::DrawControls(Game& game) {
         kValueX, kSfxY, kSliderH, 20, RAYWHITE);
 
     // ----- Left column: display -----
-    Text::Draw("DISPLAY", static_cast<int>(kLeftLabelX), static_cast<int>(kDisplayHdrY), 28, kWarnColor);
+    Text::Draw("DISPLAY", static_cast<int>(kLeftLabelX), static_cast<int>(kDisplayHdrY), 28, kWarnColor, Text::Kind::Heading);
 
     DrawLabelInRow("Target FPS", kLeftLabelX, kFpsY, 30.0f, 20, RAYWHITE);
     m_fpsDownBtn.Draw();
@@ -447,10 +447,10 @@ void SettingsState::DrawControls(Game& game) {
         kValueX, kHudScaleY, kSliderH, 20, RAYWHITE);
 
     // ----- Right column: controls -----
-    Text::Draw("CONTROLS", static_cast<int>(kCtrlHeaderX), static_cast<int>(kCtrlHeaderY), 28, kWarnColor);
+    Text::Draw("CONTROLS", static_cast<int>(kCtrlHeaderX), static_cast<int>(kCtrlHeaderY), 28, kWarnColor, Text::Kind::Heading);
 
     for (auto& gh : m_groupHeaders)
-        Text::Draw(gh.category.c_str(), static_cast<int>(kActionLabelX), static_cast<int>(gh.y), 22, SKYBLUE);
+        Text::Draw(gh.category.c_str(), static_cast<int>(kActionLabelX), static_cast<int>(gh.y), 22, SKYBLUE, Text::Kind::Heading);
 
     for (auto& row : m_keyRows) {
         DrawLabelInRow(row.action.c_str(), kActionLabelX, row.cell.m_rect.y, kKeyCellH, 20, RAYWHITE);

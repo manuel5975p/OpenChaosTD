@@ -44,12 +44,12 @@ void EndState::Draw(Game& game) {
 
     if (m_won) {
         const char* title = "VICTORY!";
-        int tw = Text::Measure(title, 48);
-        Text::Draw(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, GOLD);
+        int tw = Text::Measure(title, 48, Text::Kind::Title);
+        Text::Draw(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, GOLD, Text::Kind::Title);
     } else {
         const char* title = "GAME OVER";
-        int tw = Text::Measure(title, 48);
-        Text::Draw(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, RED);
+        int tw = Text::Measure(title, 48, Text::Kind::Title);
+        Text::Draw(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, RED, Text::Kind::Title);
     }
 
     m_playAgainButton.Draw();

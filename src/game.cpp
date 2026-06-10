@@ -1,25 +1,78 @@
 #include <game.hpp>
 #include <engine/core/text.hpp>
 #include <raylib.h>
+#include <algorithm>
 #include <iostream>
 #include <stdexcept>
 #include <filesystem>
 #include <states/menu_state.hpp>
+
+namespace {
+
+// Shrinks and recenters the window if its physical footprint would exceed the
+// monitor. Under HiDPI the requested logical size can map to a larger framebuffer
+// (1200pt is ~1800px at 1.5x), so a 1200x1200 request can overflow the screen.
+// We compare in framebuffer pixels (GetRenderWidth, same space as the monitor
+// size) and scale the logical window size by the resulting fit factor.
+void ClampWindowToMonitor() {
+    const int monitor = GetCurrentMonitor();
+
+    // Budget in physical pixels, leaving a margin for window-manager chrome.
+    const float margin = 0.92f;
+    const float maxPxW = GetMonitorWidth(monitor)  * margin;
+    const float maxPxH = GetMonitorHeight(monitor) * margin;
+
+    // Current window footprint in physical pixels.
+    const float curPxW = static_cast<float>(GetRenderWidth());
+    const float curPxH = static_cast<float>(GetRenderHeight());
+
+    const float fit = std::min({1.0f, maxPxW / curPxW, maxPxH / curPxH});
+    if (fit >= 1.0f)
+        return; // already fits
+
+    // SetWindowSize/SetWindowPosition operate in logical points; scale the
+    // current logical size by the same factor (uniform => aspect preserved).
+    const int newLogicalW = static_cast<int>(GetScreenWidth()  * fit);
+    const int newLogicalH = static_cast<int>(GetScreenHeight() * fit);
+    SetWindowSize(newLogicalW, newLogicalH);
+
+    // Recenter: convert the monitor's pixel size to logical points via the
+    // measured render/screen ratio (== 1.0 when the framebuffer wasn't scaled).
+    const float pxPerPoint = (GetScreenWidth() > 0)
+        ? static_cast<float>(GetRenderWidth()) / static_cast<float>(GetScreenWidth())
+        : 1.0f;
+    const Vector2 monPos = GetMonitorPosition(monitor);
+    const float monLogicalW = GetMonitorWidth(monitor)  / pxPerPoint;
+    const float monLogicalH = GetMonitorHeight(monitor) / pxPerPoint;
+    SetWindowPosition(static_cast<int>(monPos.x + (monLogicalW - newLogicalW) * 0.5f),
+                      static_cast<int>(monPos.y + (monLogicalH - newLogicalH) * 0.5f));
+    TraceLog(LOG_INFO, "DISPLAY: clamped window to %dx%d logical (fit=%.2f)", newLogicalW, newLogicalH, fit);
+}
+
+} // namespace
 
 // Constructor / Destructor
 Game::Game() {
     m_fileStore.SetRootPath(SearchFolderParentPath("resources", 5).parent_path());
     m_gameConfig.Load(m_fileStore);
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
+    // Deliberately NOT FLAG_WINDOW_HIGHDPI: Screen owns all virtual->window
+    // scaling, but raylib's HIGHDPI path bakes a screenScale into the MODELVIEW
+    // that BeginMode2D/EndMode2D re-apply, stacking a stray DPI factor on the HUD
+    // and world. Without the flag screenScale stays identity and our projection is
+    // the single source of truth; text still rasterizes at native resolution.
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(m_gameConfig.gameWidth, m_gameConfig.gameHeight, m_gameConfig.title.c_str());
+    ClampWindowToMonitor();
     m_gameConfig.ApplyIcon();
     SetTargetFPS(m_gameConfig.fps);
     SetExitKey(KEY_NULL);
     InitAudioDevice();
 
+    // gameWidth/gameHeight is the fixed virtual/design resolution; the actual
+    // window may have been clamped above, and Screen letterboxes between them.
     m_screen.Init(m_gameConfig.gameWidth, m_gameConfig.gameHeight);
-    Text::Init();
+    Text::Init(m_fileStore);
 
     // Gameplay data and assets are no longer loaded here — they belong to a
     // datapack and load only once the player selects one (see ActivateDatapack).

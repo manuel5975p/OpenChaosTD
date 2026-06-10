@@ -128,20 +128,35 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Define PROJECT_SOURCES as a list of all source files
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
 
-# Embed the game font into the binary (consumed by src/engine/core/text.cpp)
-set(EMBED_FONT_SRC ${CMAKE_BINARY_DIR}/generated/victor_mono_ttf.cpp)
+# Embed the game fonts into the binary (consumed by src/engine/core/text.cpp):
+# Victor Mono for code/numbers, EB Garamond for prose.
+set(EMBED_VICTOR_SRC ${CMAKE_BINARY_DIR}/generated/victor_mono_ttf.cpp)
 add_custom_command(
-    OUTPUT ${EMBED_FONT_SRC}
+    OUTPUT ${EMBED_VICTOR_SRC}
     COMMAND ${CMAKE_COMMAND}
-        -DINPUT=${CMAKE_CURRENT_LIST_DIR}/resources/fonts/VictorMono-Regular.ttf
-        -DOUTPUT=${EMBED_FONT_SRC}
+        -DINPUT=${CMAKE_CURRENT_LIST_DIR}/assets/fonts/VictorMono-Regular.ttf
+        -DOUTPUT=${EMBED_VICTOR_SRC}
         -DSYMBOL=gVictorMonoTtf
         -P ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/resources/fonts/VictorMono-Regular.ttf
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/assets/fonts/VictorMono-Regular.ttf
             ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
     COMMENT "Embedding VictorMono-Regular.ttf"
 )
-list(APPEND PROJECT_SOURCES ${EMBED_FONT_SRC})
+list(APPEND PROJECT_SOURCES ${EMBED_VICTOR_SRC})
+
+set(EMBED_GARAMOND_SRC ${CMAKE_BINARY_DIR}/generated/eb_garamond_ttf.cpp)
+add_custom_command(
+    OUTPUT ${EMBED_GARAMOND_SRC}
+    COMMAND ${CMAKE_COMMAND}
+        -DINPUT=${CMAKE_CURRENT_LIST_DIR}/assets/fonts/EBGaramond-Regular.ttf
+        -DOUTPUT=${EMBED_GARAMOND_SRC}
+        -DSYMBOL=gEBGaramondTtf
+        -P ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/assets/fonts/EBGaramond-Regular.ttf
+            ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
+    COMMENT "Embedding EBGaramond-Regular.ttf"
+)
+list(APPEND PROJECT_SOURCES ${EMBED_GARAMOND_SRC})
 
 # Adding include paths
 list(APPEND PROJECT_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/src/)

@@ -64,7 +64,7 @@ void WaveHUD::Draw(const WaveView& view, Resources& assets) {
     float innerW = m_panelW - 2.0f * m_margin;
 
     // Header: title on the left, upcoming threat budget right-aligned.
-    Text::Draw("Next Wave", static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
+    Text::Draw("Next Wave", static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD, Text::Kind::Heading);
     const char* budgetText = TextFormat("Budget: %d", static_cast<int>(view.m_budget));
     int bw = Text::Measure(budgetText, m_fontSm);
     Text::Draw(budgetText,

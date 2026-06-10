@@ -109,7 +109,7 @@ void MenuState::Draw(Game& game){
     const int cy = game.GetScreen().GetGameHeight() / 2;
 
     ClearBackground(DARKGRAY);
-    Text::Draw("OPEN CHAOS TD", cx - Text::Measure("OPEN CHAOS TD", 40)/2, cy - 80, 40, RAYWHITE);
+    Text::Draw("OPEN CHAOS TD", cx - Text::Measure("OPEN CHAOS TD", 40, Text::Kind::Title)/2, cy - 80, 40, RAYWHITE, Text::Kind::Title);
 
     // Continue is grayed and unlabeled-bright when no save is present.
     const WidgetStyle& continueStyle = m_hasSave ? kDefaultStyle : kDisabledStyle;

@@ -136,7 +136,7 @@ void TowerInfoHUD::Draw() {
     float y = m_panelRect.y + m_margin;
 
     // Tower name as header, with level indicator right-aligned
-    Text::Draw(m_name.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
+    Text::Draw(m_name.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD, Text::Kind::Heading);
     if (m_hasAttack && m_upgradeCount > 0) {
         bool isMax = m_level >= m_upgradeCount;
         const char* lvlText = isMax ? "MAX" : TextFormat("Lv %d", m_level + 1);
@@ -150,7 +150,7 @@ void TowerInfoHUD::Draw() {
 
     // Description (word-wrapped, computed in SetTarget)
     for (const auto& line : m_descLines) {
-        Text::Draw(line.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontDesc, {180, 180, 180, 255});
+        Text::Draw(line.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontDesc, {180, 180, 180, 255}, Text::Kind::Tooltip);
         y += m_descLineH;
     }
 
