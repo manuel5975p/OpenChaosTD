@@ -1,4 +1,5 @@
 #include <states/end_state.hpp>
+#include <engine/core/text.hpp>
 #include <states/menu_state.hpp>
 #include <states/play_state.hpp>
 #include <game.hpp>
@@ -43,12 +44,12 @@ void EndState::Draw(Game& game) {
 
     if (m_won) {
         const char* title = "VICTORY!";
-        int tw = MeasureText(title, 48);
-        DrawText(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, GOLD);
+        int tw = Text::Measure(title, 48);
+        Text::Draw(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, GOLD);
     } else {
         const char* title = "GAME OVER";
-        int tw = MeasureText(title, 48);
-        DrawText(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, RED);
+        int tw = Text::Measure(title, 48);
+        Text::Draw(title, static_cast<int>(cx - tw / 2.0f), static_cast<int>(cy - 80), 48, RED);
     }
 
     m_playAgainButton.Draw();

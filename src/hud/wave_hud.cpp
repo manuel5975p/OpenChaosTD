@@ -1,4 +1,5 @@
 #include <hud/wave_hud.hpp>
+#include <engine/core/text.hpp>
 #include <hud/wave_enemy_card.hpp>
 #include <engine/core/input.hpp>
 #include <engine/core/resources.hpp>
@@ -63,16 +64,16 @@ void WaveHUD::Draw(const WaveView& view, Resources& assets) {
     float innerW = m_panelW - 2.0f * m_margin;
 
     // Header: title on the left, upcoming threat budget right-aligned.
-    DrawText("Next Wave", static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
+    Text::Draw("Next Wave", static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
     const char* budgetText = TextFormat("Budget: %d", static_cast<int>(view.m_budget));
-    int bw = MeasureText(budgetText, m_fontSm);
-    DrawText(budgetText,
+    int bw = Text::Measure(budgetText, m_fontSm);
+    Text::Draw(budgetText,
              static_cast<int>(m_panelRect.x + m_panelW - m_margin) - bw,
              static_cast<int>(y + (m_fontHeader - m_fontSm)), m_fontSm, {180, 180, 180, 255});
     y += m_headerH;
 
     if (cards.empty()) {
-        DrawText("No enemies", static_cast<int>(x), static_cast<int>(y), m_fontSm, {180, 180, 180, 255});
+        Text::Draw("No enemies", static_cast<int>(x), static_cast<int>(y), m_fontSm, {180, 180, 180, 255});
         return;
     }
 

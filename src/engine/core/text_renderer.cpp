@@ -1,0 +1,459 @@
+#include "text_renderer.hpp"
+
+#if defined(PLATFORM_WEB)
+
+// harfbuzz-gpu's GLSL 3.30 isamplerBuffer atlas path needs desktop GL 3.3.
+struct TextRenderer::Impl {};
+TextRenderer::TextRenderer() = default;
+TextRenderer::~TextRenderer() = default;
+
+std::expected<std::unique_ptr<TextRenderer>, std::string> TextRenderer::Create() {
+    return std::unexpected("TextRenderer is not supported on web builds");
+}
+std::expected<TextRenderer::FontId, std::string> TextRenderer::LoadFont(std::string_view) {
+    return std::unexpected("TextRenderer is not supported on web builds");
+}
+std::expected<TextRenderer::FontId, std::string> TextRenderer::LoadFontFromMemory(const void*, std::size_t) {
+    return std::unexpected("TextRenderer is not supported on web builds");
+}
+void TextRenderer::DrawText(FontId, std::string_view, Vector2, float, Color) {}
+Vector2 TextRenderer::MeasureText(FontId, std::string_view, float) { return {0, 0}; }
+
+#else
+
+#include <raymath.h>
+#include <rlgl.h>
+
+// raylib's bundled GL loader; the function pointers are loaded by raylib at
+// InitWindow() and shared with this translation unit. Needed only for the
+// glyph atlas (integer texel buffer), which rlgl has no abstraction for.
+#include <external/glad.h>
+
+#include <hb-gpu.h>
+#include <hb.h>
+
+#include <algorithm>
+#include <cstddef>
+#include <unordered_map>
+#include <vector>
+
+namespace {
+
+// ---- GLSL entry points wrapped around the bundled harfbuzz-gpu sources ----
+
+constexpr const char* kGlslVersion = "#version 330\n";
+
+constexpr const char* kVertexMain = R"glsl(
+in vec2 a_position;
+in vec2 a_texcoord;
+in vec2 a_normal;
+in float a_emPerPos;
+in float a_glyphLoc;
+
+uniform mat4 u_matViewProjection;
+uniform vec2 u_viewport;
+
+out vec2 v_texcoord;
+flat out uint v_glyphLoc;
+
+void main()
+{
+    vec2 pos = a_position;
+    vec2 tex = a_texcoord;
+
+    // em-to-object is uniform scaling with y-flip; jac is its inverse.
+    vec4 jac = vec4(a_emPerPos, 0.0, 0.0, -a_emPerPos);
+
+    hb_gpu_dilate(pos, tex, a_normal, jac, u_matViewProjection, u_viewport);
+
+    gl_Position = u_matViewProjection*vec4(pos, 0.0, 1.0);
+    v_texcoord = tex;
+    v_glyphLoc = uint(a_glyphLoc + 0.5);
+}
+)glsl";
+
+constexpr const char* kFragmentMain = R"glsl(
+uniform vec4 u_foreground;
+
+in vec2 v_texcoord;
+flat in uint v_glyphLoc;
+
+out vec4 fragColor;
+
+void main()
+{
+    float cov = hb_gpu_draw(v_texcoord, v_glyphLoc);
+    fragColor = vec4(u_foreground.rgb*u_foreground.a, u_foreground.a)*cov;
+
+    // Stem darkening on the edge coverage only keeps small text legible.
+    if (cov > 0.0 && cov < 1.0)
+    {
+        float brightness = dot(u_foreground.rgb, vec3(1.0/3.0));
+        float ppem = 1.0/max(fwidth(v_texcoord).x, fwidth(v_texcoord).y);
+        fragColor *= hb_gpu_stem_darken(cov, brightness, ppem)/cov;
+    }
+}
+)glsl";
+
+// Matches the attribute layout consumed by kVertexMain.
+struct GlyphVertex {
+    float x, y;        // object-space position (screen units, y-down)
+    float tx, ty;      // em-space texture coordinates (font units, y-up)
+    float nx, ny;      // object-space outward normal
+    float emPerPos;    // font units per object-space unit
+    float glyphLoc;    // atlas texel offset of the encoded glyph blob
+};
+
+// Per-glyph encode result, cached per font.
+struct GlyphEntry {
+    int minX, minY, maxX, maxY;  // ink extents in font units, y-up
+    int advance;                 // horizontal advance in font units
+    unsigned atlasOffset;        // texel offset into the atlas
+    bool empty;                  // no outline (space) or atlas overflow
+};
+
+struct FontEntry {
+    hb_face_t* face = nullptr;
+    hb_font_t* font = nullptr;
+    int upem      = 0;
+    int ascender  = 0;  // font units above baseline
+    std::unordered_map<hb_codepoint_t, GlyphEntry> glyphs;
+};
+
+constexpr unsigned kAtlasTexelSize = 8;            // sizeof RGBA16I texel
+constexpr unsigned kAtlasCapacityTexels = 1u << 20;  // 8 MiB of glyph data
+constexpr int kAtlasTextureSlot = 7;               // clear of raylib's batch slots
+
+} // namespace
+
+struct TextRenderer::Impl {
+    Shader shader = {};
+    int locMvp = -1, locViewport = -1, locForeground = -1, locAtlas = -1;
+    int attrPosition = -1, attrTexcoord = -1, attrNormal = -1, attrEmPerPos = -1, attrGlyphLoc = -1;
+
+    unsigned vao = 0, vbo = 0;
+    int vboCapacity = 0;  // bytes
+
+    unsigned atlasTex = 0, atlasBuf = 0;
+    unsigned atlasCursor = 0;  // texels
+    bool atlasOverflowWarned = false;
+
+    hb_gpu_draw_t* encoder = nullptr;
+    hb_buffer_t* buffer = nullptr;
+    std::vector<FontEntry> fonts;
+    std::vector<GlyphVertex> scratch;
+
+    ~Impl() {
+        for (FontEntry& f : fonts) {
+            hb_font_destroy(f.font);
+            hb_face_destroy(f.face);
+        }
+        hb_buffer_destroy(buffer);
+        hb_gpu_draw_destroy(encoder);
+        if (vao) rlUnloadVertexArray(vao);
+        if (vbo) rlUnloadVertexBuffer(vbo);
+        if (atlasTex) glDeleteTextures(1, &atlasTex);
+        if (atlasBuf) glDeleteBuffers(1, &atlasBuf);
+        if (shader.id) UnloadShader(shader);
+    }
+
+    // Uploads an encoded glyph blob; returns its texel offset or fails on overflow.
+    std::expected<unsigned, std::string> AtlasAlloc(const char* data, unsigned lenBytes) {
+        unsigned lenTexels = (lenBytes + kAtlasTexelSize - 1)/kAtlasTexelSize;
+        if (atlasCursor + lenTexels > kAtlasCapacityTexels)
+            return std::unexpected("glyph atlas full");
+
+        unsigned offset = atlasCursor;
+        atlasCursor += lenTexels;
+        glBindBuffer(GL_TEXTURE_BUFFER, atlasBuf);
+        glBufferSubData(GL_TEXTURE_BUFFER, offset*kAtlasTexelSize, lenBytes, data);
+        glBindBuffer(GL_TEXTURE_BUFFER, 0);
+        return offset;
+    }
+
+    // Encodes and uploads a glyph on first use; cached thereafter.
+    const GlyphEntry& LookupGlyph(FontEntry& font, hb_codepoint_t gid) {
+        auto it = font.glyphs.find(gid);
+        if (it != font.glyphs.end()) return it->second;
+
+        GlyphEntry entry = {};
+        entry.advance = hb_font_get_glyph_h_advance(font.font, gid);
+        entry.empty = true;
+
+        hb_gpu_draw_clear(encoder);
+        hb_gpu_draw_glyph(encoder, font.font, gid);
+        hb_glyph_extents_t ext = {};
+        hb_blob_t* blob = hb_gpu_draw_encode(encoder, &ext);
+        unsigned len = blob ? hb_blob_get_length(blob) : 0;
+        if (len > 0) {
+            auto offset = AtlasAlloc(hb_blob_get_data(blob, nullptr), len);
+            if (offset) {
+                entry.minX = ext.x_bearing;
+                entry.maxX = ext.x_bearing + ext.width;
+                entry.maxY = ext.y_bearing;
+                entry.minY = ext.y_bearing + ext.height;  // height is negative (y-up)
+                entry.atlasOffset = *offset;
+                entry.empty = false;
+            } else if (!atlasOverflowWarned) {
+                atlasOverflowWarned = true;
+                TraceLog(LOG_WARNING, "TEXT: %s, further glyphs are dropped", offset.error().c_str());
+            }
+        }
+        if (blob) hb_gpu_draw_recycle_blob(encoder, blob);
+
+        return font.glyphs.emplace(gid, entry).first->second;
+    }
+
+    // Appends the two dilated triangles covering one glyph's ink box.
+    void AppendGlyphQuad(const GlyphEntry& g, float penX, float penY, float scale) {
+        GlyphVertex v[4];
+        for (int ci = 0; ci < 4; ci++) {
+            const int cx = (ci >> 1) & 1;
+            const int cy = ci & 1;
+            const float ex = static_cast<float>(cx ? g.maxX : g.minX);
+            const float ey = static_cast<float>(cy ? g.maxY : g.minY);
+
+            v[ci].x = penX + scale*ex;
+            v[ci].y = penY - scale*ey;  // font units are y-up, screen is y-down
+            v[ci].tx = ex;
+            v[ci].ty = ey;
+            v[ci].nx = cx ? 1.f : -1.f;
+            v[ci].ny = cy ? -1.f : 1.f;
+            v[ci].emPerPos = 1.0f/scale;
+            v[ci].glyphLoc = static_cast<float>(g.atlasOffset);
+        }
+        scratch.insert(scratch.end(), {v[0], v[1], v[2], v[1], v[2], v[3]});
+    }
+
+    // Shapes one line (no '\n') and appends its glyph quads; returns the advance width.
+    float ShapeLine(FontEntry& font, std::string_view line, float penX, float penY, float scale,
+                    bool emitQuads) {
+        hb_buffer_clear_contents(buffer);
+        hb_buffer_add_utf8(buffer, line.data(), static_cast<int>(line.size()), 0, -1);
+        hb_buffer_guess_segment_properties(buffer);
+        hb_shape(font.font, buffer, nullptr, 0);
+
+        unsigned count = 0;
+        hb_glyph_info_t* infos = hb_buffer_get_glyph_infos(buffer, &count);
+        hb_glyph_position_t* pos = hb_buffer_get_glyph_positions(buffer, nullptr);
+
+        float x = penX;
+        for (unsigned i = 0; i < count; i++) {
+            if (emitQuads) {
+                const GlyphEntry& g = LookupGlyph(font, infos[i].codepoint);
+                if (!g.empty)
+                    AppendGlyphQuad(g,
+                                    x + scale*static_cast<float>(pos[i].x_offset),
+                                    penY - scale*static_cast<float>(pos[i].y_offset),
+                                    scale);
+            }
+            x += scale*static_cast<float>(pos[i].x_advance);
+        }
+        return x - penX;
+    }
+
+    // (Re)uploads scratch vertices, growing the VBO and rebinding attributes as needed.
+    void UploadVertices() {
+        const int sizeBytes = static_cast<int>(scratch.size()*sizeof(GlyphVertex));
+        rlEnableVertexArray(vao);
+        if (sizeBytes > vboCapacity) {
+            if (vbo) rlUnloadVertexBuffer(vbo);
+            vbo = rlLoadVertexBuffer(scratch.data(), sizeBytes, true);
+            vboCapacity = sizeBytes;
+            const int stride = sizeof(GlyphVertex);
+            const auto bind = [stride](int loc, int comps, std::size_t offset) {
+                if (loc < 0) return;
+                const auto uloc = static_cast<unsigned>(loc);
+                rlSetVertexAttribute(uloc, comps, RL_FLOAT, false, stride, static_cast<int>(offset));
+                rlEnableVertexAttribute(uloc);
+            };
+            bind(attrPosition, 2, offsetof(GlyphVertex, x));
+            bind(attrTexcoord, 2, offsetof(GlyphVertex, tx));
+            bind(attrNormal, 2, offsetof(GlyphVertex, nx));
+            bind(attrEmPerPos, 1, offsetof(GlyphVertex, emPerPos));
+            bind(attrGlyphLoc, 1, offsetof(GlyphVertex, glyphLoc));
+        } else {
+            rlUpdateVertexBuffer(vbo, scratch.data(), sizeBytes, 0);
+        }
+        rlDisableVertexArray();
+    }
+};
+
+TextRenderer::TextRenderer() : m_impl(std::make_unique<Impl>()) {}
+TextRenderer::~TextRenderer() = default;
+
+std::expected<std::unique_ptr<TextRenderer>, std::string> TextRenderer::Create() {
+    if (!IsWindowReady())
+        return std::unexpected("TextRenderer requires an initialized window");
+    if (rlGetVersion() != RL_OPENGL_33 && rlGetVersion() != RL_OPENGL_43)
+        return std::unexpected("TextRenderer requires OpenGL 3.3+ (texel buffer atlas)");
+
+    auto renderer = std::unique_ptr<TextRenderer>(new TextRenderer());
+    Impl& impl = *renderer->m_impl;
+
+    const std::string vs = std::string(kGlslVersion) +
+                           hb_gpu_shader_source(HB_GPU_SHADER_STAGE_VERTEX, HB_GPU_SHADER_LANG_GLSL) +
+                           kVertexMain;
+    const std::string fs = std::string(kGlslVersion) +
+                           hb_gpu_shader_source(HB_GPU_SHADER_STAGE_FRAGMENT, HB_GPU_SHADER_LANG_GLSL) +
+                           hb_gpu_draw_shader_source(HB_GPU_SHADER_STAGE_FRAGMENT, HB_GPU_SHADER_LANG_GLSL) +
+                           kFragmentMain;
+
+    impl.shader = LoadShaderFromMemory(vs.c_str(), fs.c_str());
+    if (!IsShaderValid(impl.shader))
+        return std::unexpected("failed to compile harfbuzz-gpu Slug shaders");
+
+    impl.locMvp        = GetShaderLocation(impl.shader, "u_matViewProjection");
+    impl.locViewport   = GetShaderLocation(impl.shader, "u_viewport");
+    impl.locForeground = GetShaderLocation(impl.shader, "u_foreground");
+    impl.locAtlas      = GetShaderLocation(impl.shader, "hb_gpu_atlas");
+    impl.attrPosition  = rlGetLocationAttrib(impl.shader.id, "a_position");
+    impl.attrTexcoord  = rlGetLocationAttrib(impl.shader.id, "a_texcoord");
+    impl.attrNormal    = rlGetLocationAttrib(impl.shader.id, "a_normal");
+    impl.attrEmPerPos  = rlGetLocationAttrib(impl.shader.id, "a_emPerPos");
+    impl.attrGlyphLoc  = rlGetLocationAttrib(impl.shader.id, "a_glyphLoc");
+    if (impl.locMvp < 0 || impl.locViewport < 0 || impl.locForeground < 0 ||
+        impl.locAtlas < 0 || impl.attrPosition < 0 || impl.attrGlyphLoc < 0)
+        return std::unexpected("harfbuzz-gpu shader is missing expected interface symbols");
+
+    // Glyph atlas: an RGBA16I texel buffer holding the encoded Slug blobs.
+    glGenBuffers(1, &impl.atlasBuf);
+    glBindBuffer(GL_TEXTURE_BUFFER, impl.atlasBuf);
+    glBufferData(GL_TEXTURE_BUFFER, kAtlasCapacityTexels*kAtlasTexelSize, nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_TEXTURE_BUFFER, 0);
+    glGenTextures(1, &impl.atlasTex);
+    glActiveTexture(GL_TEXTURE0 + kAtlasTextureSlot);
+    glBindTexture(GL_TEXTURE_BUFFER, impl.atlasTex);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, impl.atlasBuf);
+    glActiveTexture(GL_TEXTURE0);
+
+    impl.vao = rlLoadVertexArray();
+    if (!impl.atlasBuf || !impl.atlasTex || !impl.vao)
+        return std::unexpected("failed to allocate GPU buffers for the glyph atlas");
+
+    impl.encoder = hb_gpu_draw_create_or_fail();
+    impl.buffer = hb_buffer_create();
+    if (!impl.encoder || !hb_buffer_allocation_successful(impl.buffer))
+        return std::unexpected("failed to allocate HarfBuzz GPU encoder");
+
+    return renderer;
+}
+
+std::expected<TextRenderer::FontId, std::string> TextRenderer::LoadFont(std::string_view path) {
+    hb_blob_t* blob = hb_blob_create_from_file_or_fail(std::string(path).c_str());
+    if (!blob)
+        return std::unexpected("failed to read font file: " + std::string(path));
+    return LoadFontBlob(blob);
+}
+
+std::expected<TextRenderer::FontId, std::string> TextRenderer::LoadFontFromMemory(const void* data,
+                                                                                  std::size_t size) {
+    if (!data || size == 0)
+        return std::unexpected("empty font data");
+    hb_blob_t* blob = hb_blob_create(static_cast<const char*>(data), static_cast<unsigned>(size),
+                                     HB_MEMORY_MODE_READONLY, nullptr, nullptr);
+    return LoadFontBlob(blob);
+}
+
+// Takes ownership of blob (one reference).
+std::expected<TextRenderer::FontId, std::string> TextRenderer::LoadFontBlob(hb_blob_t* blob) {
+    hb_face_t* face = hb_face_create(blob, 0);
+    hb_blob_destroy(blob);  // face holds its own reference
+    if (hb_face_get_glyph_count(face) == 0) {
+        hb_face_destroy(face);
+        return std::unexpected("not a valid font file");
+    }
+
+    FontEntry entry;
+    entry.face = face;
+    entry.font = hb_font_create(face);  // default scale: upem, font units
+    entry.upem = static_cast<int>(hb_face_get_upem(face));
+
+    hb_font_extents_t ext = {};
+    entry.ascender = hb_font_get_h_extents(entry.font, &ext)
+                         ? ext.ascender
+                         : entry.upem*4/5;
+
+    Impl& impl = *m_impl;
+    impl.fonts.push_back(entry);
+    return static_cast<FontId>(impl.fonts.size() - 1);
+}
+
+void TextRenderer::DrawText(FontId font, std::string_view text, Vector2 position,
+                            float fontSize, Color color) {
+    Impl& impl = *m_impl;
+    if (font >= impl.fonts.size() || text.empty() || fontSize <= 0.0f || color.a == 0)
+        return;
+    FontEntry& fe = impl.fonts[font];
+    const float scale = fontSize/static_cast<float>(fe.upem);
+
+    impl.scratch.clear();
+    float penY = position.y + scale*static_cast<float>(fe.ascender);
+    for (std::string_view rest = text; !rest.empty() || rest.data() == text.data();) {
+        const std::size_t nl = rest.find('\n');
+        impl.ShapeLine(fe, rest.substr(0, nl), position.x, penY, scale, true);
+        penY += fontSize;
+        if (nl == std::string_view::npos) break;
+        rest.remove_prefix(nl + 1);
+    }
+    if (impl.scratch.empty())
+        return;
+
+    // Glyph upload above may touch buffer bindings; flush raylib's pending
+    // batch only now, right before taking over the pipeline state.
+    rlDrawRenderBatchActive();
+
+    const Matrix mvp = MatrixMultiply(MatrixMultiply(rlGetMatrixTransform(), rlGetMatrixModelview()),
+                                      rlGetMatrixProjection());
+    const float viewport[2] = {static_cast<float>(rlGetFramebufferWidth()),
+                               static_cast<float>(rlGetFramebufferHeight())};
+    const float foreground[4] = {static_cast<float>(color.r)/255.0f,
+                                 static_cast<float>(color.g)/255.0f,
+                                 static_cast<float>(color.b)/255.0f,
+                                 static_cast<float>(color.a)/255.0f};
+    const int atlasSlot = kAtlasTextureSlot;
+    SetShaderValueMatrix(impl.shader, impl.locMvp, mvp);
+    SetShaderValue(impl.shader, impl.locViewport, viewport, SHADER_UNIFORM_VEC2);
+    SetShaderValue(impl.shader, impl.locForeground, foreground, SHADER_UNIFORM_VEC4);
+    SetShaderValue(impl.shader, impl.locAtlas, &atlasSlot, SHADER_UNIFORM_INT);
+
+    impl.UploadVertices();
+
+    // rlSetBlendMode flushes the batch, which unbinds the current program —
+    // it must come before rlEnableShader. Culling is disabled because the
+    // quad winding flips under render-texture projections.
+    rlSetBlendMode(RL_BLEND_ALPHA_PREMULTIPLY);
+    rlDisableBackfaceCulling();
+    rlEnableShader(impl.shader.id);
+    glActiveTexture(GL_TEXTURE0 + kAtlasTextureSlot);
+    glBindTexture(GL_TEXTURE_BUFFER, impl.atlasTex);
+    glActiveTexture(GL_TEXTURE0);
+
+    rlEnableVertexArray(impl.vao);
+    rlDrawVertexArray(0, static_cast<int>(impl.scratch.size()));
+    rlDisableVertexArray();
+    rlDisableShader();
+    rlEnableBackfaceCulling();
+    rlSetBlendMode(RL_BLEND_ALPHA);
+}
+
+Vector2 TextRenderer::MeasureText(FontId font, std::string_view text, float fontSize) {
+    Impl& impl = *m_impl;
+    if (font >= impl.fonts.size() || text.empty() || fontSize <= 0.0f)
+        return {0, 0};
+    FontEntry& fe = impl.fonts[font];
+    const float scale = fontSize/static_cast<float>(fe.upem);
+
+    float width = 0;
+    int lines = 0;
+    for (std::string_view rest = text; !rest.empty() || rest.data() == text.data();) {
+        const std::size_t nl = rest.find('\n');
+        width = std::max(width, impl.ShapeLine(fe, rest.substr(0, nl), 0, 0, scale, false));
+        lines++;
+        if (nl == std::string_view::npos) break;
+        rest.remove_prefix(nl + 1);
+    }
+    return {width, static_cast<float>(lines)*fontSize};
+}
+
+#endif // PLATFORM_WEB

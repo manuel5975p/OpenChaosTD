@@ -80,6 +80,43 @@ Consumed state resets at the start of each frame in `Update()`.
 
 ---
 
+### TextRenderer
+
+GPU-accelerated vector text, independent of raylib's `DrawText`. Text is shaped by HarfBuzz (kerning, ligatures, complex scripts) and rasterized per-fragment on the GPU with the Slug algorithm (harfbuzz-gpu), so it stays pixel-sharp at any size and under any `Camera2D` zoom — no bitmap font atlas. Fonts are plain TTF/OTF files loaded directly through HarfBuzz; FreeType is not involved.
+
+Errors are reported via `std::expected`; creation requires an open window (OpenGL 3.3 desktop — not available on web builds).
+
+```cpp
+auto text = TextRenderer::Create();             // once, after InitWindow()
+auto font = (*text)->LoadFont("resources/fonts/some.ttf");
+
+// In the draw loop — respects BeginMode2D / render texture transforms.
+(*text)->DrawText(*font, "Hello\nworld", {x, y}, 32, BLACK);
+Vector2 size = (*text)->MeasureText(*font, "Hello", 32);
+```
+
+Fonts can also be loaded from memory (`LoadFontFromMemory`), e.g. font data embedded in the binary — the data must outlive the renderer.
+
+Glyph outlines are encoded lazily on first use and cached in a GPU texel-buffer atlas (8 MiB, ~thousands of glyphs); shaping runs per call, so cache the strings if profiling ever shows it. `tools/text_demo.cpp` (`text_demo` target) is a standalone showcase.
+
+---
+
+### Text (facade)
+
+Global text drawing used by all game code (`engine/core/text.hpp`). Wraps a `TextRenderer` with VictorMono embedded into the binary at build time (`cmake/embed_resource.cmake` generates `victor_mono_ttf.cpp` from the repo's `VictorMono-Regular.ttf`). Signatures are drop-in for raylib's `DrawText`/`MeasureText`; if the GPU path is unavailable (web builds, shader failure) it falls back to raylib's bitmap font with a warning.
+
+```cpp
+Text::Init();      // Game ctor, after InitWindow()
+Text::Shutdown();  // Game dtor, before CloseWindow()
+
+Text::Draw("Gold: 42", x, y, fontSize, GOLD);   // top-left anchored, '\n' multi-line
+int w = Text::Measure("Gold: 42", fontSize);     // widest-line width in px
+```
+
+Game code must not call raylib's `DrawText`/`MeasureText` directly — always go through `Text::` (or `DrawTextCenteredX` in `hud/hud.hpp`, which is built on it).
+
+---
+
 ## features/
 
 ### ParticleSystem

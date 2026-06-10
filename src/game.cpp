@@ -1,4 +1,5 @@
 #include <game.hpp>
+#include <engine/core/text.hpp>
 #include <raylib.h>
 #include <iostream>
 #include <stdexcept>
@@ -18,6 +19,7 @@ Game::Game() {
     InitAudioDevice();
 
     m_screen.Init(m_gameConfig.gameWidth, m_gameConfig.gameHeight);
+    Text::Init();
 
     // Gameplay data and assets are no longer loaded here — they belong to a
     // datapack and load only once the player selects one (see ActivateDatapack).
@@ -38,6 +40,7 @@ Game::~Game() {
     if (m_currentState)
         m_currentState->OnExit(*this);
 
+    Text::Shutdown();
     CloseAudioDevice();
     CloseWindow();
     m_profiler.Print();

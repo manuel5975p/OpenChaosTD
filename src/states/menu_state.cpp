@@ -1,4 +1,5 @@
 #include <states/menu_state.hpp>
+#include <engine/core/text.hpp>
 #include <game.hpp>
 #include <raylib.h>
 #include <memory>
@@ -100,7 +101,7 @@ void MenuState::Draw(Game& game){
     const int cy = game.GetScreen().GetGameHeight() / 2;
 
     ClearBackground(DARKGRAY);
-    DrawText("OPEN CHAOS TD", cx - 180, cy - 80, 40, RAYWHITE);
+    Text::Draw("OPEN CHAOS TD", cx - Text::Measure("OPEN CHAOS TD", 40)/2, cy - 80, 40, RAYWHITE);
 
     // Continue is grayed and unlabeled-bright when no save is present.
     const WidgetStyle& continueStyle = m_hasSave ? kDefaultStyle : kDisabledStyle;

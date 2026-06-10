@@ -1,4 +1,5 @@
 #include <states/settings_state.hpp>
+#include <engine/core/text.hpp>
 #include <states/menu_state.hpp>
 #include <game.hpp>
 #include <engine/core/input.hpp>
@@ -13,13 +14,13 @@ namespace {
 
     // Centered text helper (states draw at raw virtual coords, no HUD scaling).
     void DrawCenteredText(const char* text, float centerX, float y, int fontSize, Color color) {
-        int w = MeasureText(text, fontSize);
-        DrawText(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
+        int w = Text::Measure(text, fontSize);
+        Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
     }
 
     // Vertically center a label inside a row of the given height.
     void DrawLabelInRow(const char* text, float x, float rowY, float rowH, int fontSize, Color color) {
-        DrawText(text, static_cast<int>(x), static_cast<int>(rowY + (rowH - fontSize) / 2.0f), fontSize, color);
+        Text::Draw(text, static_cast<int>(x), static_cast<int>(rowY + (rowH - fontSize) / 2.0f), fontSize, color);
     }
 }
 
@@ -416,7 +417,7 @@ void SettingsState::DrawControls(Game& game) {
     float gw = static_cast<float>(game.GetScreen().GetGameWidth());
 
     // ----- Left column: audio -----
-    DrawText("AUDIO", static_cast<int>(kLeftLabelX), static_cast<int>(kAudioHeaderY), 28, kWarnColor);
+    Text::Draw("AUDIO", static_cast<int>(kLeftLabelX), static_cast<int>(kAudioHeaderY), 28, kWarnColor);
 
     DrawLabelInRow("Music", kLeftLabelX, kMusicY, kSliderH, 20, RAYWHITE);
     m_musicSlider.Draw();
@@ -429,7 +430,7 @@ void SettingsState::DrawControls(Game& game) {
         kValueX, kSfxY, kSliderH, 20, RAYWHITE);
 
     // ----- Left column: display -----
-    DrawText("DISPLAY", static_cast<int>(kLeftLabelX), static_cast<int>(kDisplayHdrY), 28, kWarnColor);
+    Text::Draw("DISPLAY", static_cast<int>(kLeftLabelX), static_cast<int>(kDisplayHdrY), 28, kWarnColor);
 
     DrawLabelInRow("Target FPS", kLeftLabelX, kFpsY, 30.0f, 20, RAYWHITE);
     m_fpsDownBtn.Draw();
@@ -446,10 +447,10 @@ void SettingsState::DrawControls(Game& game) {
         kValueX, kHudScaleY, kSliderH, 20, RAYWHITE);
 
     // ----- Right column: controls -----
-    DrawText("CONTROLS", static_cast<int>(kCtrlHeaderX), static_cast<int>(kCtrlHeaderY), 28, kWarnColor);
+    Text::Draw("CONTROLS", static_cast<int>(kCtrlHeaderX), static_cast<int>(kCtrlHeaderY), 28, kWarnColor);
 
     for (auto& gh : m_groupHeaders)
-        DrawText(gh.category.c_str(), static_cast<int>(kActionLabelX), static_cast<int>(gh.y), 22, SKYBLUE);
+        Text::Draw(gh.category.c_str(), static_cast<int>(kActionLabelX), static_cast<int>(gh.y), 22, SKYBLUE);
 
     for (auto& row : m_keyRows) {
         DrawLabelInRow(row.action.c_str(), kActionLabelX, row.cell.m_rect.y, kKeyCellH, 20, RAYWHITE);
@@ -469,7 +470,7 @@ void SettingsState::DrawControls(Game& game) {
     }
 
     if (AnyDuplicates())
-        DrawText("! Some keys are bound to multiple actions",
+        Text::Draw("! Some keys are bound to multiple actions",
             static_cast<int>(kActionLabelX), static_cast<int>(m_controlsBottomY + 4.0f), 18, kWarnColor);
 
     // ----- Bottom buttons (Save/Discard greyed when there is nothing to act on) -----

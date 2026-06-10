@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 project(OpenChaosDefender VERSION 1.0)
 
 # Set the C++ standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -16,6 +16,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(USE_RAYLIB "Use raylib" ON)
 option(USE_NLOHMANN_JSON "Use nlohmann json" ON)
 option(USE_TOMLPLUSPLUS "Use toml++" ON)
+option(USE_HARFBUZZ "Use harfbuzz (GPU text rendering)" ON)
 
 
 ##########################################################################################
@@ -92,6 +93,31 @@ endif()
 
 
 ##########################################################################################
+# HarfBuzz Setup (text shaping + GPU Slug rendering via harfbuzz-gpu)
+##########################################################################################
+
+if(USE_HARFBUZZ)
+    # Only the core shaper and the GPU (Slug) encoder are needed.
+    set(HB_BUILD_SUBSET OFF CACHE BOOL "" FORCE)
+    set(HB_BUILD_RASTER OFF CACHE BOOL "" FORCE)
+    set(HB_BUILD_VECTOR OFF CACHE BOOL "" FORCE)
+    set(HB_BUILD_GPU ON CACHE BOOL "" FORCE)
+    set(HB_BUILD_UTILS OFF CACHE BOOL "" FORCE)
+    set(HB_HAVE_FREETYPE OFF CACHE BOOL "" FORCE)
+
+    message(STATUS "Fetching harfbuzz...")
+    fetchcontent_declare(harfbuzz
+        URL https://github.com/harfbuzz/harfbuzz/releases/download/14.2.1/harfbuzz-14.2.1.tar.xz
+        URL_HASH SHA256=a54a5d8e9380a41fbb762ce367bcbf7704792dfca0d93f1bbca86c5a57902e0e
+    )
+    fetchcontent_makeavailable(harfbuzz)
+
+    list(APPEND LINK_LIBRARIES harfbuzz harfbuzz-gpu)
+    list(APPEND PROJECT_INCLUDE ${harfbuzz_SOURCE_DIR}/src)
+endif()
+
+
+##########################################################################################
 # Project executable setup
 ##########################################################################################
 
@@ -101,6 +127,21 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Adding our source files
 # Define PROJECT_SOURCES as a list of all source files
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
+
+# Embed the game font into the binary (consumed by src/engine/core/text.cpp)
+set(EMBED_FONT_SRC ${CMAKE_BINARY_DIR}/generated/victor_mono_ttf.cpp)
+add_custom_command(
+    OUTPUT ${EMBED_FONT_SRC}
+    COMMAND ${CMAKE_COMMAND}
+        -DINPUT=${CMAKE_CURRENT_LIST_DIR}/VictorMono-Regular.ttf
+        -DOUTPUT=${EMBED_FONT_SRC}
+        -DSYMBOL=gVictorMonoTtf
+        -P ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/VictorMono-Regular.ttf
+            ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
+    COMMENT "Embedding VictorMono-Regular.ttf"
+)
+list(APPEND PROJECT_SOURCES ${EMBED_FONT_SRC})
 
 # Adding include paths
 list(APPEND PROJECT_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/src/)
@@ -143,6 +184,16 @@ endif ()
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBRARIES})
+
+# Standalone demo for the GPU text renderer (desktop only)
+if(USE_HARFBUZZ AND USE_RAYLIB AND NOT ${PLATFORM} STREQUAL "Web")
+    add_executable(text_demo
+        tools/text_demo.cpp
+        src/engine/core/text_renderer.cpp
+    )
+    target_include_directories(text_demo PRIVATE ${PROJECT_INCLUDE})
+    target_link_libraries(text_demo PRIVATE ${LINK_LIBRARIES})
+endif()
 
 # Set common compiler options for your target
 target_compile_options(${PROJECT_NAME} PRIVATE

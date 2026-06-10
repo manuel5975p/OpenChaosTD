@@ -1,4 +1,5 @@
 #include <hud/tower_info_hud.hpp>
+#include <engine/core/text.hpp>
 #include <engine/core/input.hpp>
 #include <raylib.h>
 #include <sstream>
@@ -26,7 +27,7 @@ static std::vector<std::string> WrapText(const std::string& text, float maxWidth
     std::string word, current;
     while (stream >> word) {
         std::string candidate = current.empty() ? word : current + " " + word;
-        if (MeasureText(candidate.c_str(), fontSize) <= static_cast<int>(maxWidth))
+        if (Text::Measure(candidate.c_str(), fontSize) <= static_cast<int>(maxWidth))
             current = candidate;
         else {
             if (!current.empty()) lines.push_back(current);
@@ -135,13 +136,13 @@ void TowerInfoHUD::Draw() {
     float y = m_panelRect.y + m_margin;
 
     // Tower name as header, with level indicator right-aligned
-    DrawText(m_name.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
+    Text::Draw(m_name.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
     if (m_hasAttack && m_upgradeCount > 0) {
         bool isMax = m_level >= m_upgradeCount;
         const char* lvlText = isMax ? "MAX" : TextFormat("Lv %d", m_level + 1);
         Color lvlColor = isMax ? GOLD : Color{180, 180, 180, 255};
-        int tw = MeasureText(lvlText, m_fontHeader);
-        DrawText(lvlText,
+        int tw = Text::Measure(lvlText, m_fontHeader);
+        Text::Draw(lvlText,
                  static_cast<int>(m_panelRect.x + m_panelW - m_margin) - tw,
                  static_cast<int>(y), m_fontHeader, lvlColor);
     }
@@ -149,13 +150,13 @@ void TowerInfoHUD::Draw() {
 
     // Description (word-wrapped, computed in SetTarget)
     for (const auto& line : m_descLines) {
-        DrawText(line.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontDesc, {180, 180, 180, 255});
+        Text::Draw(line.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontDesc, {180, 180, 180, 255});
         y += m_descLineH;
     }
 
     // Stat rows from every module (AttackModule core stats + effect lines). Walls add nothing.
     for (const auto& line : m_statLines) {
-        DrawText(line.m_text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, line.m_color);
+        Text::Draw(line.m_text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, line.m_color);
         y += m_lineH;
     }
 
@@ -181,9 +182,9 @@ void TowerInfoHUD::Draw() {
 
 void TowerInfoHUD::DrawUpgradeTooltip() {
     // Box sized to the widest of the header and the preview lines
-    int maxW = MeasureText("Next Level", m_fontSm);
+    int maxW = Text::Measure("Next Level", m_fontSm);
     for (const auto& line : m_upgradePreview)
-        maxW = std::max(maxW, MeasureText(line.m_text.c_str(), m_fontSm));
+        maxW = std::max(maxW, Text::Measure(line.m_text.c_str(), m_fontSm));
 
     float boxW = maxW + m_margin * 2.0f;
     float boxH = m_margin * 2.0f + static_cast<float>(m_upgradePreview.size() + 1) * m_lineH;
@@ -205,10 +206,10 @@ void TowerInfoHUD::DrawUpgradeTooltip() {
 
     float tx = boxX + m_margin;
     float ty = boxY + m_margin;
-    DrawText("Next Level", static_cast<int>(tx), static_cast<int>(ty), m_fontSm, GOLD);
+    Text::Draw("Next Level", static_cast<int>(tx), static_cast<int>(ty), m_fontSm, GOLD);
     ty += m_lineH;
     for (const auto& line : m_upgradePreview) {
-        DrawText(line.m_text.c_str(), static_cast<int>(tx), static_cast<int>(ty), m_fontSm, line.m_color);
+        Text::Draw(line.m_text.c_str(), static_cast<int>(tx), static_cast<int>(ty), m_fontSm, line.m_color);
         ty += m_lineH;
     }
 }

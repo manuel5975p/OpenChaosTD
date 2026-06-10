@@ -1,4 +1,5 @@
 #include <hud/event_hud.hpp>
+#include <engine/core/text.hpp>
 #include <raylib.h>
 #include <algorithm>
 
@@ -45,10 +46,10 @@ void EventHUD::Draw() {
         // Stack downward: oldest (index 0) at baseY, newer entries below it
         float y = baseY + static_cast<float>(i) * lineH;
 
-        int textW = MeasureText(entry.message.c_str(), fontSize);
+        int textW = Text::Measure(entry.message.c_str(), fontSize);
         DrawRectangleRec({margin - Scaled(2.0f), y - Scaled(1.0f),
                           textW + Scaled(10.0f), lineH - Scaled(2.0f)}, {20, 20, 20, bgAlpha});
-        DrawText(entry.message.c_str(), static_cast<int>(margin + Scaled(3.0f)),
+        Text::Draw(entry.message.c_str(), static_cast<int>(margin + Scaled(3.0f)),
                  static_cast<int>(y + Scaled(2.0f)), fontSize, {255, 220, 80, textAlpha});
     }
 }
