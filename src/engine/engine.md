@@ -255,7 +255,7 @@ Stable-ID container with dense storage optimised for fast iteration. Handles are
 DenseSlotMap<Tower> towers;
 auto key = towers.Insert(tower);
 Tower& t = towers.Get(key);
-towers.Remove(key);
+towers.Erase(key);
 for (auto& t : towers) { ... }
 ```
 

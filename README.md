@@ -5,7 +5,7 @@ An open-map 2D Tower Defense game written in C++ with raylib. Towers can be plac
 
 ### Prerequisites
 * **CMake** 3.22 or newer
-* **C++20 compiler** (GCC, Clang, MSVC)
+* **C++23 compiler** (GCC, Clang, MSVC)
 * **Git** (for fetching dependencies via FetchContent)
 * **Emscripten SDK** (web builds only)
 * **Python 3.8+** (web builds only)
@@ -60,15 +60,18 @@ OpenChaosTD/
 │   ├── settings.json           - Window resolution, FPS, HUD scale, title, audio volumes
 │   └── keybindings.json        - Input action bindings (rebindable)
 │
-├── data/
-│   ├── gameplay.toml           - Starting lives, gold, sell rate, auto-spawn delay
-│   ├── towers.toml             - Tower type definitions (stats, modules, description)
-│   ├── enemies.toml            - Enemy type definitions (stats, modules, description)
-│   ├── waves.toml              - Procedural wave generator: budget scaling, boss/upgrade cadence, enemy pool
-│   └── particle_effects.toml   - Named particle emitter presets
+├── datapacks/
+│   └── default/
+│       ├── pack.toml           - Datapack metadata (name, author, version, description, icon)
+│       └── data/
+│           ├── gameplay.toml           - Starting lives, gold, sell rate, auto-spawn delay
+│           ├── towers.toml             - Tower type definitions (stats, modules, description)
+│           ├── enemies.toml            - Enemy type definitions (stats, modules, description)
+│           ├── waves.toml              - Procedural wave generator: budget scaling, boss/upgrade cadence, enemy pool
+│           └── particle_effects.toml   - Named particle emitter presets
 │
 ├── docs/
-│   └── *.md                    - Modder schema docs for towers/enemies/waves JSON
+│   └── *.md                    - Modder schema docs for towers/enemies/waves TOML
 │
 └── src/
     ├── main                    - Entry point
@@ -77,10 +80,10 @@ OpenChaosTD/
     │
     ├── engine/                 Reusable engine infrastructure — see engine/engine.md
     │
-    ├── factory/                Data-driven entity construction from JSON
-    │   ├── tower_factory       - Builds Tower instances from towers.json
-    │   ├── enemy_factory       - Builds Enemy instances from enemies.json
-    │   └── emitter_presets     - Loads named EmitterDesc presets from particle_effects.json
+    ├── factory/                Data-driven entity construction from TOML
+    │   ├── tower_factory       - Builds Tower instances from towers.toml
+    │   ├── enemy_factory       - Builds Enemy instances from enemies.toml
+    │   └── emitter_presets     - Loads named EmitterDesc presets from particle_effects.toml
     │
     ├── hud/                    In-game HUD elements
     │   ├── hud                 - HUD base class: visibility, scaling, panel helpers, HudSignal
@@ -93,12 +96,18 @@ OpenChaosTD/
     │   ├── event_hud           - Message log with timed fade-out
     │   └── pause_hud           - Pause overlay: resume / restart / main menu
     │
+    ├── datapack/               Datapack registry and metadata
+    │   ├── datapack            - Datapack metadata struct
+    │   └── datapack_registry   - Discovers and lists available datapacks
+    │
     ├── states/                 Game screen state machine
     │   ├── game_state          - Abstract base (ProcessInput, Update, Draw)
     │   ├── menu_state          - Main menu
     │   ├── settings_state      - Settings / options menu
     │   ├── play_state          - Active gameplay
-    │   └── end_state           - Victory / game over screen
+    │   ├── end_state           - Victory / game over screen
+    │   ├── datapack_select_state - Datapack selection screen
+    │   └── particle_editor_state - Live particle emitter editor
     │
     ├── world/                  Entity definitions and data
     │   ├── game_data           - Runtime world state + starting values

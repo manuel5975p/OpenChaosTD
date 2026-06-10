@@ -1,6 +1,6 @@
-# Tower JSON Schema
+# Tower TOML Schema
 
-All towers are defined in `data/towers.json` as an array under the `"towers"` key.
+All towers are defined in `data/towers.toml` as a TOML array of tables under `[[towers]]`.
 
 ## Top-level fields
 
@@ -22,13 +22,13 @@ block then carries only a `texture`, and it has no `upgrades`).
 
 ## `modules` array
 
-Each entry is one module, identified by its `"type"`. The combat-defining modules are `Attack`
+Each entry is one module, identified by its `type`. The combat-defining modules are `Attack`
 and `Passive`; the rest are status-effect modules. All fields inside an entry are module-specific.
 
 ### Attack
 
-```json
-{ "type": "Attack", "damage": 2, "shotsPerMinute": 180, "range": 64, "targetCount": 1, "targetingMode": "First" }
+```toml
+{ type = "Attack", damage = 2, shotsPerMinute = 180, range = 64, targetCount = 1, targetingMode = "First" }
 ```
 
 The "shooter" module — owns the tower's core combat stats. A tower needs exactly one to attack.
@@ -47,16 +47,16 @@ All fields are optional and default to 0 / `"First"`.
 
 ### Passive
 
-```json
-{ "type": "Passive" }
+```toml
+{ type = "Passive" }
 ```
 
 Marks the tower as a non-attacking blocker (a wall). Carries no fields.
 
 ### ArmorPierce
 
-```json
-{ "type": "ArmorPierce", "armorPierce": 5.0 }
+```toml
+{ type = "ArmorPierce", armorPierce = 5.0 }
 ```
 
 Flat armor penetration — ignores up to `armorPierce` of the target's armor before damage reduction.
@@ -87,8 +87,8 @@ for that stat (e.g. `burnDamage`, `slowDuration`) — one canonical name per sta
   is next hit (Stun frees movement; Weakness adds its bonus damage to that hit, then is gone).
 
 ### Slow
-```json
-{ "type": "Slow", "slowPercent": 50, "slowDuration": 2.0, "effect": "slow_effect" }
+```toml
+{ type = "Slow", slowPercent = 50, slowDuration = 2.0, effect = "slow_effect" }
 ```
 | Field          | Type   | Description |
 |----------------|--------|-------------|
@@ -97,8 +97,8 @@ for that stat (e.g. `burnDamage`, `slowDuration`) — one canonical name per sta
 | `effect`       | string | Emitter preset name for the on-enemy particle effect |
 
 ### Burn
-```json
-{ "type": "Burn", "burnDamage": 0.5, "burnDuration": 8.0, "effect": "burn_effect" }
+```toml
+{ type = "Burn", burnDamage = 0.5, burnDuration = 8.0, effect = "burn_effect" }
 ```
 | Field          | Type   | Description |
 |----------------|--------|-------------|
@@ -107,8 +107,8 @@ for that stat (e.g. `burnDamage`, `slowDuration`) — one canonical name per sta
 | `effect`       | string | Emitter preset name for the on-enemy particle effect |
 
 ### ArmorShred
-```json
-{ "type": "ArmorShred", "shredAmount": 2, "shredDuration": 4.0, "effect": "shred_effect" }
+```toml
+{ type = "ArmorShred", shredAmount = 2, shredDuration = 4.0, effect = "shred_effect" }
 ```
 | Field           | Type   | Description |
 |-----------------|--------|-------------|
@@ -117,8 +117,8 @@ for that stat (e.g. `burnDamage`, `slowDuration`) — one canonical name per sta
 | `effect`        | string | Emitter preset name for the on-enemy particle effect |
 
 ### Weakness
-```json
-{ "type": "Weakness", "weaknessAmount": 8, "weaknessDuration": 5.0, "effect": "weakness_effect" }
+```toml
+{ type = "Weakness", weaknessAmount = 8, weaknessDuration = 5.0, effect = "weakness_effect" }
 ```
 | Field              | Type   | Description |
 |--------------------|--------|-------------|
@@ -127,8 +127,8 @@ for that stat (e.g. `burnDamage`, `slowDuration`) — one canonical name per sta
 | `effect`           | string | Emitter preset name for the on-enemy particle effect |
 
 ### Stun
-```json
-{ "type": "Stun", "stunDuration": 1.0, "effect": "stun_effect" }
+```toml
+{ type = "Stun", stunDuration = 1.0, effect = "stun_effect" }
 ```
 | Field          | Type   | Description |
 |----------------|--------|-------------|
@@ -136,12 +136,12 @@ for that stat (e.g. `burnDamage`, `slowDuration`) — one canonical name per sta
 | `effect`       | string | Emitter preset name for the on-enemy particle effect |
 
 ### RampUp
-```json
-{ "type": "RampUp", "bonusPerStack": 18, "maxStacks": 8, "idleTime": 1.2 }
+```toml
+{ type = "RampUp", bonusPerStack = 18, maxStacks = 8, idleTime = 1.2 }
 ```
 A self-buff on the tower (no enemy effect). Each shot adds a stack up to `maxStacks`; each stack
 raises `shotsPerMinute` by `bonusPerStack`. All stacks clear after `idleTime` seconds of not firing.
-Pair with a `"mul": { "shotsPerMinute": 0.5 }` on the same upgrade for a slow-start, ramping feel.
+Pair with a `mul = { shotsPerMinute = 0.5 }` on the same upgrade for a slow-start, ramping feel.
 
 | Field           | Type  | Description |
 |-----------------|-------|-------------|
@@ -150,8 +150,8 @@ Pair with a `"mul": { "shotsPerMinute": 0.5 }` on the same upgrade for a slow-st
 | `idleTime`      | float | Seconds without firing before all stacks are lost |
 
 ### Crit
-```json
-{ "type": "Crit", "critChance": 0.2, "critMultiplier": 4.0 }
+```toml
+{ type = "Crit", critChance = 0.2, critMultiplier = 4.0 }
 ```
 Supplies the attack's crit chance and multiplier (the roll happens during damage resolution).
 No enemy effect. Pair with a `critImpact` visual for an on-crit particle burst.
@@ -190,8 +190,8 @@ formats: `.wav`, `.ogg`, `.mp3`, `.flac`.
 
 Each entry is one purchasable upgrade level, applied in order (L1 first, then L2, etc.).
 
-```json
-{ "cost": 90, "add": { ... }, "mul": { ... }, "modules": [ ... ] }
+```toml
+{ cost = 90, add = { ... }, mul = { ... }, modules = [ ... ] }
 ```
 
 | Field     | Type   | Description |

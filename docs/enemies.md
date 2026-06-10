@@ -1,6 +1,6 @@
-# Enemy JSON Schema
+# Enemy TOML Schema
 
-All enemies are defined in `data/enemies.json` as an array under the `"enemies"` key.
+All enemies are defined in `data/enemies.toml` as a TOML array of tables under `[[enemies]]`.
 
 ## Top-level fields
 
@@ -16,7 +16,7 @@ All enemies are defined in `data/enemies.json` as an array under the `"enemies"`
 | `modules`      | array  | no       | The enemy's defensive and mechanical traits — see below |
 | `upgrade`      | object | no       | A single stat-scaling step re-applied once per upgrade tier — see below |
 
-The core stats above (`maxHealth`, `speed`, `reward`, `livesOnReach`) stay top-level in JSON but are
+The core stats above (`maxHealth`, `speed`, `reward`, `livesOnReach`) stay top-level but are
 parsed into an internal core stats module at build time — the runtime analogue of the tower's
 `Attack` module — so their names match the `upgrade` keys exactly.
 
@@ -28,15 +28,11 @@ status immunities — comes from the `modules` array.
 
 ## `presentation` object
 
-All presentation-only data (visuals **and** audio) lives in a nested `"presentation"` object, separate
-from the gameplay stats. This mirrors the `"presentation"` block used by towers (`towers.md`).
+All presentation-only data (visuals **and** audio) lives in a nested `presentation` object, separate
+from the gameplay stats. This mirrors the `presentation` block used by towers (`towers.md`).
 
-```json
-"presentation": {
-    "texture": "enemy_shade",
-    "deathSound": "enemy_death",
-    "deathEmitter": "death_small"
-}
+```toml
+presentation = { texture = "enemy_shade", deathSound = "enemy_death", deathEmitter = "death_small" }
 ```
 
 | Field          | Type   | Required | Description |
@@ -53,14 +49,14 @@ Supported formats: `.wav`, `.ogg`, `.mp3`, `.flac`.
 
 ## `modules` array
 
-Each entry is one module, identified by its `"type"`. All fields inside an entry are
+Each entry is one module, identified by its `type`. All fields inside an entry are
 module-specific. The available module types are `Armor`, `Regeneration`, `Shield`, `Split`,
 and `Immune`. An enemy may combine any number of them (the `sovereign` stacks four).
 
 ### Armor
 
-```json
-{ "type": "Armor", "armor": 3.0 }
+```toml
+{ type = "Armor", armor = 3.0 }
 ```
 
 Reduces every incoming hit by a flat amount. The reduction is applied after any tower armor
@@ -74,8 +70,8 @@ always takes at least a sliver of damage and can never be healed by an absorbed 
 
 ### Regeneration
 
-```json
-{ "type": "Regeneration", "regenRate": 2.0 }
+```toml
+{ type = "Regeneration", regenRate = 2.0 }
 ```
 
 Restores health every frame while the enemy is alive. Healing is capped at the enemy's
@@ -87,8 +83,8 @@ maximum health.
 
 ### Shield
 
-```json
-{ "type": "Shield", "shield": 15.0 }
+```toml
+{ type = "Shield", shield = 15.0 }
 ```
 
 A depletable damage pool that absorbs incoming damage before any is dealt to health. Each hit
@@ -101,12 +97,12 @@ shield does not recharge on its own.
 
 ### Split
 
-```json
-{ "type": "Split", "child": "golem", "splitCount": 2, "spacing": 12.0 }
+```toml
+{ type = "Split", child = "golem", splitCount = 2, spacing = 12.0 }
 ```
 
 On death, spawns `splitCount` child enemies of type `child` near the dying enemy's position. The
-`child` value must be the `name` of another enemy defined in `enemies.json`.
+`child` value must be the `name` of another enemy defined in `enemies.toml`.
 
 To stop the children from stacking into a single indistinguishable blob, they are fanned out
 **backward along the path** (away from the core) — each successive child is offset by `spacing`
@@ -122,8 +118,8 @@ stacking behavior).
 
 ### Immune
 
-```json
-{ "type": "Immune", "effect": "Stun" }
+```toml
+{ type = "Immune", effect = "Stun" }
 ```
 
 Blocks a single status-effect type from ever being applied to the enemy. Towers can still
@@ -144,8 +140,8 @@ An optional single upgrade step that scales an enemy beyond its base definition 
 elite or late-wave variants). Applying it broadcasts its deltas through the enemy's
 stat-patching pipeline and appends any new modules.
 
-```json
-"upgrade": { "add": { "armor": 2, "regenRate": 2 }, "mul": { "maxHealth": 1.5 } }
+```toml
+upgrade = { add = { armor = 2, regenRate = 2 }, mul = { maxHealth = 1.5 } }
 ```
 
 | Field     | Type   | Description |
@@ -156,12 +152,12 @@ stat-patching pipeline and appends any new modules.
 
 ### How the upgrade scales over tiers
 
-Waves carry an **upgrade tier** (configured in `data/waves.json` via `upgrade_interval` — the tier
+Waves carry an **upgrade tier** (configured in `data/waves.toml` via `upgrade_interval` — the tier
 increments every Nth wave). The wave manager applies this one upgrade definition **once per tier**:
 tier 1 applies it once, tier 2 applies it twice, and so on, with no upper bound (endless mode keeps
 stacking). Because the deltas are re-applied on top of the already-upgraded stats, the effect
 compounds — `add` accumulates linearly while `mul` compounds exponentially. For example, the
-`add: { "armor": 2 }`, `mul: { "maxHealth": 1.5 }` step above yields at tier *n*: `+2n` armor and
+`add = { armor = 2 }`, `mul = { maxHealth = 1.5 }` step above yields at tier *n*: `+2n` armor and
 `maxHealth × 1.5ⁿ`. An enemy with no `upgrade` key never scales and ignores the wave tier entirely.
 
 `add` and `mul` accept the same keys, routed to either the enemy's base stats or the matching
