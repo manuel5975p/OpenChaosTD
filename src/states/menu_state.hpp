@@ -22,5 +22,6 @@ private:
     Button m_playButton;
     Button m_settingsButton;
     Button m_particleEditorButton;
+    Button m_mapEditorButton;
     Button m_exitButton;
 };

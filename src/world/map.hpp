@@ -31,6 +31,14 @@ public:
     void AddNest(int cols, int rows);
     void SetBuff(int cols, int rows, std::string statKey, float value, bool mul);
 
+    // Editor support: the map editor paints tile types freely, so m_core/m_nests can
+    // drift from the grid (e.g. a nest tile painted over with grass). ClearNests drops
+    // the cached spawn list; RebuildGeometryFromGrid re-derives m_core/m_nests purely
+    // from the painted tile types, then rebuilds the path mesh so validation matches
+    // exactly what the grid shows.
+    void ClearNests();
+    void RebuildGeometryFromGrid();
+
     // Install a fully-formed grid/geometry from a save and regenerate derived data.
     // The grid already encodes tile types, modifiers and walkability (incl. tiles under
     // towers), so paths are rebuilt to match exactly. m_pathMesh/m_paths are never persisted.

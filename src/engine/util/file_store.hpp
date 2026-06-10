@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <toml++/toml.hpp>
 #include <string>
+#include <vector>
 
 class FileStore {
 public:
@@ -29,6 +30,16 @@ public:
     // Format-agnostic (operate on the path, regardless of file contents)
     bool           Exists(const std::string& path);
     void           Delete(const std::string& path);
+
+    // Directory operations. On web, folders are implicit in localStorage key names,
+    // so these emulate a tree by treating the path as a key prefix.
+    std::vector<std::string> ListSubfolders(const std::string& path); // immediate child names, sorted
+    void                     CreateFolder(const std::string& path);
+    void                     DeleteFolder(const std::string& path);   // recursive
+
+    // Absolute on-disk path, for APIs that bypass FileStore (e.g. raylib ExportImage).
+    // On web there is no real filesystem, so the path is returned unchanged.
+    std::string              FullPath(const std::string& path);
 
 private:
     // Resolves a relative path to a full absolute path (native only)

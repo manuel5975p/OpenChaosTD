@@ -52,6 +52,44 @@ void Map::SetBuff(int cols, int rows, std::string statKey, float value, bool mul
     tile.m_modifier = {std::move(statKey), value, mul};
 }
 
+void Map::ClearNests() {
+    m_nests.clear();
+    m_paths.clear();
+}
+
+void Map::RebuildGeometryFromGrid() {
+    ClearNests();
+
+    int width  = m_grid.GetWidth();
+    int height = m_grid.GetHeight();
+
+    // Re-derive the goal and spawns purely from the painted tile types. The first
+    // Core tile wins (the editor enforces a single core when painting).
+    bool coreFound = false;
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            TileType type = m_grid.Get(x, y).m_type;
+            if (type == TileType::Core && !coreFound) {
+                m_core = {x, y};
+                coreFound = true;
+            } else if (type == TileType::Nest) {
+                AddNest(x, y); // also reserves a path slot, keeping m_paths in lock-step
+            }
+        }
+    }
+
+    if (coreFound) {
+        BuildPathMesh();
+        return;
+    }
+
+    // No core to solve toward: produce a correctly-sized, all-unreachable mesh so
+    // ValidatePathMesh and renderers can index it safely, and flag the missing core.
+    m_pathMesh.Resize(width, height); // default Node has infinite distance
+    ConstructPaths();
+    m_core = {-1, -1};
+}
+
 void Map::RestoreFromSave(Grid2D<Tile> grid, int tileSize,
                           std::pair<int, int> core,
                           std::vector<std::pair<int, int>> nests) {

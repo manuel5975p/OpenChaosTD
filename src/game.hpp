@@ -36,6 +36,9 @@ public:
     void DeactivateDatapack();
     bool HasActiveDatapack() const { return m_packActive; }
     const std::string& GetActiveDataDir() const { return m_activeDataDir; }
+    // Maps live beside the pack's data dir, at "<packRoot>/maps". Derived from the
+    // active data dir ("<packRoot>/data") so the map editor needn't track the root.
+    std::string GetActiveMapsDir() const;
     DatapackRegistry& GetDatapackRegistry() { return m_registry; }
 
     // State machine

@@ -153,6 +153,16 @@ void Game::DeactivateDatapack() {
     m_packActive = false;
 }
 
+std::string Game::GetActiveMapsDir() const {
+    // m_activeDataDir is "<packRoot>/data"; maps sit beside it at "<packRoot>/maps".
+    const std::string suffix = "/data";
+    std::string root = m_activeDataDir;
+    if (root.size() >= suffix.size() &&
+        root.compare(root.size() - suffix.size(), suffix.size(), suffix) == 0)
+        root.erase(root.size() - suffix.size());
+    return root + "/maps";
+}
+
 // State machine
 void Game::ChangeState(std::unique_ptr<GameState> newState) {
     // Store for deferred application — never swap mid-frame

@@ -1,0 +1,1512 @@
+[dimensions]
+cols = 20
+rows = 15
+tileSize = 32
+
+[geometry]
+core = [ 16, 13 ]
+nests = [ [ 2, 1 ], [ 17, 1 ] ]
+
+[meta]
+description = 'asdasd'
+name = 'test'
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Nest'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Nest'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Core'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true

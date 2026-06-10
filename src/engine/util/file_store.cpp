@@ -1,4 +1,5 @@
 #include <engine/util/file_store.hpp>
+#include <algorithm>
 #include <iostream>
 
 #if defined(PLATFORM_WEB)
@@ -260,5 +261,97 @@ void FileStore::Delete(const std::string& path) {
     if (std::filesystem::exists(fullPath))
         std::filesystem::remove(fullPath);
 
+#endif
+}
+
+// ListSubfolders — immediate child directory names, sorted
+std::vector<std::string> FileStore::ListSubfolders(const std::string& path) {
+#if defined(PLATFORM_WEB)
+
+    // Folders are implicit in localStorage key names. Collect the first path
+    // segment that follows "path/" across every stored key, de-duplicated.
+    std::string prefix = path + "/";
+    char* raw = (char*)EM_ASM_PTR({
+        var value = Object.keys(localStorage).join("\n");
+        var len = lengthBytesUTF8(value) + 1;
+        var buf = _malloc(len);
+        stringToUTF8(value, buf, len);
+        return buf;
+    });
+    std::vector<std::string> folders;
+    if (raw) {
+        std::stringstream keys(raw);
+        free(raw);
+        std::string key;
+        while (std::getline(keys, key, '\n')) {
+            if (key.rfind(prefix, 0) != 0) continue;
+            std::string rest = key.substr(prefix.size());
+            size_t slash = rest.find('/');
+            if (slash == std::string::npos) continue; // a file directly in path, not a subfolder
+            std::string name = rest.substr(0, slash);
+            if (std::find(folders.begin(), folders.end(), name) == folders.end())
+                folders.push_back(name);
+        }
+    }
+    std::sort(folders.begin(), folders.end());
+    return folders;
+
+#else
+
+    std::string fullPath = ResolvePath(path);
+    std::vector<std::string> folders;
+    if (!std::filesystem::is_directory(fullPath))
+        return folders;
+
+    for (const auto& entry : std::filesystem::directory_iterator(fullPath)) {
+        if (entry.is_directory())
+            folders.push_back(entry.path().filename().string());
+    }
+    std::sort(folders.begin(), folders.end());
+    return folders;
+
+#endif
+}
+
+// CreateFolder
+void FileStore::CreateFolder(const std::string& path) {
+#if defined(PLATFORM_WEB)
+    // No-op: localStorage has no directories; SaveJson/SaveToml materialize the
+    // folder implicitly the moment a file is written under it.
+    (void)path;
+#else
+    std::filesystem::create_directories(ResolvePath(path));
+#endif
+}
+
+// DeleteFolder — recursive
+void FileStore::DeleteFolder(const std::string& path) {
+#if defined(PLATFORM_WEB)
+
+    // Remove every key under "path" (the folder itself and anything beneath it).
+    EM_ASM({
+        var prefix = UTF8ToString($0);
+        var keys = Object.keys(localStorage);
+        for (var i = 0; i < keys.length; i++) {
+            if (keys[i] === prefix || keys[i].indexOf(prefix + "/") === 0)
+                localStorage.removeItem(keys[i]);
+        }
+    }, path.c_str());
+
+#else
+
+    std::string fullPath = ResolvePath(path);
+    if (std::filesystem::exists(fullPath))
+        std::filesystem::remove_all(fullPath);
+
+#endif
+}
+
+// FullPath
+std::string FileStore::FullPath(const std::string& path) {
+#if defined(PLATFORM_WEB)
+    return path;
+#else
+    return ResolvePath(path);
 #endif
 }

@@ -35,8 +35,11 @@ void MenuState::OnEnter(Game& game) {
     m_particleEditorButton.m_label = "PARTICLE EDITOR";
     m_particleEditorButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 182), 160.0f, 44.0f };
 
+    m_mapEditorButton.m_label = "MAP EDITOR";
+    m_mapEditorButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 236), 160.0f, 44.0f };
+
     m_exitButton.m_label = "EXIT";
-    m_exitButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 236), 160.0f, 44.0f };
+    m_exitButton.m_rect = { static_cast<float>(cx - 80), static_cast<float>(cy + 290), 160.0f, 44.0f };
 }
 
 void MenuState::OnExit(Game& /*game*/) {
@@ -50,6 +53,7 @@ void MenuState::ProcessInput(Game& game, float /*dt*/) {
     m_playButton.Update(mousePos, clicked);
     m_settingsButton.Update(mousePos, clicked);
     m_particleEditorButton.Update(mousePos, clicked);
+    m_mapEditorButton.Update(mousePos, clicked);
     m_exitButton.Update(mousePos, clicked);
 
     // Continue resumes the last save; only interactive when one exists.
@@ -71,6 +75,10 @@ void MenuState::ProcessInput(Game& game, float /*dt*/) {
 
     if (m_particleEditorButton.IsClicked())
         game.ChangeState(std::make_unique<DatapackSelectState>(DatapackSelectState::Intent::EditParticles));
+
+    // The map editor also needs an active pack, so it routes through selection too.
+    if (m_mapEditorButton.IsClicked())
+        game.ChangeState(std::make_unique<DatapackSelectState>(DatapackSelectState::Intent::EditMap));
 
     if (m_exitButton.IsClicked() || game.GetInput().IsPressed("Cancel"))
         game.Quit();
@@ -116,6 +124,9 @@ void MenuState::Draw(Game& game){
 
     m_particleEditorButton.Draw();
     m_particleEditorButton.DrawLabel(16, RAYWHITE);
+
+    m_mapEditorButton.Draw();
+    m_mapEditorButton.DrawLabel(18, RAYWHITE);
 
     m_exitButton.Draw();
     m_exitButton.DrawLabel(24, RAYWHITE);
