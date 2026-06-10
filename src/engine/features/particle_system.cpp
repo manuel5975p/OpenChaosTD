@@ -19,7 +19,7 @@ static Vector2 ShapeOffset(const EmitterDesc& desc) {
             // Along the emitter angle, centred on the anchor.
             float a = desc.m_angle * DEG2RAD;
             float t = RandSigned() * desc.m_shapeSize.x * 0.5f;
-            return {std::cosf(a) * t, std::sinf(a) * t};
+            return {cosf(a) * t, sinf(a) * t};
         }
         case SpawnShape::Box:
             return {RandSigned() * desc.m_shapeSize.x * 0.5f,
@@ -27,11 +27,11 @@ static Vector2 ShapeOffset(const EmitterDesc& desc) {
         case SpawnShape::Circle: {
             float a = RandUnit() * 2.0f * PI;
             float r = RandUnit() * desc.m_shapeRadius;
-            return {std::cosf(a) * r, std::sinf(a) * r};
+            return {cosf(a) * r, sinf(a) * r};
         }
         case SpawnShape::Ring: {
             float a = RandUnit() * 2.0f * PI;
-            return {std::cosf(a) * desc.m_shapeRadius, std::sinf(a) * desc.m_shapeRadius};
+            return {cosf(a) * desc.m_shapeRadius, sinf(a) * desc.m_shapeRadius};
         }
         case SpawnShape::Point:
         default:
@@ -55,8 +55,8 @@ void ParticleSystem::SpawnParticle(Vector2 origin, const EmitterDesc& desc, Vect
 
     p->center = origin;
     p->position = Vector2Add(origin, offset);
-    p->velocity = {std::cosf(dirAngle) * speed + baseVelocity.x, std::sinf(dirAngle) * speed + baseVelocity.y};
-    p->seedDir = {std::cosf(dirAngle), std::sinf(dirAngle)};
+    p->velocity = {cosf(dirAngle) * speed + baseVelocity.x, sinf(dirAngle) * speed + baseVelocity.y};
+    p->seedDir = {cosf(dirAngle), sinf(dirAngle)};
     p->radialSpeed = desc.m_radialSpeed;
     p->tangentialSpeed = desc.m_tangentialSpeed;
     p->lifetime = life;
