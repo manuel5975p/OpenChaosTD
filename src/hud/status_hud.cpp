@@ -72,9 +72,9 @@ void StatusHUD::Draw(const StatusView& view) {
     // Left cluster: lives, then gold placed after the measured lives width so a large value never
     // runs under the centered readout.
     const char* livesStr = TextFormat("Lives: %d", view.m_lives);
-    Text::Draw(livesStr, marginX, m_textY, fontMain, RAYWHITE);
-    int goldX = marginX + Text::Measure(livesStr, fontMain) + gapX;
-    Text::Draw(TextFormat("Gold: %d", view.m_gold), goldX, m_textY, fontMain, GOLD);
+    Text::Draw(livesStr, marginX, m_textY, fontMain, RAYWHITE, Text::Face::Mono);
+    int goldX = marginX + Text::Measure(livesStr, fontMain, Text::Face::Mono) + gapX;
+    Text::Draw(TextFormat("Gold: %d", view.m_gold), goldX, m_textY, fontMain, GOLD, Text::Face::Mono);
 
     // Center: wave progress and win target folded into one readout (endless => infinity).
     DrawWaveReadout(view, static_cast<int>(m_panelRect.width / 2.0f));
@@ -111,7 +111,7 @@ void StatusHUD::DrawWaveReadout(const StatusView& view, int centerX) {
     // Numeric win target: one plain centered string.
     if (view.m_victoryWave > 0) {
         DrawTextCenteredX(TextFormat("Wave: %s / %d", num, view.m_victoryWave),
-                          centerX, m_textY, font, RAYWHITE);
+                          centerX, m_textY, font, RAYWHITE, Text::Face::Mono);
         return;
     }
 
@@ -122,11 +122,11 @@ void StatusHUD::DrawWaveReadout(const StatusView& view, int centerX) {
     float glyphW = glyphH * 1.2f;
     float gap = Scaled(2.0f);
 
-    int leftW = Text::Measure(left, font);
+    int leftW = Text::Measure(left, font, Text::Face::Mono);
     float totalW = static_cast<float>(leftW) + gap + glyphW;
     float startX = static_cast<float>(centerX) - totalW / 2.0f;
 
-    Text::Draw(left, static_cast<int>(startX), m_textY, font, RAYWHITE);
+    Text::Draw(left, static_cast<int>(startX), m_textY, font, RAYWHITE, Text::Face::Mono);
     float glyphX = startX + static_cast<float>(leftW) + gap;
     DrawInfinity(glyphX, static_cast<float>(m_textY) + glyphH / 2.0f, glyphH, Color{120, 180, 220, 255});
 }

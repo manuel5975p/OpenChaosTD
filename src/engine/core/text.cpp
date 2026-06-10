@@ -5,14 +5,21 @@
 #include <cstddef>
 #include <memory>
 
-// Generated at build time from VictorMono-Regular.ttf (cmake/embed_resource.cmake)
+// Generated at build time from the TTFs in assets/fonts/ (cmake/embed_resource.cmake)
 extern const unsigned char gVictorMonoTtf[];
 extern const std::size_t gVictorMonoTtfSize;
+extern const unsigned char gEBGaramondTtf[];
+extern const std::size_t gEBGaramondTtfSize;
 
 namespace {
 
 std::unique_ptr<TextRenderer> sRenderer;
-TextRenderer::FontId sFont = 0;
+TextRenderer::FontId sProseFont = 0;  // EB Garamond
+TextRenderer::FontId sMonoFont = 0;   // Victor Mono
+
+TextRenderer::FontId FontFor(Text::Face face) {
+    return face == Text::Face::Mono ? sMonoFont : sProseFont;
+}
 
 } // namespace
 
@@ -24,34 +31,36 @@ void Init() {
         TraceLog(LOG_WARNING, "TEXT: %s — falling back to raylib DrawText", renderer.error().c_str());
         return;
     }
-    auto font = (*renderer)->LoadFontFromMemory(gVictorMonoTtf, gVictorMonoTtfSize);
-    if (!font) {
+    auto prose = (*renderer)->LoadFontFromMemory(gEBGaramondTtf, gEBGaramondTtfSize);
+    auto mono = (*renderer)->LoadFontFromMemory(gVictorMonoTtf, gVictorMonoTtfSize);
+    if (!prose || !mono) {
         TraceLog(LOG_WARNING, "TEXT: embedded font failed (%s) — falling back to raylib DrawText",
-                 font.error().c_str());
+                 (!prose ? prose : mono).error().c_str());
         return;
     }
     sRenderer = std::move(*renderer);
-    sFont = *font;
+    sProseFont = *prose;
+    sMonoFont = *mono;
 }
 
 void Shutdown() {
     sRenderer.reset();
 }
 
-void Draw(const char* text, int x, int y, int fontSize, Color color) {
+void Draw(const char* text, int x, int y, int fontSize, Color color, Face face) {
     if (!sRenderer) {
         ::DrawText(text, x, y, fontSize, color);
         return;
     }
-    sRenderer->DrawText(sFont, text,
+    sRenderer->DrawText(FontFor(face), text,
                         {static_cast<float>(x), static_cast<float>(y)},
                         static_cast<float>(fontSize), color);
 }
 
-int Measure(const char* text, int fontSize) {
+int Measure(const char* text, int fontSize, Face face) {
     if (!sRenderer)
         return ::MeasureText(text, fontSize);
-    const Vector2 size = sRenderer->MeasureText(sFont, text, static_cast<float>(fontSize));
+    const Vector2 size = sRenderer->MeasureText(FontFor(face), text, static_cast<float>(fontSize));
     return static_cast<int>(size.x + 0.5f);
 }
 

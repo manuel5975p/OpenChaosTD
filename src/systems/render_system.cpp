@@ -54,7 +54,7 @@ void RenderSystem::DebugDrawMap(const Map& map){
             // Draw flowfield flow direction and distance
             if(map.GetPathMesh().Get(x, y).m_distance != std::numeric_limits<int>::max()){
                 // Distance
-                Text::Draw(TextFormat("%i", map.GetPathMesh().Get(x, y).m_distance), map.TileToWorld(x, y).x + 1, map.TileToWorld(x, y).y + 1, 6, BLACK);
+                Text::Draw(TextFormat("%i", map.GetPathMesh().Get(x, y).m_distance), map.TileToWorld(x, y).x + 1, map.TileToWorld(x, y).y + 1, 6, BLACK, Text::Face::Mono);
 
                 // Flow direction
                 std::pair<int, int> end = map.GetPathMesh().Get(x, y).m_predecessor;;
@@ -79,11 +79,11 @@ void RenderSystem::DrawTowers(const DenseSlotMap<Tower>& towers, Resources& asse
             bool isMax = tower.m_level >= static_cast<int>(tower.m_upgrades->size());
             const char* lvlText = TextFormat("%d", tower.m_level + 1);
             constexpr int kFontSize = 10;
-            int tw = Text::Measure(lvlText, kFontSize);
+            int tw = Text::Measure(lvlText, kFontSize, Text::Face::Mono);
             Text::Draw(lvlText,
                      static_cast<int>(tower.m_position.x + hw) - tw - 1,
                      static_cast<int>(tower.m_position.y + hh) - kFontSize - 1,
-                     kFontSize, isMax ? GOLD : WHITE);
+                     kFontSize, isMax ? GOLD : WHITE, Text::Face::Mono);
         }
     }
 }

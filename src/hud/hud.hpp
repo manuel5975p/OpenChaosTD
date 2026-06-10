@@ -1,5 +1,6 @@
 #pragma once
 #include <raylib.h>
+#include <engine/core/text.hpp>
 
 class Input;
 
@@ -11,7 +12,8 @@ private:
     bool m_pending = false;
 };
 
-void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color);
+void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color,
+                       Text::Face face = Text::Face::Prose);
 
 // Base for every HUD component: shared scaling, panel helpers, and visibility state. Concrete
 // HUDs expose their own typed ProcessInput/Draw methods fed by read-only views (see hud_views.hpp)
