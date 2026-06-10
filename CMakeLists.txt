@@ -133,11 +133,11 @@ set(EMBED_FONT_SRC ${CMAKE_BINARY_DIR}/generated/victor_mono_ttf.cpp)
 add_custom_command(
     OUTPUT ${EMBED_FONT_SRC}
     COMMAND ${CMAKE_COMMAND}
-        -DINPUT=${CMAKE_CURRENT_LIST_DIR}/VictorMono-Regular.ttf
+        -DINPUT=${CMAKE_CURRENT_LIST_DIR}/resources/fonts/VictorMono-Regular.ttf
         -DOUTPUT=${EMBED_FONT_SRC}
         -DSYMBOL=gVictorMonoTtf
         -P ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/VictorMono-Regular.ttf
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/resources/fonts/VictorMono-Regular.ttf
             ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
     COMMENT "Embedding VictorMono-Regular.ttf"
 )

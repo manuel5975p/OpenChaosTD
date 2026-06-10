@@ -2,16 +2,16 @@
 
 #include <raylib.h>
 
-// Global text drawing facade: GPU vector text (TextRenderer) using two fonts
-// embedded in the binary — EB Garamond for prose and Victor Mono for code and
-// numeric readouts. Drop-in signatures for raylib's DrawText/MeasureText so
+// Global text drawing facade: GPU vector text (TextRenderer) using one font
+// embedded in the binary — Victor Mono for both prose and code/numeric
+// readouts. Drop-in signatures for raylib's DrawText/MeasureText so
 // call sites need no other changes; the optional Face selects the typeface.
 // Falls back to raylib's bitmap font where the GPU path is unavailable
 // (e.g. web builds).
 namespace Text {
 
-// Typeface selection. Prose (EB Garamond) is the default for UI copy; Mono
-// (Victor Mono) is for code and numbers, where tabular figures read cleaner.
+// Typeface selection. Both faces use Victor Mono; the distinction is
+// preserved for call sites that want to label their text semantically.
 enum class Face { Prose, Mono };
 
 // Creates the renderer and loads the embedded fonts; warns and arms the

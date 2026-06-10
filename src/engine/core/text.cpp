@@ -5,16 +5,14 @@
 #include <cstddef>
 #include <memory>
 
-// Generated at build time from the TTFs in assets/fonts/ (cmake/embed_resource.cmake)
+// Generated at build time from the TTF in resources/fonts/ (cmake/embed_resource.cmake)
 extern const unsigned char gVictorMonoTtf[];
 extern const std::size_t gVictorMonoTtfSize;
-extern const unsigned char gEBGaramondTtf[];
-extern const std::size_t gEBGaramondTtfSize;
 
 namespace {
 
 std::unique_ptr<TextRenderer> sRenderer;
-TextRenderer::FontId sProseFont = 0;  // EB Garamond
+TextRenderer::FontId sProseFont = 0;  // Victor Mono
 TextRenderer::FontId sMonoFont = 0;   // Victor Mono
 
 TextRenderer::FontId FontFor(Text::Face face) {
@@ -31,7 +29,7 @@ void Init() {
         TraceLog(LOG_WARNING, "TEXT: %s — falling back to raylib DrawText", renderer.error().c_str());
         return;
     }
-    auto prose = (*renderer)->LoadFontFromMemory(gEBGaramondTtf, gEBGaramondTtfSize);
+    auto prose = (*renderer)->LoadFontFromMemory(gVictorMonoTtf, gVictorMonoTtfSize);
     auto mono = (*renderer)->LoadFontFromMemory(gVictorMonoTtf, gVictorMonoTtfSize);
     if (!prose || !mono) {
         TraceLog(LOG_WARNING, "TEXT: embedded font failed (%s) — falling back to raylib DrawText",
