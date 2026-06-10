@@ -3,9 +3,9 @@
 #include <engine/core/input.hpp>
 #include <algorithm>
 
-void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color) {
-    int width = Text::Measure(text, fontSize);
-    Text::Draw(text, centerX - width / 2, y, fontSize, color);
+void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color, Text::Face face) {
+    int width = Text::Measure(text, fontSize, face);
+    Text::Draw(text, centerX - width / 2, y, fontSize, color, face);
 }
 
 void HUD::DrawPanelBackground(unsigned char alpha, bool border) const {
