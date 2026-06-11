@@ -1,8 +1,7 @@
 #include <states/datapack_select_state.hpp>
 #include <states/menu_state.hpp>
 #include <states/play_state.hpp>
-#include <states/particle_editor_state.hpp>
-#include <states/map_editor_state.hpp>
+#include <states/editor_select_state.hpp>
 #include <states/map_select_state.hpp>
 #include <datapack/datapack.hpp>
 #include <engine/core/text.hpp>
@@ -41,10 +40,8 @@ void DatapackSelectState::SelectPack(Game& game, int index) {
 
     game.ActivateDatapack(packs[index]);
 
-    if (m_intent == Intent::EditParticles)
-        game.ChangeState(std::make_unique<ParticleEditorState>());
-    else if (m_intent == Intent::EditMap)
-        game.ChangeState(std::make_unique<MapEditorState>());
+    if (m_intent == Intent::Edit)
+        game.ChangeState(std::make_unique<EditorSelectState>());
     else if (m_intent == Intent::Continue)
         game.ChangeState(std::make_unique<PlayingState>(true));
     else

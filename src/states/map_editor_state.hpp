@@ -28,10 +28,11 @@ private:
 
     // --- Setup / layout ---
     void Layout(Game& game);
-    void RebuildCatalog(Game& game);     // FileStore::ListSubfolders -> m_mapFolders + row buttons
+    void RebuildCatalog(Game& game);     // scan maps/, parse meta, load previews, build card entries
     void SyncBuffControls();             // value range + mul default for the active buff stat
 
     // --- Catalog actions ---
+    void UnloadPreviews();
     void OpenMap(Game& game, int index);
     void DeleteMap(Game& game, int index);
     void ConfirmNewMap(Game& game);
@@ -67,13 +68,22 @@ private:
     bool m_statusOk = true;
 
     // --- Catalog ---
-    std::vector<std::string> m_mapFolders;
-    std::vector<Button> m_openButtons;
-    std::vector<Button> m_deleteButtons;
-    Rectangle m_catalogRect = {};
-    float m_catalogScroll = 0.0f;
+    struct MapEntry {
+        std::string m_folder;       // subdir name under maps/
+        std::string m_name;
+        std::string m_description;
+        Texture2D m_preview = {};
+        bool m_hasPreview = false;
+    };
+
+    std::vector<MapEntry> m_entries;
+    ScrollableList m_list; // scroll/hover state + card geometry (default layout)
+    std::vector<Button> m_deleteButtons; // one per entry, positioned per-card in draw
     Button m_newMapBtn;
     Button m_catalogBackBtn;
+
+    static constexpr float kIconPad = 16.0f; // inset of the preview inside a card
+    static constexpr float kThumbW = 160.0f; // preview column width inside a card
 
     // --- New-map modal ---
     bool m_modalOpen = false;
@@ -112,7 +122,6 @@ private:
     static constexpr float kTopY       = 110.0f;
     static constexpr float kMargin     = 40.0f;
     static constexpr float kFooterH    = 80.0f;
-    static constexpr float kRowH       = 44.0f;
     static constexpr float kRowGap     = 8.0f;
     static constexpr float kPaletteX   = 40.0f;
     static constexpr float kPaletteW   = 220.0f;

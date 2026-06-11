@@ -9,9 +9,9 @@
 // transitions to the screen named by the launch intent.
 class DatapackSelectState : public GameState {
 public:
-    // Where to go once a pack is chosen: a new game, resume a save, the particle
-    // editor, or the map editor.
-    enum class Intent { Play, Continue, EditParticles, EditMap };
+    // Where to go once a pack is chosen: a new game, resume a save, or the
+    // editor selection screen.
+    enum class Intent { Play, Continue, Edit };
 
     explicit DatapackSelectState(Intent intent) : m_intent(intent) {}
 

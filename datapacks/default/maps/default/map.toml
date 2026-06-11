@@ -1,15 +1,120 @@
 [dimensions]
-cols = 15
-rows = 20
+cols = 20
+rows = 15
 tileSize = 32
 
 [geometry]
-core = [ 6, 10 ]
-nests = [ [ 0, 0 ], [ 14, 0 ] ]
+core = [ 7, 13 ]
+nests = [ [ 1, 1 ], [ 18, 1 ] ]
 
 [meta]
-description = 'The intersection'
-name = 'Intersection'
+description = 'the default map'
+name = 'default'
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
 
 [[tiles]]
 buildable = false
@@ -42,34 +147,49 @@ type = 'Rock'
 walkable = false
 
 [[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
+buildable = true
+type = 'Grass'
+walkable = true
 
 [[tiles]]
 buildable = true
 type = 'Grass'
 walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
 
 [[tiles]]
 buildable = true
@@ -84,1225 +204,6 @@ walkable = true
 [[tiles]]
 buildable = false
 type = 'Nest'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-mul = false
-statKey = 'range'
-type = 'Buff'
-value = 30.0
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-mul = false
-statKey = 'range'
-type = 'Buff'
-value = 30.0
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Core'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-mul = true
-statKey = 'shotsPerMinute'
-type = 'Buff'
-value = 1.5
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = false
-type = 'Rock'
-walkable = false
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
-walkable = true
-
-[[tiles]]
-buildable = true
-type = 'Grass'
 walkable = true
 
 [[tiles]]
@@ -1384,9 +285,69 @@ type = 'Grass'
 walkable = true
 
 [[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
 buildable = true
 type = 'Grass'
 walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
 
 [[tiles]]
 buildable = true
@@ -1454,9 +415,426 @@ type = 'Grass'
 walkable = true
 
 [[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
 buildable = true
 type = 'Grass'
 walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+mul = true
+statKey = 'shotsPerMinute'
+type = 'Buff'
+value = 1.5
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+mul = true
+statKey = 'damage'
+type = 'Buff'
+value = 1.5
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+mul = false
+statKey = 'range'
+type = 'Buff'
+value = 30.0
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+mul = false
+statKey = 'range'
+type = 'Buff'
+value = 30.0
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
 
 [[tiles]]
 buildable = true
@@ -1514,6 +892,16 @@ type = 'Grass'
 walkable = true
 
 [[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
 buildable = true
 type = 'Grass'
 walkable = true
@@ -1522,3 +910,624 @@ walkable = true
 buildable = true
 type = 'Grass'
 walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+mul = true
+statKey = 'shotsPerMinute'
+type = 'Buff'
+value = 1.5
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+mul = true
+statKey = 'shotsPerMinute'
+type = 'Buff'
+value = 1.5
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Core'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = true
+type = 'Grass'
+walkable = true
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false
+
+[[tiles]]
+buildable = false
+type = 'Rock'
+walkable = false

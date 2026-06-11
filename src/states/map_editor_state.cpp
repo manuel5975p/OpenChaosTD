@@ -4,6 +4,7 @@
 #include <engine/core/draw_helpers.hpp>
 #include <world/tile.hpp>
 #include <game.hpp>
+#include <toml++/toml.hpp>
 #include <raylib.h>
 #include <algorithm>
 #include <cctype>
@@ -18,7 +19,6 @@
 namespace {
     constexpr Color kAccentColor = {255, 180, 0, 255};
     constexpr Color kFailColor   = {255, 120, 60, 255};
-    constexpr float kScrollSpeed = 30.0f;
 
     // Stat keys a Buff tile can apply, parallel to the three buff brush buttons.
     const char* kBuffStats[3] = {"range", "damage", "shotsPerMinute"};
@@ -68,7 +68,9 @@ void MapEditorState::OnEnter(Game& game) {
     RebuildCatalog(game);
 }
 
-void MapEditorState::OnExit(Game& /*game*/) {}
+void MapEditorState::OnExit(Game& /*game*/) {
+    UnloadPreviews();
+}
 
 // --- Setup / layout ----------------------------------------------------------
 
@@ -77,8 +79,7 @@ void MapEditorState::Layout(Game& game) {
     float gh = static_cast<float>(game.GetScreen().GetGameHeight());
     float footerY = gh - kFooterH;
 
-    // Catalog list band + footer actions.
-    m_catalogRect = {kMargin, kTopY, gw - 2.0f * kMargin, footerY - kTopY};
+    // Catalog footer actions.
     m_newMapBtn.m_rect      = {kMargin, footerY + 18.0f, 180.0f, 44.0f};
     m_catalogBackBtn.m_rect = {gw - kMargin - 160.0f, footerY + 18.0f, 160.0f, 44.0f};
 
@@ -118,14 +119,51 @@ void MapEditorState::Layout(Game& game) {
 }
 
 void MapEditorState::RebuildCatalog(Game& game) {
-    m_mapFolders = game.GetFileStore().ListSubfolders(MapsDir(game));
-    m_openButtons.assign(m_mapFolders.size(), Button{});
-    m_deleteButtons.assign(m_mapFolders.size(), Button{});
-    for (size_t i = 0; i < m_mapFolders.size(); i++) {
-        m_openButtons[i].m_label = "OPEN";
-        m_deleteButtons[i].m_label = "DELETE";
+    UnloadPreviews();
+    m_entries.clear();
+    m_list.Reset();
+
+    FileStore& fs = game.GetFileStore();
+    std::string mapsDir = MapsDir(game);
+
+    for (const std::string& folder : fs.ListSubfolders(mapsDir)) {
+        std::string mapDir = mapsDir + "/" + folder;
+        std::string tomlPath = mapDir + "/map.toml";
+        if (!fs.Exists(tomlPath)) continue;
+
+        toml::table t = fs.LoadToml(tomlPath);
+        if (t.empty()) continue;
+
+        MapEntry e;
+        e.m_folder = folder;
+        e.m_name = t["meta"]["name"].value_or(folder);
+        e.m_description = t["meta"]["description"].value_or(std::string{});
+
+        std::vector<unsigned char> bytes = fs.LoadBytes(mapDir + "/map.png");
+        if (!bytes.empty()) {
+            Image img = LoadImageFromMemory(".png", bytes.data(), static_cast<int>(bytes.size()));
+            if (img.data != nullptr) {
+                e.m_preview = LoadTextureFromImage(img);
+                UnloadImage(img);
+                e.m_hasPreview = e.m_preview.id != 0;
+            }
+        }
+        m_entries.push_back(std::move(e));
     }
-    m_catalogScroll = 0.0f;
+
+    m_deleteButtons.assign(m_entries.size(), Button{});
+    for (size_t i = 0; i < m_entries.size(); i++)
+        m_deleteButtons[i].m_label = "DELETE";
+}
+
+void MapEditorState::UnloadPreviews() {
+    for (MapEntry& e : m_entries) {
+        if (e.m_hasPreview) {
+            UnloadTexture(e.m_preview);
+            e.m_preview = {};
+            e.m_hasPreview = false;
+        }
+    }
 }
 
 void MapEditorState::SyncBuffControls() {
@@ -167,8 +205,8 @@ std::string MapEditorState::MapDir(Game& game, const std::string& folder) const 
 // --- Catalog actions ---------------------------------------------------------
 
 void MapEditorState::OpenMap(Game& game, int index) {
-    if (index < 0 || index >= static_cast<int>(m_mapFolders.size())) return;
-    const std::string& folder = m_mapFolders[index];
+    if (index < 0 || index >= static_cast<int>(m_entries.size())) return;
+    const std::string& folder = m_entries[index].m_folder;
 
     if (!MapSerialization::Load(game.GetFileStore(), MapDir(game, folder), m_map, m_meta)) {
         SetStatus("Could not load '" + folder + "'", false);
@@ -183,8 +221,8 @@ void MapEditorState::OpenMap(Game& game, int index) {
 }
 
 void MapEditorState::DeleteMap(Game& game, int index) {
-    if (index < 0 || index >= static_cast<int>(m_mapFolders.size())) return;
-    const std::string folder = m_mapFolders[index];
+    if (index < 0 || index >= static_cast<int>(m_entries.size())) return;
+    const std::string folder = m_entries[index].m_folder;
     game.GetFileStore().DeleteFolder(MapDir(game, folder));
     RebuildCatalog(game);
     SetStatus("Deleted '" + folder + "'", true);
@@ -346,12 +384,11 @@ void MapEditorState::ProcessCatalogInput(Game& game) {
     Input& input = game.GetInput();
     Vector2 mouse = input.GetMousePosition();
     bool clicked = input.IsMousePressed(MOUSE_LEFT_BUTTON);
+    float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
+    float screenH = static_cast<float>(game.GetScreen().GetGameHeight());
+    int count = static_cast<int>(m_entries.size());
 
-    float contentH = m_mapFolders.size() * (kRowH + kRowGap);
-    float maxScroll = std::max(0.0f, contentH - m_catalogRect.height);
-    float wheel = input.GetMouseWheelDelta();
-    if (wheel != 0.0f && CheckCollisionPointRec(mouse, m_catalogRect))
-        m_catalogScroll = std::clamp(m_catalogScroll - wheel * kScrollSpeed, 0.0f, maxScroll);
+    m_list.ProcessScroll(input.GetMouseWheelDelta(), count, screenH);
 
     m_newMapBtn.Update(mouse, clicked);
     m_catalogBackBtn.Update(mouse, clicked);
@@ -368,27 +405,29 @@ void MapEditorState::ProcessCatalogInput(Game& game) {
         return;
     }
 
-    // Map rows: position each row's buttons for the current scroll, then hit-test
-    // only within the visible band so masked overflow stays inert.
-    float rowRight = m_catalogRect.x + m_catalogRect.width;
-    bool inBand = CheckCollisionPointRec(mouse, m_catalogRect);
-    for (size_t i = 0; i < m_mapFolders.size(); i++) {
-        float rowY = m_catalogRect.y - m_catalogScroll + i * (kRowH + kRowGap);
-        m_openButtons[i].m_rect   = {rowRight - 204.0f, rowY + 4.0f, 90.0f, kRowH - 8.0f};
-        m_deleteButtons[i].m_rect = {rowRight - 104.0f, rowY + 4.0f, 90.0f, kRowH - 8.0f};
-        if (!inBand) continue;
-
-        m_openButtons[i].Update(mouse, clicked);
+    // Delete buttons — process before card selection so a delete click doesn't also
+    // register as a card-open. Only visible cards (inside the list band) are hit.
+    float listTop = m_list.ListTop();
+    float listBottom = m_list.ListBottom(screenH);
+    for (int i = 0; i < count; i++) {
+        Rectangle card = m_list.CardRect(i, screenW, screenH);
+        if (card.y + card.height < listTop || card.y > listBottom) continue;
+        m_deleteButtons[i].m_rect = {
+            card.x + card.width - 110.0f,
+            card.y + card.height - 35.0f,
+            90.0f, 24.0f
+        };
         m_deleteButtons[i].Update(mouse, clicked);
-        if (m_openButtons[i].IsClicked()) {
-            OpenMap(game, static_cast<int>(i));
-            return;
-        }
         if (m_deleteButtons[i].IsClicked()) {
-            DeleteMap(game, static_cast<int>(i));
+            DeleteMap(game, i);
             return;
         }
     }
+
+    // Card hover/select — clicking a card opens the map for editing.
+    int chosen = m_list.ProcessHover(mouse, clicked, count, screenW, screenH);
+    if (chosen >= 0)
+        OpenMap(game, chosen);
 }
 
 void MapEditorState::ProcessModalInput(Game& game) {
@@ -489,14 +528,14 @@ void MapEditorState::Draw(Game& game) {
     float gw = static_cast<float>(game.GetScreen().GetGameWidth());
     float gh = static_cast<float>(game.GetScreen().GetGameHeight());
 
-    ClearBackground(DARKGRAY);
-    DrawCenteredText("MAP EDITOR", gw / 2.0f, 40.0f, 40, RAYWHITE);
-
     if (m_mode == Mode::Catalog) {
+        // Catalog mode: DrawCatalog handles clear, cards, header/footer masks.
         DrawCatalog(game);
         if (m_modalOpen)
             DrawNewMapModal(game);
     } else {
+        ClearBackground(DARKGRAY);
+        DrawCenteredText("MAP EDITOR", gw / 2.0f, 40.0f, 40, RAYWHITE);
         DrawPalette(game);
         DrawEditCanvas(game);
         DrawBottomBar(game);
@@ -508,34 +547,80 @@ void MapEditorState::Draw(Game& game) {
 }
 
 void MapEditorState::DrawCatalog(Game& game) {
-    if (m_mapFolders.empty()) {
+    constexpr Color kBg     = {30, 30, 35, 255};
+    constexpr Color kSubtle = {160, 160, 170, 255};
+
+    ClearBackground(kBg);
+
+    float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
+    float screenH = static_cast<float>(game.GetScreen().GetGameHeight());
+    float listTop = m_list.ListTop();
+    float listBottom = m_list.ListBottom(screenH);
+
+    int count = static_cast<int>(m_entries.size());
+
+    if (count == 0) {
         DrawCenteredText("No maps in this pack - click NEW MAP to create one",
-                         m_catalogRect.x + m_catalogRect.width / 2.0f,
-                         m_catalogRect.y + m_catalogRect.height / 2.0f - 9.0f, 20, LIGHTGRAY);
+                         screenW / 2.0f, screenH / 2.0f - 9.0f, 20, LIGHTGRAY);
     }
 
-    float rowRight = m_catalogRect.x + m_catalogRect.width;
-    game.GetScreen().BeginScissor(m_catalogRect);
-    for (size_t i = 0; i < m_mapFolders.size(); i++) {
-        float rowY = m_catalogRect.y - m_catalogScroll + i * (kRowH + kRowGap);
-        // Position the row's buttons here too, so drawing never depends on input order.
-        m_openButtons[i].m_rect   = {rowRight - 204.0f, rowY + 4.0f, 90.0f, kRowH - 8.0f};
-        m_deleteButtons[i].m_rect = {rowRight - 104.0f, rowY + 4.0f, 90.0f, kRowH - 8.0f};
-        if (rowY + kRowH < m_catalogRect.y || rowY > m_catalogRect.y + m_catalogRect.height)
-            continue;
+    for (int i = 0; i < count; i++) {
+        const MapEntry& entry = m_entries[i];
+        Rectangle card = m_list.CardRect(i, screenW, screenH);
 
-        Rectangle row = {m_catalogRect.x, rowY, m_catalogRect.width, kRowH};
-        DrawRectangleRec(row, kDefaultStyle.m_bgNormal);
-        DrawRectangleLinesEx(row, kDefaultStyle.m_borderWidth, kDefaultStyle.m_border);
-        DrawLabelInRow(m_mapFolders[i].c_str(), row.x + 16.0f, row.y, row.height, 22, RAYWHITE);
+        // Cull cards entirely outside the visible band.
+        if (card.y + card.height < listTop || card.y > listBottom) continue;
 
-        m_openButtons[i].Draw();
-        m_openButtons[i].DrawLabel(16, RAYWHITE);
+        bool hovered = (i == m_list.Hovered());
+        DrawRectangleRec(card, hovered ? kDefaultStyle.m_bgHovered : kDefaultStyle.m_bgNormal);
+        DrawRectangleLinesEx(card, hovered ? kDefaultStyle.m_borderWidthActive : kDefaultStyle.m_borderWidth,
+                             hovered ? kDefaultStyle.m_borderSel : kDefaultStyle.m_border);
+
+        // Thumbnail column.
+        Rectangle thumb = {card.x + kIconPad, card.y + kIconPad, kThumbW, card.height - 2.0f * kIconPad};
+        if (entry.m_hasPreview) {
+            DrawRectangleRec(thumb, {15, 15, 18, 255});
+            DrawTextureFitted(entry.m_preview, thumb);
+            DrawRectangleLinesEx(thumb, 1.0f, kDefaultStyle.m_border);
+        } else {
+            DrawRectangleRec(thumb, {20, 20, 25, 255});
+            DrawRectangleLinesEx(thumb, 1.0f, kDefaultStyle.m_border);
+            DrawCenteredText("no preview", thumb.x + thumb.width / 2.0f,
+                             thumb.y + thumb.height / 2.0f - 8.0f, 16, kSubtle);
+        }
+
+        // Text column.
+        float textX = thumb.x + thumb.width + 20.0f;
+        float textRight = card.x + card.width - 20.0f;
+        float textW = textRight - textX;
+
+        Text::Draw(entry.m_name.c_str(), static_cast<int>(textX),
+                   static_cast<int>(card.y + 24.0f), 26, kDefaultStyle.m_text);
+
+        std::string desc = TruncateToWidth(entry.m_description, 16, textW);
+        Text::Draw(desc.c_str(), static_cast<int>(textX),
+                   static_cast<int>(card.y + 64.0f), 16, kSubtle);
+
+        // Delete button (position repeated here so drawing never depends on input order).
+        m_deleteButtons[i].m_rect = {
+            card.x + card.width - 110.0f,
+            card.y + card.height - 35.0f,
+            90.0f, 24.0f
+        };
         m_deleteButtons[i].Draw(false, kDefaultStyle);
-        m_deleteButtons[i].DrawLabel(16, kFailColor);
+        m_deleteButtons[i].DrawLabel(14, kFailColor);
     }
-    game.GetScreen().EndScissor();
 
+    // Scrollbar (only when there is something to scroll).
+    m_list.DrawScrollbar(count, screenW, screenH, {20, 20, 25, 255}, kDefaultStyle.m_border);
+
+    // Header mask + title (covers any card scrolled up into this band).
+    DrawRectangle(0, 0, static_cast<int>(screenW), static_cast<int>(listTop), kBg);
+    DrawCenteredText("MAP EDITOR", screenW / 2.0f, 40.0f, 40, RAYWHITE);
+
+    // Footer mask + action buttons.
+    DrawRectangle(0, static_cast<int>(listBottom), static_cast<int>(screenW),
+                  static_cast<int>(screenH - listBottom), kBg);
     m_newMapBtn.Draw();
     m_newMapBtn.DrawLabel(20, RAYWHITE);
     m_catalogBackBtn.Draw();

@@ -1,203 +1,201 @@
-# Mod: Default OpenChaosTD DataPack
-# Author: Lufu251
-# Version: 1.0.0
-# Compatibility: Game Version 1.0+
-
-[presets.zapper_muzzle]
-count = 8
-color = [180, 230, 255, 255]
-endColor = [100, 180, 255, 0]
-speed = 70
-speedVariance = 25
-spread = 115
-lifetime = 0.07
-size = 2.5
-
-[presets.zapper_impact]
+[presets.burn_effect]
+angle = 270.0
+color = [ 94, 51, 163, 255 ]
 count = 5
-color = [100, 190, 255, 255]
-endColor = [60, 140, 220, 0]
-speed = 55
-speedVariance = 20
-spread = 360
-lifetime = 0.12
-size = 2.0
-
-[presets.freezer_muzzle]
-count = 20
-color = [200, 235, 255, 255]
-endColor = [120, 200, 255, 0]
-angle = 0
-spread = 360
-speed = 100
-speedVariance = 50
-lifetime = 0.5
-size = 3
-
-[presets.freezer_impact]
-count = 8
-color = [80, 190, 255, 255]
-endColor = [40, 140, 210, 0]
-speed = 35
-speedVariance = 12
-spread = 360
+emitRate = 18.0
+endColor = [ 255, 88, 24, 255 ]
+endSize = 0.8
 lifetime = 0.28
-size = 3.0
-
-[presets.sniper_muzzle]
-count = 4
-color = [255, 255, 255, 255]
-endColor = [220, 220, 255, 0]
-spread = 34
-speed = 120
-speedVariance = 40
-lifetime = 0.05
-size = 3.0
-
-[presets.sniper_impact]
-count = 16
-color = [220, 220, 255, 255]
-endColor = [180, 180, 200, 0]
-speed = 100
-speedVariance = 35
-spread = 360
-lifetime = 0.35
-size = 4.0
-
-[presets.flamer_muzzle]
-count = 10
-color = [255, 160, 40, 255]
-endColor = [200, 80, 0, 0]
-angle = 0
-spread = 360
-speed = 100
-speedVariance = 50
-lifetime = 0.5
-size = 3.0
-
-[presets.flamer_impact]
-count = 8
-color = [255, 100, 20, 255]
-endColor = [180, 50, 0, 0]
-speed = 50
-speedVariance = 18
-spread = 360
-lifetime = 0.22
-size = 3.5
-
-[presets.piercer_muzzle]
-count = 6
-color = [230, 235, 240, 255]
-endColor = [180, 190, 200, 0]
-spread = 29
-speed = 110
-speedVariance = 40
-lifetime = 0.06
-size = 3.0
-
-[presets.piercer_impact]
-count = 10
-color = [200, 210, 220, 255]
-endColor = [160, 170, 180, 0]
-speed = 80
-speedVariance = 30
-spread = 103
-lifetime = 0.15
+shape = 'Circle'
+shapeRadius = 5.0
 size = 2.5
+speed = 22.0
+speedVariance = 8.0
+spread = 57.0
 
 [presets.crit_impact]
+color = [ 255, 200, 0, 255 ]
 count = 22
-color = [255, 200, 0, 255]
-endColor = [220, 150, 0, 0]
+endColor = [ 220, 150, 0, 0 ]
+lifetime = 0.45
+size = 5.0
 speed = 85
 speedVariance = 30
 spread = 360
-lifetime = 0.45
-size = 5.0
-
-[presets.slow_effect]
-count = 1
-emitRate = 8
-color = [160, 220, 255, 180]
-endColor = [80, 160, 220, 0]
-speed = 10
-speedVariance = 4
-spread = 360
-lifetime = 0.38
-size = 2.0
-
-[presets.burn_effect]
-count = 1
-emitRate = 18
-color = [255, 110, 30, 255]
-endColor = [180, 40, 0, 0]
-angle = 270
-spread = 57
-speed = 22
-speedVariance = 8
-lifetime = 0.28
-size = 2.5
-
-[presets.shred_effect]
-count = 1
-emitRate = 12
-color = [200, 200, 205, 200]
-endColor = [120, 120, 130, 0]
-speed = 26
-speedVariance = 10
-spread = 360
-lifetime = 0.3
-size = 1.8
-
-[presets.stun_effect]
-count = 1
-emitRate = 14
-color = [255, 225, 80, 255]
-endColor = [255, 180, 0, 0]
-angle = 270
-spread = 120
-speed = 18
-speedVariance = 6
-lifetime = 0.4
-size = 2.2
-
-[presets.weakness_effect]
-count = 1
-emitRate = 10
-color = [190, 110, 230, 200]
-endColor = [120, 50, 160, 0]
-speed = 12
-speedVariance = 5
-spread = 360
-lifetime = 0.42
-size = 2.2
-
-[presets.death_small]
-count = 80
-color = [220, 55, 55, 255]
-endColor = [160, 20, 20, 0]
-speed = 70
-speedVariance = 25
-spread = 360
-lifetime = 0.25
-size = 3.0
-
-[presets.death_medium]
-count = 14
-color = [220, 55, 55, 255]
-endColor = [160, 20, 20, 0]
-speed = 90
-speedVariance = 30
-spread = 360
-lifetime = 0.4
-size = 4.5
 
 [presets.death_large]
+color = [ 220, 55, 55, 255 ]
 count = 24
-color = [220, 55, 55, 255]
-endColor = [160, 20, 20, 0]
+endColor = [ 160, 20, 20, 0 ]
+lifetime = 0.6
+size = 6.0
 speed = 110
 speedVariance = 40
 spread = 360
-lifetime = 0.6
-size = 6.0
+
+[presets.death_medium]
+color = [ 220, 55, 55, 255 ]
+count = 14
+endColor = [ 160, 20, 20, 0 ]
+lifetime = 0.4
+size = 4.5
+speed = 90
+speedVariance = 30
+spread = 360
+
+[presets.death_small]
+color = [ 220, 55, 55, 255 ]
+count = 80
+endColor = [ 160, 20, 20, 0 ]
+lifetime = 0.25
+size = 3.0
+speed = 70
+speedVariance = 25
+spread = 360
+
+[presets.flamer_impact]
+color = [ 255, 100, 20, 255 ]
+count = 8
+endColor = [ 180, 50, 0, 0 ]
+lifetime = 0.22
+size = 3.5
+speed = 50
+speedVariance = 18
+spread = 360
+
+[presets.flamer_muzzle]
+angle = 0
+color = [ 255, 160, 40, 255 ]
+count = 10
+endColor = [ 200, 80, 0, 0 ]
+lifetime = 0.5
+size = 3.0
+speed = 100
+speedVariance = 50
+spread = 360
+
+[presets.freezer_impact]
+color = [ 80, 190, 255, 255 ]
+count = 8
+endColor = [ 40, 140, 210, 0 ]
+lifetime = 0.28
+size = 3.0
+speed = 35
+speedVariance = 12
+spread = 360
+
+[presets.freezer_muzzle]
+angle = 0
+color = [ 200, 235, 255, 255 ]
+count = 20
+endColor = [ 120, 200, 255, 0 ]
+lifetime = 0.5
+size = 3
+speed = 100
+speedVariance = 50
+spread = 360
+
+[presets.piercer_impact]
+color = [ 200, 210, 220, 255 ]
+count = 10
+endColor = [ 160, 170, 180, 0 ]
+lifetime = 0.15
+size = 2.5
+speed = 80
+speedVariance = 30
+spread = 103
+
+[presets.piercer_muzzle]
+color = [ 230, 235, 240, 255 ]
+count = 6
+endColor = [ 180, 190, 200, 0 ]
+lifetime = 0.06
+size = 3.0
+speed = 110
+speedVariance = 40
+spread = 29
+
+[presets.shred_effect]
+color = [ 200, 200, 205, 200 ]
+count = 1
+emitRate = 12
+endColor = [ 120, 120, 130, 0 ]
+lifetime = 0.3
+size = 1.8
+speed = 26
+speedVariance = 10
+spread = 360
+
+[presets.slow_effect]
+color = [ 160, 220, 255, 180 ]
+count = 1
+emitRate = 8
+endColor = [ 80, 160, 220, 0 ]
+lifetime = 0.38
+size = 2.0
+speed = 10
+speedVariance = 4
+spread = 360
+
+[presets.sniper_impact]
+color = [ 220, 220, 255, 255 ]
+count = 16
+endColor = [ 180, 180, 200, 0 ]
+lifetime = 0.35
+size = 4.0
+speed = 100
+speedVariance = 35
+spread = 360
+
+[presets.sniper_muzzle]
+color = [ 255, 255, 255, 255 ]
+count = 4
+endColor = [ 220, 220, 255, 0 ]
+lifetime = 0.05
+size = 3.0
+speed = 120
+speedVariance = 40
+spread = 34
+
+[presets.stun_effect]
+angle = 270
+color = [ 255, 225, 80, 255 ]
+count = 1
+emitRate = 14
+endColor = [ 255, 180, 0, 0 ]
+lifetime = 0.4
+size = 2.2
+speed = 18
+speedVariance = 6
+spread = 120
+
+[presets.weakness_effect]
+color = [ 190, 110, 230, 200 ]
+count = 1
+emitRate = 10
+endColor = [ 120, 50, 160, 0 ]
+lifetime = 0.42
+size = 2.2
+speed = 12
+speedVariance = 5
+spread = 360
+
+[presets.zapper_impact]
+color = [ 100, 190, 255, 255 ]
+count = 5
+endColor = [ 60, 140, 220, 0 ]
+lifetime = 0.12
+size = 2.0
+speed = 55
+speedVariance = 20
+spread = 360
+
+[presets.zapper_muzzle]
+color = [ 180, 230, 255, 255 ]
+count = 8
+endColor = [ 100, 180, 255, 0 ]
+lifetime = 0.07
+size = 2.5
+speed = 70
+speedVariance = 25
+spread = 115
