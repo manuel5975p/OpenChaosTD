@@ -104,7 +104,7 @@ void MapEditorState::Layout(Game& game) {
     float sw = (kPaletteW - 2.0f * 6.0f) / 3.0f;
     for (int i = 0; i < 3; i++)
         m_buffStatButtons[i].m_rect = {kPaletteX + i * (sw + 6.0f), py, sw, 30.0f};
-    py += 42.0f;
+    py += 56.0f;
     m_buffValue.m_rect = {kPaletteX, py, kPaletteW, 24.0f};
     py += 38.0f;
     m_buffMul.m_rect = {kPaletteX, py, 26.0f, 26.0f};
@@ -179,7 +179,7 @@ void MapEditorState::OpenMap(Game& game, int index) {
     m_brush = Brush::Grass;
     m_lastValidateOk = false;
     m_hoverX = m_hoverY = -1;
-    m_render.CenterCamera(m_map, game.GetScreen());
+    m_render.CenterCamera(m_map, m_canvasRect);
 }
 
 void MapEditorState::DeleteMap(Game& game, int index) {
@@ -215,7 +215,7 @@ void MapEditorState::ConfirmNewMap(Game& game) {
     m_brush = Brush::Grass;
     m_lastValidateOk = false;
     m_hoverX = m_hoverY = -1;
-    m_render.CenterCamera(m_map, game.GetScreen());
+    m_render.CenterCamera(m_map, m_canvasRect);
     SetStatus("New map - paint a core, nests and a path, then save", true);
 }
 
@@ -591,9 +591,8 @@ void MapEditorState::DrawPalette(Game& /*game*/) {
     m_buffValue.Draw();
     DrawLabelInRow(TextFormat("%.1f", m_buffValue.m_value),
                    m_buffValue.m_rect.x, m_buffValue.m_rect.y - 22.0f, 20.0f, 14, RAYWHITE);
+    m_buffMul.m_label = m_buffMul.m_value ? "Multiply" : "Add";
     m_buffMul.Draw();
-    DrawLabelInRow(m_buffMul.m_value ? "Multiply" : "Add",
-                   m_buffMul.m_rect.x + 34.0f, m_buffMul.m_rect.y, m_buffMul.m_rect.height, 16, RAYWHITE);
 }
 
 void MapEditorState::DrawEditCanvas(Game& game) {

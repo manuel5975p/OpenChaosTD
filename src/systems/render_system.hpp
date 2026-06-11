@@ -24,6 +24,7 @@ public:
     void DrawAttacks(const std::vector<Attack>& attacks);
 
     void CenterCamera(Map& map, Screen& renderer);
+    void CenterCamera(Map& map, Rectangle viewport);
     void ControlCamera(float& dt, Input& input);
 
     // Access

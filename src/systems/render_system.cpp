@@ -166,11 +166,19 @@ void RenderSystem::DebugDrawEnemies(const DenseSlotMap<Enemy>& enemies) {
 }
 
 void RenderSystem::CenterCamera(Map& map, Screen& renderer){
-    m_camera.target = {-static_cast<float>(renderer.GetGameWidth()) / 2.f, -static_cast<float>(renderer.GetGameHeight()) / 2.f};
-    m_camera.offset = {-(map.GetCols() * map.GetTileSize()) / 2.f, -(map.GetRows() * map.GetTileSize()) / 2.f};
-    m_camera.zoom = 1.0f;
-    m_camera.rotation = 0.0f; // never rotated; reset defensively so the map can't render tilted
-    m_zoomIndex = 1;          // keep the wheel-zoom index in sync with the reset zoom level
+    CenterCamera(map, {0.0f, 0.0f,
+        static_cast<float>(renderer.GetGameWidth()),
+        static_cast<float>(renderer.GetGameHeight())});
+}
+
+void RenderSystem::CenterCamera(Map& map, Rectangle viewport){
+    float mapW = static_cast<float>(map.GetCols() * map.GetTileSize());
+    float mapH = static_cast<float>(map.GetRows() * map.GetTileSize());
+    m_camera.target   = {mapW / 2.f, mapH / 2.f};
+    m_camera.offset   = {viewport.x + viewport.width / 2.f, viewport.y + viewport.height / 2.f};
+    m_camera.zoom     = 1.0f;
+    m_camera.rotation = 0.0f;
+    m_zoomIndex = 1;
 }
 
 void RenderSystem::ControlCamera(float& dt, Input& input){
