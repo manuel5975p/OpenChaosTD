@@ -27,11 +27,15 @@ void EndState::ProcessInput(Game& game, float /*dt*/) {
     m_playAgainButton.Update(mouse, clicked);
     m_menuButton.Update(mouse, clicked);
 
-    if (m_playAgainButton.IsClicked())
+    if (m_playAgainButton.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<PlayingState>());
+    }
 
-    if (m_menuButton.IsClicked() || game.GetInput().IsPressed("Cancel"))
+    if (m_menuButton.IsClicked() || game.GetInput().IsPressed("Cancel")) {
+        if (m_menuButton.IsClicked()) game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<MenuState>());
+    }
 }
 
 void EndState::Update(Game& /*game*/, float /*dt*/) {}

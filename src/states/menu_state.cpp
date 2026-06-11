@@ -53,6 +53,7 @@ void MenuState::ProcessInput(Game& game, float /*dt*/) {
     if (m_hasSave) {
         m_continueButton.Update(mousePos, clicked);
         if (m_continueButton.IsClicked()) {
+            game.GetSoundSystem().PlaySfx("button_click");
             HandleContinue(game);
             return;
         }
@@ -60,14 +61,20 @@ void MenuState::ProcessInput(Game& game, float /*dt*/) {
 
     // Play and the editors both need an active datapack, so they route through the
     // selection screen first (carrying where to go once a pack is chosen).
-    if (m_playButton.IsClicked() || game.GetInput().IsPressed("Confirm"))
+    if (m_playButton.IsClicked() || game.GetInput().IsPressed("Confirm")) {
+        game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<DatapackSelectState>(DatapackSelectState::Intent::Play));
+    }
 
-    if (m_settingsButton.IsClicked())
+    if (m_settingsButton.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<SettingsState>());
+    }
 
-    if (m_editorButton.IsClicked())
+    if (m_editorButton.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<DatapackSelectState>(DatapackSelectState::Intent::Edit));
+    }
 
     if (m_exitButton.IsClicked() || game.GetInput().IsPressed("Cancel"))
         game.Quit();

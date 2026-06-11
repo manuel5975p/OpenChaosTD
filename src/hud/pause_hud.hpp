@@ -1,7 +1,7 @@
 #pragma once
 
 #include <hud/hud.hpp>
-#include <engine/features/ui_widgets.hpp>
+#include <hud/button_list.hpp>
 #include <raylib.h>
 
 class Input;
@@ -16,23 +16,17 @@ public:
     void ProcessInput(Input& input);
     void Draw();
 
-    bool WasResumeRequested()   { return m_resumeSignal.Consume(); }
-    bool WasSaveRequested()     { return m_saveSignal.Consume(); }
-    bool WasLoadRequested()     { return m_loadSignal.Consume(); }
-    bool WasRestartRequested()  { return m_restartSignal.Consume(); }
-    bool WasMainMenuRequested() { return m_mainMenuSignal.Consume(); }
+    bool WasResumeRequested()   { return m_buttons.Consume(kResume); }
+    bool WasSaveRequested()     { return m_buttons.Consume(kSave); }
+    bool WasLoadRequested()     { return m_buttons.Consume(kLoad); }
+    bool WasRestartRequested()  { return m_buttons.Consume(kRestart); }
+    bool WasMainMenuRequested() { return m_buttons.Consume(kMainMenu); }
 
 private:
-    Button m_resumeBtn;
-    Button m_saveBtn;
-    Button m_loadBtn;
-    Button m_restartBtn;
-    Button m_mainMenuBtn;
-    HudSignal m_resumeSignal;
-    HudSignal m_saveSignal;
-    HudSignal m_loadSignal;
-    HudSignal m_restartSignal;
-    HudSignal m_mainMenuSignal;
+    // Stable indices into m_buttons, in stack order.
+    enum : int { kResume, kSave, kLoad, kRestart, kMainMenu };
+
+    Hud::ButtonList m_buttons;
     int m_screenW = 0;
     int m_screenH = 0;
 };

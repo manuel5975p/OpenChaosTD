@@ -1,6 +1,8 @@
 #pragma once
 
 #include <raylib.h>
+#include <string>
+#include <vector>
 
 // Global text drawing facade: GPU vector text (TextRenderer) using one font
 // embedded in the binary — Victor Mono for both prose and code/numeric
@@ -27,5 +29,9 @@ void Draw(const char* text, int x, int y, int fontSize, Color color, Face face =
 
 // Width in pixels of the widest line of text at fontSize.
 int Measure(const char* text, int fontSize, Face face = Face::Prose);
+
+// Greedy word-wrap: split UTF-8 text into lines no wider than maxWidth pixels at fontSize.
+std::vector<std::string> Wrap(const std::string& text, float maxWidth, int fontSize,
+                              Face face = Face::Prose);
 
 } // namespace Text

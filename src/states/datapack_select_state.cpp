@@ -62,6 +62,7 @@ void DatapackSelectState::ProcessInput(Game& game, float /*dt*/) {
     // Back button / cancel returns to the menu.
     m_backButton.Update(mouse, clicked);
     if (m_backButton.IsClicked() || game.GetInput().IsPressed("Cancel")) {
+        if (m_backButton.IsClicked()) game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<MenuState>());
         return;
     }
@@ -69,8 +70,10 @@ void DatapackSelectState::ProcessInput(Game& game, float /*dt*/) {
     // Card hover/select — the widget limits hits to the visible band so clicks on the
     // masked overflow above/below the list are ignored.
     int chosen = m_list.ProcessHover(mouse, clicked, count, screenW, screenH);
-    if (chosen >= 0)
+    if (chosen >= 0) {
+        game.GetSoundSystem().PlaySfx("button_click");
         SelectPack(game, chosen);
+    }
 }
 
 void DatapackSelectState::Update(Game& /*game*/, float /*dt*/) {}

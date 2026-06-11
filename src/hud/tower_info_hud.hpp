@@ -2,6 +2,7 @@
 
 #include <hud/hud.hpp>
 #include <hud/hud_views.hpp>
+#include <hud/hud_theme.hpp>
 #include <engine/features/ui_widgets.hpp>
 #include <raylib.h>
 #include <string>
@@ -25,17 +26,13 @@ public:
     bool WasUpgradeRequested() { return m_upgradeSignal.Consume(); }
 
 private:
-    float m_panelW    = 160.0f;
-    float m_margin    =   8.0f;
-    float m_lineH     =  15.0f;
-    float m_descLineH =  13.0f;
-    float m_headerH   =  20.0f;
-    float m_sellH     =  22.0f;
-    float m_sellGap   =   6.0f;
-    float m_anchorGap =  20.0f;
-    int   m_fontSm     = 11;
-    int   m_fontDesc   = 10;
-    int   m_fontHeader = 14;
+    // Shared panel metrics plus the extras unique to this panel.
+    Hud::PanelMetrics m_metrics;
+    float m_descLineH = 0.0f;
+    float m_sellH     = 0.0f;
+    float m_sellGap   = 0.0f;
+    float m_anchorGap = 0.0f;
+    int   m_fontDesc  = 0;
 
     // Content snapshot taken in SetTarget (no Tower/Enemy references kept).
     bool m_hasTarget = false;
@@ -61,6 +58,10 @@ private:
     bool m_upgradeReady = false;    // affordable and not yet max level
     bool m_hasNextUpgrade = false;  // an unpurchased upgrade level exists
     std::vector<DescLine> m_upgradePreview; // delta lines for the next upgrade
+
+    // SetTarget splits into a content snapshot (+ word-wrap) and a geometry pass.
+    void SetContent(const TowerInfoView& view);
+    void Layout(const TowerInfoView& view);
 
     void DrawUpgradeTooltip();
 };

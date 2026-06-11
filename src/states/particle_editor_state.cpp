@@ -376,24 +376,30 @@ void ParticleEditorState::ProcessInput(Game& game, float /*dt*/) {
     // Shape selector
     for (int i = 0; i < 5; i++) {
         m_shapeButtons[i].Update(mouse, pressed);
-        if (m_shapeButtons[i].IsClicked())
+        if (m_shapeButtons[i].IsClicked()) {
+            game.GetSoundSystem().PlaySfx("button_click");
             m_working.m_shape = static_cast<SpawnShape>(i);
+        }
     }
 
     // Preset management
     m_newBtn.Update(mouse, pressed);
     m_deleteBtn.Update(mouse, pressed);
-    if (m_newBtn.IsClicked())
+    if (m_newBtn.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         NewPreset();
-    if (m_deleteBtn.IsClicked() && m_selectedPreset >= 0)
+    }
+    if (m_deleteBtn.IsClicked() && m_selectedPreset >= 0) {
+        game.GetSoundSystem().PlaySfx("button_click");
         DeleteSelected(game);
+    }
 
     // Preset browser: pager via buttons or mouse wheel over the list
     m_pagePrevBtn.Update(mouse, pressed);
     m_pageNextBtn.Update(mouse, pressed);
     int pageStep = 0;
-    if (m_pagePrevBtn.IsClicked()) pageStep = -1;
-    if (m_pageNextBtn.IsClicked()) pageStep = +1;
+    if (m_pagePrevBtn.IsClicked()) { game.GetSoundSystem().PlaySfx("button_click"); pageStep = -1; }
+    if (m_pageNextBtn.IsClicked()) { game.GetSoundSystem().PlaySfx("button_click"); pageStep = +1; }
     float wheel = input.GetMouseWheelDelta();
     if (wheel != 0.0f && CheckCollisionPointRec(mouse, m_browserRect))
         pageStep = wheel > 0.0f ? -1 : +1;
@@ -404,14 +410,17 @@ void ParticleEditorState::ProcessInput(Game& game, float /*dt*/) {
 
     for (size_t i = 0; i < m_presetButtons.size(); i++) {
         m_presetButtons[i].Update(mouse, pressed);
-        if (m_presetButtons[i].IsClicked())
+        if (m_presetButtons[i].IsClicked()) {
+            game.GetSoundSystem().PlaySfx("button_click");
             LoadPreset(game, m_presetPage * m_presetsPerPage + static_cast<int>(i));
+        }
     }
 
     // Preview controls
     m_continuousToggle.Update(mouse, pressed);
     m_clearBtn.Update(mouse, pressed);
     if (m_clearBtn.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         m_previewParticles.Clear(); // wipes live emitters too — re-added next frame
         m_liveEmitter = DenseSlotMap<Emitter>::INVALID_KEY;
     }
@@ -423,11 +432,14 @@ void ParticleEditorState::ProcessInput(Game& game, float /*dt*/) {
     m_saveBtn.Update(mouse, pressed);
     m_backBtn.Update(mouse, pressed);
 
-    if (m_saveBtn.IsClicked() && !m_nameInput.m_text.empty())
+    if (m_saveBtn.IsClicked() && !m_nameInput.m_text.empty()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         Save(game);
+    }
 
     // Escape acts as Back, but not while typing a preset name
     if (m_backBtn.IsClicked() || (input.IsPressed("Cancel") && !m_nameInput.IsFocused())) {
+        if (m_backBtn.IsClicked()) game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<MenuState>());
         return;
     }

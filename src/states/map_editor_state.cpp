@@ -393,10 +393,12 @@ void MapEditorState::ProcessCatalogInput(Game& game) {
     m_newMapBtn.Update(mouse, clicked);
     m_catalogBackBtn.Update(mouse, clicked);
     if (m_catalogBackBtn.IsClicked() || input.IsPressed("Cancel")) {
+        if (m_catalogBackBtn.IsClicked()) game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<MenuState>());
         return;
     }
     if (m_newMapBtn.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         m_modalOpen = true;
         m_modalName.m_text.clear();
         m_modalDesc.m_text.clear();
@@ -419,6 +421,7 @@ void MapEditorState::ProcessCatalogInput(Game& game) {
         };
         m_deleteButtons[i].Update(mouse, clicked);
         if (m_deleteButtons[i].IsClicked()) {
+            game.GetSoundSystem().PlaySfx("button_click");
             DeleteMap(game, i);
             return;
         }
@@ -426,8 +429,10 @@ void MapEditorState::ProcessCatalogInput(Game& game) {
 
     // Card hover/select — clicking a card opens the map for editing.
     int chosen = m_list.ProcessHover(mouse, clicked, count, screenW, screenH);
-    if (chosen >= 0)
+    if (chosen >= 0) {
+        game.GetSoundSystem().PlaySfx("button_click");
         OpenMap(game, chosen);
+    }
 }
 
 void MapEditorState::ProcessModalInput(Game& game) {
@@ -446,11 +451,14 @@ void MapEditorState::ProcessModalInput(Game& game) {
 
     bool typing = m_modalName.IsFocused() || m_modalDesc.IsFocused();
     if (m_modalCancelBtn.IsClicked() || (input.IsPressed("Cancel") && !typing)) {
+        if (m_modalCancelBtn.IsClicked()) game.GetSoundSystem().PlaySfx("button_click");
         m_modalOpen = false;
         return;
     }
-    if (m_modalCreateBtn.IsClicked())
+    if (m_modalCreateBtn.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         ConfirmNewMap(game);
+    }
 }
 
 void MapEditorState::ProcessEditInput(Game& game, float dt) {
@@ -462,13 +470,16 @@ void MapEditorState::ProcessEditInput(Game& game, float dt) {
     // Brush palette.
     for (int i = 0; i < 5; i++) {
         m_brushButtons[i].Update(mouse, pressed);
-        if (m_brushButtons[i].IsClicked())
+        if (m_brushButtons[i].IsClicked()) {
+            game.GetSoundSystem().PlaySfx("button_click");
             m_brush = static_cast<Brush>(i);
+        }
     }
     if (m_brush == Brush::Buff) {
         for (int i = 0; i < 3; i++) {
             m_buffStatButtons[i].Update(mouse, pressed);
             if (m_buffStatButtons[i].IsClicked()) {
+                game.GetSoundSystem().PlaySfx("button_click");
                 m_buffStatIndex = i;
                 SyncBuffControls();
             }
@@ -482,14 +493,19 @@ void MapEditorState::ProcessEditInput(Game& game, float dt) {
     m_saveBtn.Update(mouse, pressed);
     m_editBackBtn.Update(mouse, pressed);
     if (m_editBackBtn.IsClicked() || input.IsPressed("Cancel")) {
+        if (m_editBackBtn.IsClicked()) game.GetSoundSystem().PlaySfx("button_click");
         m_mode = Mode::Catalog;
         RebuildCatalog(game);
         return;
     }
-    if (m_validateBtn.IsClicked())
+    if (m_validateBtn.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         Validate();
-    if (m_saveBtn.IsClicked())
+    }
+    if (m_saveBtn.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         Save(game);
+    }
 
     // Block grid interaction when the cursor is over the palette/bottom-bar UI.
     float gw = static_cast<float>(game.GetScreen().GetGameWidth());

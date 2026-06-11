@@ -98,6 +98,7 @@ void Game::LoadResources() {
     // and holds only engine/menu-level assets. Gameplay assets live in datapacks
     // and are mounted on top of this root when a pack is activated.
     m_resources.SetAssetPath(SearchFolderParentPath("resources", 5));
+    m_resources.LoadSoundsFromDir("sounds");
     m_soundSystem.Init(m_resources);
 }
 

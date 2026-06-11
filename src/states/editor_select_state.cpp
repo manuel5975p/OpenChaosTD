@@ -35,14 +35,20 @@ void EditorSelectState::ProcessInput(Game& game, float /*dt*/) {
     m_mapEditorButton.Update(mouse, clicked);
     m_backButton.Update(mouse, clicked);
 
-    if (m_particleEditorButton.IsClicked())
+    if (m_particleEditorButton.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<ParticleEditorState>());
+    }
 
-    if (m_mapEditorButton.IsClicked())
+    if (m_mapEditorButton.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<MapEditorState>());
+    }
 
-    if (m_backButton.IsClicked() || game.GetInput().IsPressed("Cancel"))
+    if (m_backButton.IsClicked() || game.GetInput().IsPressed("Cancel")) {
+        if (m_backButton.IsClicked()) game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<DatapackSelectState>(DatapackSelectState::Intent::Edit));
+    }
 }
 
 void EditorSelectState::Update(Game& /*game*/, float /*dt*/) {}

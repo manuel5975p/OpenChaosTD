@@ -22,16 +22,14 @@ void PauseHUD::Build(float scale, int screenW, int screenH) {
     float spacing = Scaled(56.0f);
     float firstY = m_panelRect.y + Scaled(80.0f);
 
-    m_resumeBtn.m_label = "RESUME";
-    m_resumeBtn.m_rect = { btnX, firstY, btnW, btnH };
-    m_saveBtn.m_label = "SAVE";
-    m_saveBtn.m_rect = { btnX, firstY + spacing, btnW, btnH };
-    m_loadBtn.m_label = "LOAD";
-    m_loadBtn.m_rect = { btnX, firstY + spacing * 2.0f, btnW, btnH };
-    m_restartBtn.m_label = "RESTART";
-    m_restartBtn.m_rect = { btnX, firstY + spacing * 3.0f, btnW, btnH };
-    m_mainMenuBtn.m_label = "MAIN MENU";
-    m_mainMenuBtn.m_rect = { btnX, firstY + spacing * 4.0f, btnW, btnH };
+    // Order must match the kResume..kMainMenu indices.
+    m_buttons.items.clear();
+    m_buttons.Add("RESUME");
+    m_buttons.Add("SAVE");
+    m_buttons.Add("LOAD");
+    m_buttons.Add("RESTART");
+    m_buttons.Add("MAIN MENU");
+    m_buttons.LayoutVertical(btnX, firstY, btnW, btnH, spacing);
 }
 
 void PauseHUD::ProcessInput(Input& input) {
@@ -40,17 +38,9 @@ void PauseHUD::ProcessInput(Input& input) {
     bool pressed = false;
     if (!BeginInput(input, mousePos, pressed)) return;
 
-    m_resumeBtn.Update(mousePos, pressed);
-    m_saveBtn.Update(mousePos, pressed);
-    m_loadBtn.Update(mousePos, pressed);
-    m_restartBtn.Update(mousePos, pressed);
-    m_mainMenuBtn.Update(mousePos, pressed);
-
-    if (m_resumeBtn.IsClicked())   m_resumeSignal.Raise();
-    if (m_saveBtn.IsClicked())     m_saveSignal.Raise();
-    if (m_loadBtn.IsClicked())     m_loadSignal.Raise();
-    if (m_restartBtn.IsClicked())  m_restartSignal.Raise();
-    if (m_mainMenuBtn.IsClicked()) m_mainMenuSignal.Raise();
+    bool clicked = false;
+    m_buttons.Update(mousePos, pressed, clicked);
+    if (clicked) PlayClickSound();
 }
 
 void PauseHUD::Draw() {
@@ -66,15 +56,5 @@ void PauseHUD::Draw() {
     int titleY = static_cast<int>(m_panelRect.y + Scaled(28.0f));
     DrawTextCenteredX("PAUSED", centerX, titleY, ScaledInt(28.0f), RAYWHITE);
 
-    int fontBtn = ScaledInt(18.0f);
-    m_resumeBtn.Draw();
-    m_resumeBtn.DrawLabel(fontBtn, RAYWHITE);
-    m_saveBtn.Draw();
-    m_saveBtn.DrawLabel(fontBtn, RAYWHITE);
-    m_loadBtn.Draw();
-    m_loadBtn.DrawLabel(fontBtn, RAYWHITE);
-    m_restartBtn.Draw();
-    m_restartBtn.DrawLabel(fontBtn, RAYWHITE);
-    m_mainMenuBtn.Draw();
-    m_mainMenuBtn.DrawLabel(fontBtn, RAYWHITE);
+    m_buttons.Draw(ScaledInt(18.0f), RAYWHITE);
 }

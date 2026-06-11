@@ -4,6 +4,9 @@
 
 #include <cstddef>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 // Generated at build time from the TTF in resources/fonts/ (cmake/embed_resource.cmake)
 extern const unsigned char gVictorMonoTtf[];
@@ -60,6 +63,23 @@ int Measure(const char* text, int fontSize, Face face) {
         return ::MeasureText(text, fontSize);
     const Vector2 size = sRenderer->MeasureText(FontFor(face), text, static_cast<float>(fontSize));
     return static_cast<int>(size.x + 0.5f);
+}
+
+std::vector<std::string> Wrap(const std::string& text, float maxWidth, int fontSize, Face face) {
+    std::vector<std::string> lines;
+    std::istringstream stream(text);
+    std::string word, current;
+    while (stream >> word) {
+        std::string candidate = current.empty() ? word : current + " " + word;
+        if (Measure(candidate.c_str(), fontSize, face) <= static_cast<int>(maxWidth))
+            current = candidate;
+        else {
+            if (!current.empty()) lines.push_back(current);
+            current = word;
+        }
+    }
+    if (!current.empty()) lines.push_back(current);
+    return lines;
 }
 
 } // namespace Text

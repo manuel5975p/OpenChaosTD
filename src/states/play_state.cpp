@@ -52,6 +52,11 @@ void PlayingState::OnEnter(Game& game) {
     m_waveHUD.Build(scale, screenW);
     m_eventLog.Build(scale);
 
+    SoundSystem* ss = &game.GetSoundSystem();
+    m_towerHUD.SetSoundSystem(ss);
+    m_scoreHUD.SetSoundSystem(ss);
+    m_towerInfoHUD.SetSoundSystem(ss);
+
     m_waveManager.Load(game.GetFileStore(), game.GetEnemyFactory(), game.GetActiveDataDir());
 
     // A resumed game restarts the wave lookahead from the saved wave number so the next wave
@@ -60,6 +65,7 @@ void PlayingState::OnEnter(Game& game) {
         m_waveManager.PrepareForWave(game.GetGameData().m_waveNumber, game.GetEnemyFactory());
 
     m_pauseHUD.Build(scale, screenW, screenH);
+    m_pauseHUD.SetSoundSystem(ss);
 }
 
 void PlayingState::OnExit(Game& game) {

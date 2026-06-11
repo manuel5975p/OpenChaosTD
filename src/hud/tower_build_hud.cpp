@@ -34,6 +34,7 @@ void TowerBuildHUD::ProcessInput(Input& input) {
     for (BuildButton& entry : m_buttons) {
         entry.m_button.Update(mousePos, pressed);
         if (entry.m_button.IsClicked()) {
+            PlayClickSound();
             // Toggle: clicking the active type again clears the selection
             m_selectedTower = (m_selectedTower == entry.m_button.m_label) ? "" : entry.m_button.m_label;
             break;

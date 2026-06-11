@@ -1,45 +1,30 @@
 #include <hud/tower_info_hud.hpp>
+#include <hud/hud_draw.hpp>
+#include <hud/hud_theme.hpp>
 #include <engine/core/text.hpp>
 #include <engine/core/input.hpp>
 #include <raylib.h>
-#include <sstream>
 #include <algorithm>
 
 void TowerInfoHUD::Build(float scale) {
     HUD::Build(scale);
-    m_panelW      = Scaled(160.0f);
-    m_margin      = Scaled(8.0f);
-    m_lineH       = Scaled(15.0f);
+    m_metrics     = Hud::PanelMetrics::Scale(scale, 160.0f, 8.0f, 15.0f, 20.0f, 11.0f, 14.0f);
     m_descLineH   = Scaled(13.0f);
-    m_headerH     = Scaled(20.0f);
     m_sellH       = Scaled(22.0f);
     m_sellGap     = Scaled(6.0f);
     m_anchorGap   = Scaled(20.0f);
-    m_fontSm      = ScaledInt(11.0f);
     m_fontDesc    = ScaledInt(10.0f);
-    m_fontHeader  = ScaledInt(14.0f);
     Hide(); // shown only while a tower is selected or hovered
 }
 
-static std::vector<std::string> WrapText(const std::string& text, float maxWidth, int fontSize) {
-    std::vector<std::string> lines;
-    std::istringstream stream(text);
-    std::string word, current;
-    while (stream >> word) {
-        std::string candidate = current.empty() ? word : current + " " + word;
-        if (Text::Measure(candidate.c_str(), fontSize) <= static_cast<int>(maxWidth))
-            current = candidate;
-        else {
-            if (!current.empty()) lines.push_back(current);
-            current = word;
-        }
-    }
-    if (!current.empty()) lines.push_back(current);
-    return lines;
+void TowerInfoHUD::SetTarget(const TowerInfoView& view) {
+    SetContent(view);
+    Layout(view);
+    Show();
 }
 
-void TowerInfoHUD::SetTarget(const TowerInfoView& view) {
-    // Snapshot the content the panel will render.
+void TowerInfoHUD::SetContent(const TowerInfoView& view) {
+    // Snapshot the content the panel will render (no Tower/Enemy references kept).
     m_hasTarget     = true;
     m_name          = view.m_name;
     m_hasAttack     = view.m_hasAttack;
@@ -54,27 +39,32 @@ void TowerInfoHUD::SetTarget(const TowerInfoView& view) {
     m_showTargeting = view.m_interactive && view.m_hasAttack;         // retarget any time
     m_showUpgrade   = view.m_interactive && view.m_hasAttack && view.m_upgradeCount > 0;
 
-    m_descLines = WrapText(view.m_description, m_panelW - m_margin * 2.0f, m_fontDesc);
+    m_descLines = Text::Wrap(view.m_description, m_metrics.panelW - m_metrics.margin * 2.0f, m_fontDesc);
+}
+
+void TowerInfoHUD::Layout(const TowerInfoView& view) {
+    const float margin = m_metrics.margin;
+    const float panelW = m_metrics.panelW;
 
     int statRows = static_cast<int>(m_statLines.size());
-    float panelH = m_margin + m_headerH
+    float panelH = margin + m_metrics.headerH
         + static_cast<float>(m_descLines.size()) * m_descLineH
-        + statRows * m_lineH
+        + statRows * m_metrics.lineH
         + (m_showUpgrade ? m_sellGap + m_sellH : 0.0f)
         + (m_showTargeting ? m_sellGap + m_sellH : 0.0f)
-        + (m_showSell ? m_sellGap + m_sellH : 0.0f) + m_margin;
+        + (m_showSell ? m_sellGap + m_sellH : 0.0f) + margin;
 
     // Anchor above the screen point, then clamp so the panel stays on-screen
-    m_panelRect = { view.m_screenPos.x - m_panelW / 2.0f, view.m_screenPos.y - panelH - m_anchorGap,
-                    m_panelW, panelH };
+    m_panelRect = { view.m_screenPos.x - panelW / 2.0f, view.m_screenPos.y - panelH - m_anchorGap,
+                    panelW, panelH };
     ClampPanelToScreen(view.m_screenW, view.m_screenH);
 
     // Lay config buttons bottom-up: Sell at the bottom, then Upgrade, then Targeting on top
-    float btnW = m_panelW - m_margin * 2.0f;
-    float btnY = m_panelRect.y + panelH - m_margin - m_sellH;
+    float btnW = panelW - margin * 2.0f;
+    float btnY = m_panelRect.y + panelH - margin - m_sellH;
     if (m_showSell) {
         m_sellBtn.m_label = TextFormat("Sell: $%d", view.m_sellRefund);
-        m_sellBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
+        m_sellBtn.m_rect = { m_panelRect.x + margin, btnY, btnW, m_sellH };
         btnY -= m_sellGap + m_sellH;
     }
     m_upgradeReady = false;
@@ -89,15 +79,13 @@ void TowerInfoHUD::SetTarget(const TowerInfoView& view) {
             m_hasNextUpgrade = true;
             m_upgradePreview = view.m_upgradePreview;
         }
-        m_upgradeBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
+        m_upgradeBtn.m_rect = { m_panelRect.x + margin, btnY, btnW, m_sellH };
         btnY -= m_sellGap + m_sellH;
     }
     if (m_showTargeting) {
         m_targetBtn.m_label = TextFormat("Target: %s", m_targetingName.c_str());
-        m_targetBtn.m_rect = { m_panelRect.x + m_margin, btnY, btnW, m_sellH };
+        m_targetBtn.m_rect = { m_panelRect.x + margin, btnY, btnW, m_sellH };
     }
-
-    Show();
 }
 
 void TowerInfoHUD::ProcessInput(Input& input) {
@@ -109,19 +97,25 @@ void TowerInfoHUD::ProcessInput(Input& input) {
     // but only raise the buy signal when the player can pay.
     if (m_hasNextUpgrade) {
         m_upgradeBtn.Update(mousePos, pressed);
-        if (m_upgradeReady && m_upgradeBtn.IsClicked())
+        if (m_upgradeReady && m_upgradeBtn.IsClicked()) {
+            PlayClickSound();
             m_upgradeSignal.Raise();
+        }
     }
     if (m_showTargeting) {
         m_targetBtn.Update(mousePos, pressed);
-        if (m_targetBtn.IsClicked())
+        if (m_targetBtn.IsClicked()) {
+            PlayClickSound();
             m_targetSignal.Raise();
+        }
     }
     // Sell is shown while disabled during waves, but only a wave-free (enabled) button reacts.
     if (m_showSell && m_sellEnabled) {
         m_sellBtn.Update(mousePos, pressed);
-        if (m_sellBtn.IsClicked())
+        if (m_sellBtn.IsClicked()) {
+            PlayClickSound();
             m_sellSignal.Raise();
+        }
     }
 }
 
@@ -130,67 +124,62 @@ void TowerInfoHUD::Draw() {
 
     DrawPanelBackground(220, true);
 
-    float x = m_panelRect.x + m_margin;
-    float y = m_panelRect.y + m_margin;
+    const float margin = m_metrics.margin;
+    float x = m_panelRect.x + margin;
+    float y = m_panelRect.y + margin;
 
     // Tower name as header, with level indicator right-aligned
-    Text::Draw(m_name.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontHeader, GOLD);
+    Text::Draw(m_name.c_str(), static_cast<int>(x), static_cast<int>(y), m_metrics.fontHeader, GOLD);
     if (m_hasAttack && m_upgradeCount > 0) {
         bool isMax = m_level >= m_upgradeCount;
         const char* lvlText = isMax ? "MAX" : TextFormat("Lv %d", m_level + 1);
-        Color lvlColor = isMax ? GOLD : Color{180, 180, 180, 255};
-        int tw = Text::Measure(lvlText, m_fontHeader);
-        Text::Draw(lvlText,
-                 static_cast<int>(m_panelRect.x + m_panelW - m_margin) - tw,
-                 static_cast<int>(y), m_fontHeader, lvlColor);
+        Color lvlColor = isMax ? GOLD : Hud::kTextMuted;
+        Hud::DrawTextRightAligned(lvlText, m_panelRect.x + m_metrics.panelW - margin, y,
+                                  m_metrics.fontHeader, lvlColor);
     }
-    y += m_headerH;
+    y += m_metrics.headerH;
 
-    // Description (word-wrapped, computed in SetTarget)
+    // Description (word-wrapped, computed in SetContent)
     for (const auto& line : m_descLines) {
-        Text::Draw(line.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontDesc, {180, 180, 180, 255});
+        Text::Draw(line.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontDesc, Hud::kTextMuted);
         y += m_descLineH;
     }
 
     // Stat rows from every module (AttackModule core stats + effect lines). Walls add nothing.
-    for (const auto& line : m_statLines) {
-        Text::Draw(line.m_text.c_str(), static_cast<int>(x), static_cast<int>(y), m_fontSm, line.m_color);
-        y += m_lineH;
-    }
+    y = Hud::DrawDescLines(m_statLines, x, y, m_metrics.lineH, m_metrics.fontSm);
 
     if (m_showUpgrade) {
-        const WidgetStyle& style = m_upgradeReady ? kDefaultStyle : kDisabledStyle;
-        m_upgradeBtn.Draw(false, style);
-        m_upgradeBtn.DrawLabel(m_fontSm, m_upgradeReady ? Color{160, 240, 120, 255} : DARKGRAY);
+        Hud::DrawToggleableButton(m_upgradeBtn, m_upgradeReady, m_metrics.fontSm, Hud::kUpgradeReady);
         if (m_hasNextUpgrade && m_upgradeBtn.IsHovered())
             DrawUpgradeTooltip();
     }
 
     if (m_showTargeting) {
         m_targetBtn.Draw();
-        m_targetBtn.DrawLabel(m_fontSm, SKYBLUE);
+        m_targetBtn.DrawLabel(m_metrics.fontSm, SKYBLUE);
     }
 
-    if (m_showSell) {
-        const WidgetStyle& style = m_sellEnabled ? kDefaultStyle : kDisabledStyle;
-        m_sellBtn.Draw(false, style);
-        m_sellBtn.DrawLabel(m_fontSm, m_sellEnabled ? GREEN : DARKGRAY);
-    }
+    if (m_showSell)
+        Hud::DrawToggleableButton(m_sellBtn, m_sellEnabled, m_metrics.fontSm, GREEN);
 }
 
 void TowerInfoHUD::DrawUpgradeTooltip() {
-    // Box sized to the widest of the header and the preview lines
-    int maxW = Text::Measure("Next Level", m_fontSm);
-    for (const auto& line : m_upgradePreview)
-        maxW = std::max(maxW, Text::Measure(line.m_text.c_str(), m_fontSm));
+    const float margin = m_metrics.margin;
+    const int   fontSm = m_metrics.fontSm;
+    const float lineH  = m_metrics.lineH;
 
-    float boxW = maxW + m_margin * 2.0f;
-    float boxH = m_margin * 2.0f + static_cast<float>(m_upgradePreview.size() + 1) * m_lineH;
+    // Box sized to the widest of the header and the preview lines
+    int maxW = Text::Measure("Next Level", fontSm);
+    for (const auto& line : m_upgradePreview)
+        maxW = std::max(maxW, Text::Measure(line.m_text.c_str(), fontSm));
+
+    float boxW = maxW + margin * 2.0f;
+    float boxH = margin * 2.0f + static_cast<float>(m_upgradePreview.size() + 1) * lineH;
 
     // Prefer the left of the panel; flip to the right if it would clip off-screen
     float boxX = m_panelRect.x - boxW - m_sellGap;
     if (boxX < 0.0f)
-        boxX = m_panelRect.x + m_panelW + m_sellGap;
+        boxX = m_panelRect.x + m_metrics.panelW + m_sellGap;
 
     // Align with the upgrade button, clamped to stay on-screen vertically
     float boxY = m_upgradeBtn.m_rect.y;
@@ -199,15 +188,11 @@ void TowerInfoHUD::DrawUpgradeTooltip() {
     if (boxY < 0.0f) boxY = 0.0f;
 
     Rectangle box = { boxX, boxY, boxW, boxH };
-    DrawRectangleRec(box, {20, 20, 20, 235});
-    DrawRectangleLinesEx(box, 1.0f, {255, 180, 0, 255});
+    Hud::DrawFramedBox(box, Hud::PanelBg(235), Hud::kTooltipBorder);
 
-    float tx = boxX + m_margin;
-    float ty = boxY + m_margin;
-    Text::Draw("Next Level", static_cast<int>(tx), static_cast<int>(ty), m_fontSm, GOLD);
-    ty += m_lineH;
-    for (const auto& line : m_upgradePreview) {
-        Text::Draw(line.m_text.c_str(), static_cast<int>(tx), static_cast<int>(ty), m_fontSm, line.m_color);
-        ty += m_lineH;
-    }
+    float tx = boxX + margin;
+    float ty = boxY + margin;
+    Text::Draw("Next Level", static_cast<int>(tx), static_cast<int>(ty), fontSm, GOLD);
+    ty += lineH;
+    Hud::DrawDescLines(m_upgradePreview, tx, ty, lineH, fontSm);
 }

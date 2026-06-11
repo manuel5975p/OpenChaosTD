@@ -16,8 +16,8 @@ private:
     static constexpr float kFadeTime   = 1.0f; // seconds over which entries fade out
 
     struct Entry {
-        std::string message;
-        float timeLeft;
+        std::string m_message;
+        float m_timeLeft;
     };
 
     std::vector<Entry> m_entries;

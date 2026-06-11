@@ -1,7 +1,14 @@
 #include <hud/hud.hpp>
+#include <hud/hud_theme.hpp>
 #include <engine/core/text.hpp>
 #include <engine/core/input.hpp>
+#include <engine/features/sound_system.hpp>
 #include <algorithm>
+
+void HUD::PlayClickSound() const {
+    if (m_soundSystem)
+        m_soundSystem->PlaySfx("button_click");
+}
 
 void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color, Text::Face face) {
     // Thin integer-coord forwarder to the shared float-coord helper.
@@ -9,9 +16,9 @@ void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color
 }
 
 void HUD::DrawPanelBackground(unsigned char alpha, bool border) const {
-    DrawRectangleRec(m_panelRect, {20, 20, 20, alpha});
+    DrawRectangleRec(m_panelRect, Hud::PanelBg(alpha));
     if (border)
-        DrawRectangleLinesEx(m_panelRect, 1.0f, {80, 80, 80, 255});
+        DrawRectangleLinesEx(m_panelRect, 1.0f, Hud::kPanelBorder);
 }
 
 void HUD::ConsumePanelClick(Input& input) const {

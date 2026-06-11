@@ -114,13 +114,16 @@ void MapSelectState::ProcessInput(Game& game, float /*dt*/) {
 
     m_backButton.Update(mouse, clicked);
     if (m_backButton.IsClicked() || game.GetInput().IsPressed("Cancel")) {
+        if (m_backButton.IsClicked()) game.GetSoundSystem().PlaySfx("button_click");
         game.ChangeState(std::make_unique<DatapackSelectState>(DatapackSelectState::Intent::Play));
         return;
     }
 
     int chosen = m_list.ProcessHover(mouse, clicked, count, screenW, screenH);
-    if (chosen >= 0)
+    if (chosen >= 0) {
+        game.GetSoundSystem().PlaySfx("button_click");
         SelectEntry(game, chosen);
+    }
 }
 
 void MapSelectState::Update(Game& /*game*/, float /*dt*/) {}

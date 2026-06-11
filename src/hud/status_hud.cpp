@@ -1,4 +1,6 @@
 #include <hud/status_hud.hpp>
+#include <hud/hud_theme.hpp>
+#include <hud/hud_draw.hpp>
 #include <engine/core/text.hpp>
 #include <engine/core/input.hpp>
 #include <raylib.h>
@@ -40,20 +42,28 @@ void StatusHUD::ProcessInput(Input& input, const StatusView& view) {
     m_waveInfoBtn.Update(mousePos, pressed);
 
     // Auto toggle is always clickable, even mid-wave
-    if (m_autoBtn.IsClicked())
+    if (m_autoBtn.IsClicked()) {
+        PlayClickSound();
         m_autoSignal.Raise();
+    }
 
     // Speed cycle is always clickable, even mid-wave
-    if (m_speedBtn.IsClicked())
+    if (m_speedBtn.IsClicked()) {
+        PlayClickSound();
         m_speedSignal.Raise();
+    }
 
     // Wave info panel toggle is always clickable
-    if (m_waveInfoBtn.IsClicked())
+    if (m_waveInfoBtn.IsClicked()) {
+        PlayClickSound();
         m_waveInfoSignal.Raise();
+    }
 
     // Start wave only when no wave is running
-    if (!view.m_waveActive && m_startWaveBtn.IsClicked())
+    if (!view.m_waveActive && m_startWaveBtn.IsClicked()) {
+        PlayClickSound();
         m_waveSignal.Raise();
+    }
 }
 
 void StatusHUD::Draw(const StatusView& view) {
@@ -90,9 +100,7 @@ void StatusHUD::Draw(const StatusView& view) {
     m_autoBtn.DrawLabel(fontBtn, view.m_autoSpawn ? GOLD : RAYWHITE);
 
     // Start wave button — greyed out while a wave is running
-    const WidgetStyle& waveStyle = view.m_waveActive ? kDisabledStyle : kDefaultStyle;
-    m_startWaveBtn.Draw(false, waveStyle);
-    m_startWaveBtn.DrawLabel(fontBtn, view.m_waveActive ? DARKGRAY : RAYWHITE);
+    Hud::DrawToggleableButton(m_startWaveBtn, !view.m_waveActive, fontBtn, RAYWHITE);
 }
 
 void StatusHUD::DrawWaveReadout(const StatusView& view, int centerX) {
@@ -125,7 +133,7 @@ void StatusHUD::DrawWaveReadout(const StatusView& view, int centerX) {
 
     Text::Draw(left, static_cast<int>(startX), m_textY, font, RAYWHITE, Text::Face::Mono);
     float glyphX = startX + static_cast<float>(leftW) + gap;
-    DrawInfinity(glyphX, static_cast<float>(m_textY) + glyphH / 2.0f, glyphH, Color{120, 180, 220, 255});
+    DrawInfinity(glyphX, static_cast<float>(m_textY) + glyphH / 2.0f, glyphH, Hud::kInfinityGlyph);
 }
 
 void StatusHUD::DrawInfinity(float x, float yMid, float h, Color color) const {

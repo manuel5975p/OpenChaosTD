@@ -4,6 +4,7 @@
 #include <engine/core/draw_helpers.hpp>
 
 class Input;
+class SoundSystem;
 
 // One-shot flag: raised on an event, consumed exactly once.
 struct HudSignal {
@@ -30,9 +31,13 @@ public:
     void Hide() { m_visible = false; }
     bool IsVisible() const { return m_visible; }
 
+    void SetSoundSystem(SoundSystem* ss) { m_soundSystem = ss; }
+
 protected:
     float Scaled(float base) const { return base * m_scale; }
     int   ScaledInt(float base) const { return static_cast<int>(base * m_scale); }
+
+    void PlayClickSound() const;
 
     void DrawPanelBackground(unsigned char alpha, bool border = false) const;
     void ConsumePanelClick(Input& input) const;
@@ -47,4 +52,5 @@ protected:
     float m_scale = 1.0f;
     bool m_visible = true;
     Rectangle m_panelRect = {};
+    SoundSystem* m_soundSystem = nullptr;
 };

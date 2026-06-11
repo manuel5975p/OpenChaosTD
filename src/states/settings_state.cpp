@@ -329,13 +329,14 @@ void SettingsState::ProcessControls(Game& game) {
     // FPS stepper
     m_fpsDownBtn.Update(mouse, pressed);
     m_fpsUpBtn.Update(mouse, pressed);
-    if (m_fpsDownBtn.IsClicked()) m_working.fps = StepFps(m_working.fps, -1);
-    if (m_fpsUpBtn.IsClicked())   m_working.fps = StepFps(m_working.fps, +1);
+    if (m_fpsDownBtn.IsClicked()) { game.GetSoundSystem().PlaySfx("button_click"); m_working.fps = StepFps(m_working.fps, -1); }
+    if (m_fpsUpBtn.IsClicked())   { game.GetSoundSystem().PlaySfx("button_click"); m_working.fps = StepFps(m_working.fps, +1); }
 
     // Keybinding cells — clicking one starts capture
     for (auto& row : m_keyRows) {
         row.cell.Update(mouse, pressed);
         if (row.cell.IsClicked()) {
+            game.GetSoundSystem().PlaySfx("button_click");
             BeginRebind(row.action);
             return;
         }
@@ -348,10 +349,10 @@ void SettingsState::ProcessControls(Game& game) {
     m_resetBtn.Update(mouse, pressed);
     m_backBtn.Update(mouse, pressed);
 
-    if (m_saveBtn.IsClicked() && dirty)    Save(game);
-    if (m_discardBtn.IsClicked() && dirty) Discard(game);
-    if (m_resetBtn.IsClicked())            ResetToDefaults();
-    if (m_backBtn.IsClicked())             RequestBack(game);
+    if (m_saveBtn.IsClicked() && dirty)    { game.GetSoundSystem().PlaySfx("button_click"); Save(game); }
+    if (m_discardBtn.IsClicked() && dirty) { game.GetSoundSystem().PlaySfx("button_click"); Discard(game); }
+    if (m_resetBtn.IsClicked())            { game.GetSoundSystem().PlaySfx("button_click"); ResetToDefaults(); }
+    if (m_backBtn.IsClicked())             { game.GetSoundSystem().PlaySfx("button_click"); RequestBack(game); }
 
     // Escape / Cancel acts as Back
     if (game.GetInput().IsPressed("Cancel"))
@@ -367,20 +368,24 @@ void SettingsState::ProcessDialog(Game& game) {
     m_dlgCancelBtn.Update(mouse, pressed);
 
     if (m_dlgSaveBtn.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         Save(game);
         m_showDialog = false;
         game.ChangeState(std::make_unique<MenuState>());
         return;
     }
     if (m_dlgDiscardBtn.IsClicked()) {
+        game.GetSoundSystem().PlaySfx("button_click");
         m_working = m_snapshot;
         ApplyLiveAudio(game, m_snapshot); // revert any live audio preview
         m_showDialog = false;
         game.ChangeState(std::make_unique<MenuState>());
         return;
     }
-    if (m_dlgCancelBtn.IsClicked() || game.GetInput().IsPressed("Cancel"))
+    if (m_dlgCancelBtn.IsClicked() || game.GetInput().IsPressed("Cancel")) {
+        if (m_dlgCancelBtn.IsClicked()) game.GetSoundSystem().PlaySfx("button_click");
         m_showDialog = false; // keep editing
+    }
 }
 
 void SettingsState::Update(Game& /*game*/, float dt) {
