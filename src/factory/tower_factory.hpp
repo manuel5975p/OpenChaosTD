@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <expected>
 #include <toml++/toml.hpp>
 #include <world/module_def.hpp>
 #include <world/tower.hpp>
@@ -18,7 +19,9 @@ public:
     void Load(FileStore& fileStore, const EmitterPresets& presets, const std::string& dataDir);
     // Drop all loaded templates (called when the active datapack is unloaded).
     void Clear();
-    Tower Create(const std::string& name) const;
+    // Build a tower by template name. Returns an error message when the name is unknown
+    // (e.g. a stale save or edited datapack) rather than crashing the caller.
+    std::expected<Tower, std::string> Create(const std::string& name) const;
     bool Has(const std::string& name) const;
 
     const std::vector<std::string>& GetNames() const { return m_order; }

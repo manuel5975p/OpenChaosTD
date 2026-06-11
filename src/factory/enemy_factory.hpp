@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <expected>
 #include <toml++/toml.hpp>
 #include <world/module_def.hpp>
 #include <world/enemy.hpp>
@@ -19,7 +20,9 @@ public:
     void Load(FileStore& fileStore, const EmitterPresets& presets, const std::string& dataDir);
     // Drop all loaded templates (called when the active datapack is unloaded).
     void Clear();
-    Enemy Create(const std::string& name) const;
+    // Build an enemy by template name. Returns an error message when the name is unknown
+    // (e.g. a stale save or edited datapack) rather than crashing the caller.
+    std::expected<Enemy, std::string> Create(const std::string& name) const;
     bool Has(const std::string& name) const;
 
     // Build a single module from its definition (also used to append upgrade modules).

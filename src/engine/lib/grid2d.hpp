@@ -2,33 +2,25 @@
 
 #include <algorithm>
 #include <vector>
-#include <stdexcept>
-#include <string>
+#include <cassert>
 
 template<typename T>
 class Grid2D {
 public:
     Grid2D() = default;
 
+    // width > 0, height > 0 (positive dimensions are a caller invariant).
     Grid2D(int width, int height, const T& fill = T{})
         : m_width(width)
         , m_height(height)
         , m_data(width * height, fill)
     {
-        if (width <= 0 || height <= 0)
-            throw std::invalid_argument(
-                "Grid2D: dimensions must be positive, got " +
-                std::to_string(width) + "x" + std::to_string(height)
-            );
+        assert(width > 0 && height > 0 && "Grid2D: dimensions must be positive");
     }
 
-    // Resize — resets all cells to fill value
+    // Resize — resets all cells to fill value. Pre: width > 0, height > 0.
     void Resize(int width, int height, const T& fill = T{}) {
-        if (width <= 0 || height <= 0)
-            throw std::invalid_argument(
-                "Grid2D: dimensions must be positive, got " +
-                std::to_string(width) + "x" + std::to_string(height)
-            );
+        assert(width > 0 && height > 0 && "Grid2D: dimensions must be positive");
         m_width  = width;
         m_height = height;
         m_data.assign(width * height, fill);
@@ -80,12 +72,7 @@ public:
 
 private:
     void CheckBounds(int x, int y) const {
-        if (!InBounds(x, y))
-            throw std::out_of_range(
-                "Grid2D: (" + std::to_string(x) + ", " + std::to_string(y) +
-                ") out of range for " + std::to_string(m_width) +
-                "x" + std::to_string(m_height) + " grid"
-            );
+        assert(InBounds(x, y) && "Grid2D: index out of range");
     }
 
     int m_width  = 0;

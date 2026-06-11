@@ -128,20 +128,41 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Define PROJECT_SOURCES as a list of all source files
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
 
-# Embed the game font into the binary (consumed by src/engine/core/text.cpp)
-set(EMBED_FONT_SRC ${CMAKE_BINARY_DIR}/generated/victor_mono_ttf.cpp)
+# Fonts live in resources/fonts/ — the single canonical location. That same folder
+# is fed to two mechanisms so every platform gets the real typeface:
+#   * the embed header-gen below bakes the TTFs into the binary (all platforms), and
+#   * the web build's --preload-file resources@resources copies them into the wasm VFS
+#     (see the PLATFORM Web block), where the raylib fallback loads them by path.
+# Victor Mono for code/numbers, EB Garamond for prose.
+set(FONTS_DIR ${CMAKE_CURRENT_LIST_DIR}/resources/fonts)
+
+set(EMBED_VICTOR_SRC ${CMAKE_BINARY_DIR}/generated/victor_mono_ttf.cpp)
 add_custom_command(
-    OUTPUT ${EMBED_FONT_SRC}
+    OUTPUT ${EMBED_VICTOR_SRC}
     COMMAND ${CMAKE_COMMAND}
-        -DINPUT=${CMAKE_CURRENT_LIST_DIR}/resources/fonts/VictorMono-Regular.ttf
-        -DOUTPUT=${EMBED_FONT_SRC}
+        -DINPUT=${FONTS_DIR}/VictorMono.ttf
+        -DOUTPUT=${EMBED_VICTOR_SRC}
         -DSYMBOL=gVictorMonoTtf
         -P ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/resources/fonts/VictorMono-Regular.ttf
+    DEPENDS ${FONTS_DIR}/VictorMono.ttf
             ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
-    COMMENT "Embedding VictorMono-Regular.ttf"
+    COMMENT "Embedding VictorMono.ttf"
 )
-list(APPEND PROJECT_SOURCES ${EMBED_FONT_SRC})
+list(APPEND PROJECT_SOURCES ${EMBED_VICTOR_SRC})
+
+set(EMBED_GARAMOND_SRC ${CMAKE_BINARY_DIR}/generated/eb_garamond_ttf.cpp)
+add_custom_command(
+    OUTPUT ${EMBED_GARAMOND_SRC}
+    COMMAND ${CMAKE_COMMAND}
+        -DINPUT=${FONTS_DIR}/EBGaramond.ttf
+        -DOUTPUT=${EMBED_GARAMOND_SRC}
+        -DSYMBOL=gEBGaramondTtf
+        -P ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
+    DEPENDS ${FONTS_DIR}/EBGaramond.ttf
+            ${CMAKE_CURRENT_LIST_DIR}/cmake/embed_resource.cmake
+    COMMENT "Embedding EBGaramond.ttf"
+)
+list(APPEND PROJECT_SOURCES ${EMBED_GARAMOND_SRC})
 
 # Adding include paths
 list(APPEND PROJECT_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/src/)

@@ -16,7 +16,7 @@ void DrawFramedBox(Rectangle rect, Color fill, Color border);
 
 // Draw `text` so its right edge sits at `rightEdge` (measure + subtract width).
 void DrawTextRightAligned(const char* text, float rightEdge, float y, int fontSize, Color color,
-                          Text::Face face = Text::Face::Prose);
+                          Text::Kind kind = Text::Kind::Body);
 
 // Draw each line at (x, y), advancing y by lineH per row. Returns the y past the last line.
 float DrawDescLines(const std::vector<DescLine>& lines, float x, float y, float lineH, int fontSize);

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <expected>
 
 class Resources {
 public:
@@ -25,11 +26,13 @@ public:
     void PopSearchPath();
     const std::string& GetAssetPath() const; // the base (lowest-priority) root
 
-    // Load
-    void LoadTexture(const std::string& key, const std::string& relativePath);
-    void LoadSound(const std::string& key, const std::string& relativePath);
-    void LoadFont(const std::string& key, const std::string& relativePath, int fontSize = 20);
-    void LoadMusic(const std::string& key, const std::string& relativePath);
+    // Load. Returns an error message describing the failure (file missing under every
+    // search root, or a decode error) instead of crashing — caller decides whether a
+    // missing asset is fatal. A key already loaded is a no-op success.
+    std::expected<void, std::string> LoadTexture(const std::string& key, const std::string& relativePath);
+    std::expected<void, std::string> LoadSound(const std::string& key, const std::string& relativePath);
+    std::expected<void, std::string> LoadFont(const std::string& key, const std::string& relativePath, int fontSize = 20);
+    std::expected<void, std::string> LoadMusic(const std::string& key, const std::string& relativePath);
 
     // Bulk load from a subdirectory across every search root (key = filename stem).
     // Higher-priority roots win on key collisions. Returns the keys newly added by

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <world/module_def.hpp>
-#include <iostream>
+#include <cstdio>
 
 // Look up a module builder by its type string and invoke it, logging and returning a
 // null module pointer when the type is unknown. Shared by TowerFactory and EnemyFactory,
@@ -12,6 +12,6 @@ ModulePtr BuildFromRegistry(const Builders& builders, const ModuleDef& mod, cons
     auto it = builders.find(mod.m_type);
     if (it != builders.end())
         return it->second(mod);
-    std::cerr << factoryName << ": unknown module type '" << mod.m_type << "'\n";
+    std::fprintf(stderr, "%s: unknown module type '%s'\n", factoryName, mod.m_type.c_str());
     return nullptr;
 }

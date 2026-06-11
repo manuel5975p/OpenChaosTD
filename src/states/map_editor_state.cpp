@@ -183,9 +183,8 @@ void MapEditorState::SyncBuffControls() {
 // --- Helpers -----------------------------------------------------------------
 
 void MapEditorState::SetStatus(const std::string& msg, bool ok) {
-    m_status = msg;
+    m_status.Set(msg);
     m_statusOk = ok;
-    m_statusTimer = 3.0f;
 }
 
 void MapEditorState::SanitizeName(std::string& name) {
@@ -534,8 +533,7 @@ void MapEditorState::ProcessEditInput(Game& game, float dt) {
 }
 
 void MapEditorState::Update(Game& /*game*/, float dt) {
-    if (m_statusTimer > 0.0f)
-        m_statusTimer -= dt;
+    m_status.Update(dt);
 }
 
 // --- Draw --------------------------------------------------------------------
@@ -557,9 +555,7 @@ void MapEditorState::Draw(Game& game) {
         DrawBottomBar(game);
     }
 
-    if (m_statusTimer > 0.0f)
-        DrawCenteredText(m_status.c_str(), gw / 2.0f, gh - kFooterH - 26.0f, 18,
-                         m_statusOk ? GREEN : kFailColor);
+    m_status.Draw(gw / 2.0f, gh - kFooterH - 26.0f, 18, m_statusOk ? GREEN : kFailColor);
 }
 
 void MapEditorState::DrawCatalog(Game& game) {

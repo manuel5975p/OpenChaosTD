@@ -15,11 +15,7 @@ void AttackModule::PatchStats(const std::string& key, float v, bool mul) {
     if      (key == "damage")         ApplyDelta(m_damage, v, mul);
     else if (key == "shotsPerMinute") ApplyDelta(m_shotsPerMinute, v, mul);
     else if (key == "range")          ApplyDelta(m_range, v, mul);
-    else if (key == "targetCount") {
-        float t = static_cast<float>(m_targetCount);
-        ApplyDelta(t, v, mul);
-        m_targetCount = static_cast<int>(t + 0.5f);
-    }
+    else if (key == "targetCount")    PatchInt(m_targetCount, v, mul);
 }
 
 void AttackModule::DescribeStats(std::vector<DescLine>& out) const {

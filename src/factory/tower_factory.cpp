@@ -160,10 +160,10 @@ void TowerFactory::ApplyUpgradeStats(Tower& tower, const TowerUpgrade& up) const
         if (auto m = BuildModule(mod)) tower.AddModule(std::move(m));
 }
 
-Tower TowerFactory::Create(const std::string& name) const {
+std::expected<Tower, std::string> TowerFactory::Create(const std::string& name) const {
     auto it = m_templates.find(name);
     if (it == m_templates.end())
-        throw std::runtime_error("TowerFactory: unknown tower '" + name + "'");
+        return std::unexpected("TowerFactory: unknown tower '" + name + "'");
 
     const TowerTemplate& tmpl = it->second;
     Tower tower;

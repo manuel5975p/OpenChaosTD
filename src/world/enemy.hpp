@@ -132,8 +132,10 @@ private:
 
 // Tripwire for Clone(): adding/removing/reordering an Enemy field changes sizeof(Enemy) and trips
 // this assert, forcing a look at Clone() so the new field gets a copy line. Update the constant
-// once Clone() is handled. (64-bit layout; adjust the value if the layout legitimately changes.)
+// once Clone() is handled. The size is the 64-bit layout, so the check is scoped to 64-bit
+// builds (the normal dev target); 32-bit targets such as the wasm32 web build have smaller
+// pointers and a different sizeof, where this tripwire does not apply.
 inline constexpr std::size_t kExpectedEnemySize = 240;
-static_assert(sizeof(Enemy) == kExpectedEnemySize,
+static_assert(sizeof(void*) != 8 || sizeof(Enemy) == kExpectedEnemySize,
               "Enemy layout changed: update Enemy::Clone() for the new field, then set "
               "kExpectedEnemySize to sizeof(Enemy).");

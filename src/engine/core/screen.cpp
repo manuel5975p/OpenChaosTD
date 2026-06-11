@@ -15,24 +15,20 @@ void Screen::OnResize() {
     UpdateScale();
 }
 
-// UpdateScale
-// Calculates the largest rectangle that fits the virtual resolution inside the current screen
+// Recomputes the letterbox in framebuffer pixels and caches the logical->pixel
+// mouse factor. We measure that factor as render/screen rather than trusting
+// GetWindowScaleDPI(): on X11 fractional scaling the framebuffer often is not
+// enlarged even though GetWindowScaleDPI() still reports e.g. 1.5x, which would
+// over-scale the mouse. render/screen is 1.0 when unscaled, the real ratio when not.
 void Screen::UpdateScale() {
-    const float screenW = static_cast<float>(GetScreenWidth());
-    const float screenH = static_cast<float>(GetScreenHeight());
+    const int screenW = GetScreenWidth();
+    m_dpiScale = (screenW > 0) ? static_cast<float>(GetRenderWidth()) / static_cast<float>(screenW)
+                               : 1.0f;
 
-    const float scaleX = screenW / static_cast<float>(m_virtualWidth);
-    const float scaleY = screenH / static_cast<float>(m_virtualHeight);
-    m_scale = (scaleX < scaleY) ? scaleX : scaleY; // fit inside, preserve ratio
-
-    const float scaledW = m_virtualWidth  * m_scale;
-    const float scaledH = m_virtualHeight * m_scale;
-
-    // Center the game image
-    const float offsetX = (screenW - scaledW) * 0.5f;
-    const float offsetY = (screenH - scaledH) * 0.5f;
-
-    m_destRect = { offsetX, offsetY, scaledW, scaledH };
+    const Letterbox lb = ComputeLetterbox(GetRenderWidth(), GetRenderHeight(),
+                                          m_virtualWidth, m_virtualHeight);
+    m_destRect = lb.destRect;
+    m_scale    = lb.scale;
 }
 
 // Frame
@@ -44,12 +40,14 @@ void Screen::BeginFrame() {
     // virtual units, placing the virtual rect at the letterboxed destination.
     // Game code keeps drawing in virtual coordinates; the GPU rasterizes at
     // native resolution. Modelview is untouched, so Camera2D nests as usual.
+    const double renderW = static_cast<double>(GetRenderWidth());
+    const double renderH = static_cast<double>(GetRenderHeight());
     rlMatrixMode(RL_PROJECTION);
     rlLoadIdentity();
     const double left = -m_destRect.x / m_scale;
     const double top  = -m_destRect.y / m_scale;
-    rlOrtho(left, left + GetScreenWidth() / m_scale,
-            top + GetScreenHeight() / m_scale, top, 0.0, 1.0);
+    rlOrtho(left, left + renderW / m_scale,
+            top + renderH / m_scale, top, 0.0, 1.0);
     rlMatrixMode(RL_MODELVIEW);
     rlLoadIdentity();
 
@@ -64,12 +62,19 @@ void Screen::EndFrame() {
     EndDrawing();
 }
 
-// Scissor in virtual coordinates
+// Scissor in virtual coordinates.
+// m_destRect/m_scale are already in framebuffer pixels, so we drive rlScissor
+// directly (GL's bottom-left origin) rather than BeginScissorMode, whose own
+// DPI fix-up would double-scale our already-framebuffer-space rect.
 void Screen::BeginScissor(Rectangle virtualRect) const {
-    BeginScissorMode(static_cast<int>(m_destRect.x + virtualRect.x * m_scale),
-                     static_cast<int>(m_destRect.y + virtualRect.y * m_scale),
-                     static_cast<int>(virtualRect.width * m_scale),
-                     static_cast<int>(virtualRect.height * m_scale));
+    const int x = static_cast<int>(m_destRect.x + virtualRect.x * m_scale);
+    const int y = static_cast<int>(m_destRect.y + virtualRect.y * m_scale);
+    const int w = static_cast<int>(virtualRect.width  * m_scale);
+    const int h = static_cast<int>(virtualRect.height * m_scale);
+
+    rlDrawRenderBatchActive(); // flush draws bound to the previous scissor
+    rlEnableScissorTest();
+    rlScissor(x, GetRenderHeight() - (y + h), w, h);
 }
 
 void Screen::EndScissor() const {
@@ -80,18 +85,10 @@ void Screen::EndScissor() const {
 }
 
 // Virtual mouse
+// GetMousePosition reports logical points; MapMouseToVirtual bridges those to
+// framebuffer pixels via the DPI scale before undoing the letterbox.
 Vector2 Screen::GetVirtualMouse() const {
-    Vector2 mouse = GetMousePosition();
-
-    // Subtract letterbox offset, then divide by scale
-    mouse.x = (mouse.x - m_destRect.x) / m_scale;
-    mouse.y = (mouse.y - m_destRect.y) / m_scale;
-
-    // Clamp to virtual bounds
-    if (mouse.x < 0.0f) mouse.x = 0.0f;
-    if (mouse.y < 0.0f) mouse.y = 0.0f;
-    if (mouse.x > static_cast<float>(m_virtualWidth))  mouse.x = static_cast<float>(m_virtualWidth);
-    if (mouse.y > static_cast<float>(m_virtualHeight)) mouse.y = static_cast<float>(m_virtualHeight);
-
-    return mouse;
+    const Letterbox lb{ m_destRect, m_scale };
+    return MapMouseToVirtual(GetMousePosition(), m_dpiScale, lb,
+                             m_virtualWidth, m_virtualHeight);
 }

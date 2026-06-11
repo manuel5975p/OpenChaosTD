@@ -1,7 +1,7 @@
 #include <engine/core/resources.hpp>
 #include <raylib.h>
 #include <iostream>
-#include <stdexcept>
+#include <cassert>
 #include <filesystem>
 #include <unordered_set>
 
@@ -29,8 +29,9 @@ const std::string& Resources::GetAssetPath() const {
 
 // Path resolution
 std::string Resources::ResolvePath(const std::string& relativePath) const {
-    if (m_searchPaths.empty())
-        throw std::runtime_error("Resources: SetAssetPath() must be called before loading resources");
+    // Internal invariant: SetAssetPath() establishes the base root during startup before
+    // any load occurs. Reaching here empty is a programmer error, not bad user data.
+    assert(!m_searchPaths.empty() && "Resources: SetAssetPath() must be called before loading resources");
 
     // First search root that actually holds the file wins.
     for (const auto& root : m_searchPaths) {
@@ -44,15 +45,16 @@ std::string Resources::ResolvePath(const std::string& relativePath) const {
 }
 
 // Load
-void Resources::LoadTexture(const std::string& key, const std::string& relativePath) {
-    if (m_textures.count(key)) return;
+std::expected<void, std::string> Resources::LoadTexture(const std::string& key, const std::string& relativePath) {
+    if (m_textures.count(key)) return {};
 
     std::string fullPath = ResolvePath(relativePath);
     Texture2D tex = ::LoadTexture(fullPath.c_str());
     if (tex.id == 0)
-        throw std::runtime_error("Resources: failed to load texture '" + fullPath + "'");
+        return std::unexpected("Resources: failed to load texture '" + fullPath + "'");
 
     m_textures[key] = tex;
+    return {};
 }
 
 std::vector<std::string> Resources::LoadTexturesFromDir(const std::string& relativeDir) {
@@ -159,65 +161,66 @@ std::vector<std::string> Resources::LoadSoundsFromDir(const std::string& relativ
     return addedKeys;
 }
 
-void Resources::LoadSound(const std::string& key, const std::string& relativePath) {
-    if (m_sounds.count(key)) return;
+std::expected<void, std::string> Resources::LoadSound(const std::string& key, const std::string& relativePath) {
+    if (m_sounds.count(key)) return {};
 
     std::string fullPath = ResolvePath(relativePath);
     Sound sfx = ::LoadSound(fullPath.c_str());
     if (sfx.frameCount == 0)
-        throw std::runtime_error("Resources: failed to load sound '" + fullPath + "'");
+        return std::unexpected("Resources: failed to load sound '" + fullPath + "'");
 
     m_sounds[key] = sfx;
+    return {};
 }
 
-void Resources::LoadFont(const std::string& key, const std::string& relativePath, int fontSize) {
-    if (m_fonts.count(key)) return;
+std::expected<void, std::string> Resources::LoadFont(const std::string& key, const std::string& relativePath, int fontSize) {
+    if (m_fonts.count(key)) return {};
 
     std::string fullPath = ResolvePath(relativePath);
     Font font = ::LoadFontEx(fullPath.c_str(), fontSize, nullptr, 0);
     if (font.texture.id == 0)
-        throw std::runtime_error("Resources: failed to load font '" + fullPath + "'");
+        return std::unexpected("Resources: failed to load font '" + fullPath + "'");
 
     m_fonts[key] = font;
+    return {};
 }
 
-void Resources::LoadMusic(const std::string& key, const std::string& relativePath) {
-    if (m_music.count(key)) return;
+std::expected<void, std::string> Resources::LoadMusic(const std::string& key, const std::string& relativePath) {
+    if (m_music.count(key)) return {};
 
     std::string fullPath = ResolvePath(relativePath);
     Music music = ::LoadMusicStream(fullPath.c_str());
     if (music.frameCount == 0)
-        throw std::runtime_error("Resources: failed to load music '" + fullPath + "'");
+        return std::unexpected("Resources: failed to load music '" + fullPath + "'");
 
     m_music[key] = music;
+    return {};
 }
 
 // Retrieve
+// Get* assume the key was loaded first (load-then-get is an internal invariant); callers
+// who cannot guarantee that should gate on the matching Has* query.
 Texture2D& Resources::GetTexture(const std::string& key) {
     auto it = m_textures.find(key);
-    if (it == m_textures.end())
-        throw std::runtime_error("Resources: texture key '" + key + "' not found");
+    assert(it != m_textures.end() && "Resources: texture key not found");
     return it->second;
 }
 
 Sound& Resources::GetSound(const std::string& key) {
     auto it = m_sounds.find(key);
-    if (it == m_sounds.end())
-        throw std::runtime_error("Resources: sound key '" + key + "' not found");
+    assert(it != m_sounds.end() && "Resources: sound key not found");
     return it->second;
 }
 
 Font& Resources::GetFont(const std::string& key) {
     auto it = m_fonts.find(key);
-    if (it == m_fonts.end())
-        throw std::runtime_error("Resources: font key '" + key + "' not found");
+    assert(it != m_fonts.end() && "Resources: font key not found");
     return it->second;
 }
 
 Music& Resources::GetMusic(const std::string& key) {
     auto it = m_music.find(key);
-    if (it == m_music.end())
-        throw std::runtime_error("Resources: music key '" + key + "' not found");
+    assert(it != m_music.end() && "Resources: music key not found");
     return it->second;
 }
 

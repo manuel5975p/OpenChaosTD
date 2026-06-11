@@ -140,7 +140,9 @@ void WorldSystem::CheckEnemyDead(GameData& gameData, EnemyFactory& enemyFactory,
         for (const auto& req : requests) {
             for (int i = 0; i < req.m_count; i++) {
                 float offset = i * req.m_spacing;
-                Enemy child = enemyFactory.Create(req.m_type);
+                auto built = enemyFactory.Create(req.m_type);
+                if (!built) break; // unknown split type (edited datapack) -> spawn nothing
+                Enemy child = std::move(*built);
                 child.m_position     = Vector2Add(pos, Vector2Scale(back, offset));
                 child.m_spawnedNest  = nest;
                 child.m_waypointIndex = waypoint;

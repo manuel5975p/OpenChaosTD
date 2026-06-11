@@ -1,5 +1,6 @@
 #include <engine/util/file_store.hpp>
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 
 #if defined(PLATFORM_WEB)
@@ -26,8 +27,8 @@ void FileStore::SetRootPath(const std::string& rootPath) {
 
 // Private: path resolution
 std::string FileStore::ResolvePath(const std::string& path) const {
-    if (m_rootPath.empty())
-        throw std::runtime_error("filestore: SetRootPath() must be called before any file operations");
+    // Internal invariant: SetRootPath() runs during startup before any file op.
+    assert(!m_rootPath.empty() && "filestore: SetRootPath() must be called before any file operations");
 
 #if defined(PLATFORM_WEB)
     return path;

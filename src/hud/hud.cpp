@@ -10,9 +10,9 @@ void HUD::PlayClickSound() const {
         m_soundSystem->PlaySfx("button_click");
 }
 
-void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color, Text::Face face) {
+void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color, Text::Kind kind) {
     // Thin integer-coord forwarder to the shared float-coord helper.
-    DrawCenteredText(text, static_cast<float>(centerX), static_cast<float>(y), fontSize, color, face);
+    DrawCenteredText(text, static_cast<float>(centerX), static_cast<float>(y), fontSize, color, kind);
 }
 
 void HUD::DrawPanelBackground(unsigned char alpha, bool border) const {

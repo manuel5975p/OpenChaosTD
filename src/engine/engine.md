@@ -212,15 +212,15 @@ Cross-platform file read/write for JSON (nlohmann/json) and TOML (toml++). The r
 ```cpp
 m_fileStore.SetRootPath(projectRoot);
 
-// JSON (config files)
-auto j = m_fileStore.LoadJson("config/settings.json");
+// JSON (keybindings, save games)
+auto j = m_fileStore.LoadJson("config/keybindings.json");
 m_fileStore.SaveJson("data/save.json", j);
 
-// TOML (game data)
-auto tbl = m_fileStore.LoadToml("data/towers.toml");
+// TOML (settings, game data)
+auto tbl = m_fileStore.LoadToml("config/settings.toml");
 m_fileStore.SaveToml("data/save.toml", tbl);
 
-bool exists = m_fileStore.Exists("config/settings.json");
+bool exists = m_fileStore.Exists("config/settings.toml");
 ```
 
 Used by all factories and config types. On web builds, path resolution accounts for the Emscripten virtual filesystem.

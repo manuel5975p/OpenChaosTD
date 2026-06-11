@@ -85,6 +85,6 @@ void TowerBuildHUD::Draw(const BuildBarView& view, Resources& assets) {
         Color costColor = (view.m_gold >= entry.m_cost) ? GREEN : RED;
         DrawTextCenteredX(costStr, centerX,
             static_cast<int>(btn.m_rect.y + btn.m_rect.height - Scaled(9.0f)),
-            fontSize, costColor, Text::Face::Mono);
+            fontSize, costColor, Text::Kind::Number);
     }
 }

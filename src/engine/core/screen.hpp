@@ -2,9 +2,14 @@
 
 #include <raylib.h>
 
+#include <engine/core/letterbox.hpp>
+
 // Letterboxed virtual-resolution presenter: maps the fixed virtual coordinate
 // space onto the window via the projection matrix, so everything rasterizes at
 // native resolution (no intermediate render texture — vector text stays crisp).
+// DPI-aware: all letterbox math runs in framebuffer pixels (GetRenderWidth),
+// and mouse input is bridged from logical points via the window DPI scale, so
+// hit-testing stays aligned on fractional-scale (HiDPI) monitors.
 class Screen {
 public:
     // Call after InitWindow()
@@ -38,6 +43,7 @@ private:
     int m_virtualWidth = 1280;
     int m_virtualHeight = 720;
 
-    Rectangle m_destRect = {};  // destination rect on the real screen (letterboxed)
-    float m_scale = 1.0f;
+    Rectangle m_destRect = {};  // destination rect in framebuffer pixels (letterboxed)
+    float m_scale = 1.0f;       // framebuffer-pixels per virtual unit
+    float m_dpiScale = 1.0f;    // logical points -> framebuffer pixels (measured: render/screen)
 };

@@ -1,0 +1,18 @@
+# Font assignment per semantic text kind.
+#
+# Each value is a font NAME, resolved in this order:
+#   1. assets/fonts/<name>.ttf  or  assets/fonts/<name>.otf   (file override)
+#   2. a built-in embedded font: "EBGaramond" or "VictorMono"
+#   3. otherwise the body font is used as a fallback (with a warning)
+#
+# So to use a custom font, drop "MyFont.ttf" into assets/fonts/ and set a kind
+# to "MyFont". Several kinds may share one font; each unique font loads once.
+
+[fonts]
+title   = "EBGaramond"   # menu title, victory / game-over banners
+heading = "EBGaramond"   # section headers, panel titles ("Next Wave", tower name)
+body    = "EBGaramond"   # general UI copy (the default kind)
+label   = "EBGaramond"   # small captions / meta lines
+number  = "VictorMono"   # numeric readouts (gold, budget, costs, levels)
+button  = "EBGaramond"   # button captions
+tooltip = "EBGaramond"   # tower / enemy description lines
