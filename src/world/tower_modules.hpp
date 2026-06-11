@@ -49,6 +49,14 @@ inline void ApplyDelta(float& field, float v, bool mul) {
     field = mul ? field * v : field + v;
 }
 
+// Apply a delta to an integer field via the float path, rounding half-up. The exact
+// `+ 0.5f` rounding is load-bearing for save-replay determinism; do not change it.
+inline void PatchInt(int& field, float v, bool mul) {
+    float t = static_cast<float>(field);
+    ApplyDelta(t, v, mul);
+    field = static_cast<int>(t + 0.5f);
+}
+
 // DescribeStats/PatchStats are inherited from IStatModule (shared with EnemyModule).
 class TowerModule : public IStatModule {
 public:

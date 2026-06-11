@@ -12,15 +12,8 @@ void BaseStatsModule::ResetLive() {
 void BaseStatsModule::PatchStats(const std::string& key, float v, bool mul) {
     if      (key == "maxHealth") ApplyDelta(m_maxHealth, v, mul);
     else if (key == "speed")     ApplyDelta(m_speed, v, mul);
-    else if (key == "reward") {
-        float r = static_cast<float>(m_reward);
-        ApplyDelta(r, v, mul);
-        m_reward = static_cast<int>(r + 0.5f);
-    } else if (key == "livesOnReach") {
-        float l = static_cast<float>(m_livesOnReach);
-        ApplyDelta(l, v, mul);
-        m_livesOnReach = static_cast<int>(l + 0.5f);
-    }
+    else if (key == "reward")       PatchInt(m_reward, v, mul);
+    else if (key == "livesOnReach") PatchInt(m_livesOnReach, v, mul);
 }
 
 void BaseStatsModule::DescribeStats(std::vector<DescLine>& out) const {
@@ -105,9 +98,5 @@ void SplitModule::DescribeStats(std::vector<DescLine>& out) const {
 }
 
 void SplitModule::PatchStats(const std::string& key, float v, bool mul) {
-    if (key == "splitCount") {
-        float c = static_cast<float>(m_count);
-        ApplyDelta(c, v, mul);
-        m_count = static_cast<int>(c + 0.5f);
-    }
+    if (key == "splitCount") PatchInt(m_count, v, mul);
 }

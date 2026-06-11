@@ -72,10 +72,10 @@ void EnemyFactory::Load(FileStore& fileStore, const EmitterPresets& presets, con
     }
 }
 
-Enemy EnemyFactory::Create(const std::string& name) const {
+std::expected<Enemy, std::string> EnemyFactory::Create(const std::string& name) const {
     auto it = m_templates.find(name);
     if (it == m_templates.end())
-        throw std::runtime_error("EnemyFactory: unknown enemy '" + name + "'");
+        return std::unexpected("EnemyFactory: unknown enemy '" + name + "'");
 
     const EnemyTemplate& tmpl = it->second;
     Enemy enemy;

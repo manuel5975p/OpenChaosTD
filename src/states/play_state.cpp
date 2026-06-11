@@ -284,8 +284,9 @@ void PlayingState::HandleTowerPlacement(Game& game, Vector2 mouseWorld) {
     if (m_towerHUD.GetSelectedTower().empty()) return;
     int cost = game.GetTowerFactory().GetCost(m_towerHUD.GetSelectedTower());
     if (game.GetGameData().m_gold >= cost) {
-        Tower tower = game.GetTowerFactory().Create(m_towerHUD.GetSelectedTower());
-        if (m_worldSystem.PlaceTower(x, y, tower, game.GetGameData())) {
+        auto built = game.GetTowerFactory().Create(m_towerHUD.GetSelectedTower());
+        if (!built) return;
+        if (m_worldSystem.PlaceTower(x, y, *built, game.GetGameData())) {
             game.GetGameData().m_gold -= cost;
             m_towerHUD.ClearSelection();
         }
@@ -316,7 +317,8 @@ void PlayingState::SyncHUDState(Game& game) {
     // Only rebuild the preview tower when the hovered type changes
     if (m_selection.hoveredTowerName != hovered) {
         m_selection.hoveredTowerName = hovered;
-        m_hoveredTowerCache = game.GetTowerFactory().Create(hovered);
+        if (auto built = game.GetTowerFactory().Create(hovered))
+            m_hoveredTowerCache = std::move(*built);
     }
     Vector2 topCenter = m_towerHUD.GetHoveredButtonTopCenter(mousePos);
     m_towerInfoHUD.SetTarget(MakeTowerInfoView(game, m_hoveredTowerCache, topCenter, false));

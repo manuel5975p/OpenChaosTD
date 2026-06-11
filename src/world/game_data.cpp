@@ -1,6 +1,7 @@
 #include <world/game_data.hpp>
 #include <world/save_serialization.hpp>
 #include <engine/util/file_store.hpp>
+#include <iostream>
 
 // Bumped when the on-disk save schema changes incompatibly; older versions are rejected.
 static constexpr int kSaveVersion = 1;
@@ -87,7 +88,10 @@ bool GameData::LoadState(FileStore& fileStore, const std::string& path, const To
         m_enemies.Clear();
         m_attacks.clear();
         return true;
-    } catch (const std::exception&) {
-        return false; // malformed shape/type anywhere in the parse block
+    } catch (const std::exception& e) {
+        // Malformed shape/type anywhere in the parse block. Keep the one catch here at the
+        // json parse edge, but surface the reason instead of swallowing it silently.
+        std::cerr << "GameData::LoadState: rejecting corrupt save: " << e.what() << "\n";
+        return false;
     }
 }

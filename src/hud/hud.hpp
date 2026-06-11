@@ -15,7 +15,7 @@ private:
 };
 
 void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color,
-                       Text::Face face = Text::Face::Prose);
+                       Text::Kind kind = Text::Kind::Body);
 
 // Base for every HUD component: shared scaling, panel helpers, and visibility state. Concrete
 // HUDs expose their own typed ProcessInput/Draw methods fed by read-only views (see hud_views.hpp)

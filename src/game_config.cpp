@@ -1,49 +1,47 @@
 #include <game_config.hpp>
 #include <engine/util/file_store.hpp>
 #include <raylib.h>
+#include <toml++/toml.hpp>
 #include <cmath>
+#include <string>
 
 void GameConfig::Load(FileStore& fileStore) {
-    if (!fileStore.Exists("config/settings.json"))
+    if (!fileStore.Exists("config/settings.toml"))
         return;
 
-    auto j = fileStore.LoadJson("config/settings.json");
+    const toml::table table = fileStore.LoadToml("config/settings.toml");
 
     // Window bootstrap group (not editable from the settings menu)
-    if (j.contains("window")) {
-        const auto& w = j["window"];
-        if (w.contains("width")) gameWidth = w["width"].get<int>();
-        if (w.contains("height")) gameHeight = w["height"].get<int>();
-        if (w.contains("title")) title = w["title"].get<std::string>();
+    if (const toml::table* w = table["window"].as_table()) {
+        if (auto v = (*w)["width"].value<int>())          gameWidth  = *v;
+        if (auto v = (*w)["height"].value<int>())         gameHeight = *v;
+        if (auto v = (*w)["title"].value<std::string>())  title      = *v;
     }
     // Display group
-    if (j.contains("display")) {
-        const auto& d = j["display"];
-        if (d.contains("fps")) fps = d["fps"].get<int>();
-        if (d.contains("hudScale")) hudScale = d["hudScale"].get<float>();
+    if (const toml::table* d = table["display"].as_table()) {
+        if (auto v = (*d)["fps"].value<int>())        fps      = *v;
+        if (auto v = (*d)["hudScale"].value<float>()) hudScale = *v;
     }
     // Audio group
-    if (j.contains("audio")) {
-        const auto& a = j["audio"];
-        if (a.contains("musicVolume")) musicVolume = a["musicVolume"].get<float>();
-        if (a.contains("sfxVolume")) sfxVolume = a["sfxVolume"].get<float>();
+    if (const toml::table* a = table["audio"].as_table()) {
+        if (auto v = (*a)["musicVolume"].value<float>()) musicVolume = *v;
+        if (auto v = (*a)["sfxVolume"].value<float>())   sfxVolume   = *v;
     }
 }
 
 void GameConfig::Save(FileStore& fileStore) {
     // Mirror the grouped on-disk shape. The window group is written straight from
     // the live struct so it round-trips untouched even though the menu never edits it.
-    nlohmann::json j;
-    j["window"]["width"] = gameWidth;
-    j["window"]["height"] = gameHeight;
-    j["window"]["title"] = title;
-    j["display"]["fps"] = fps;
-    // Round slider-driven floats to 2 decimals so the snapped increments
-    // serialize cleanly (e.g. 0.85, 1.25) instead of float-promotion noise.
-    j["display"]["hudScale"] = std::round(hudScale * 100.0) / 100.0;
-    j["audio"]["musicVolume"] = std::round(musicVolume * 100.0) / 100.0;
-    j["audio"]["sfxVolume"] = std::round(sfxVolume * 100.0) / 100.0;
-    fileStore.SaveJson("config/settings.json", j);
+    // Round slider-driven floats to 2 decimals so the snapped increments serialize
+    // cleanly (e.g. 0.85, 1.25) instead of float-promotion noise.
+    const toml::table data{
+        {"window", toml::table{{"width", gameWidth}, {"height", gameHeight}, {"title", title}}},
+        {"display", toml::table{{"fps", fps},
+                                {"hudScale", std::round(hudScale * 100.0) / 100.0}}},
+        {"audio", toml::table{{"musicVolume", std::round(musicVolume * 100.0) / 100.0},
+                              {"sfxVolume", std::round(sfxVolume * 100.0) / 100.0}}},
+    };
+    fileStore.SaveToml("config/settings.toml", data);
 }
 
 void GameConfig::ApplyIcon() {

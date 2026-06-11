@@ -188,11 +188,11 @@ void WaveManager::RebuildPreviewPrototypes(int pendingWaveNumber, const EnemyFac
     // One fully-upgraded prototype per unique enemy type in the upcoming wave.
     for (const auto& grp : m_pendingDef.m_groups) {
         if (m_previewPrototypes.count(grp.m_enemyType)) continue;
-        if (!enemyFactory.Has(grp.m_enemyType)) continue; // e.g. an unlisted type — nothing to clone
-        Enemy proto = enemyFactory.Create(grp.m_enemyType);
-        ApplyTierUpgrades(proto, tier, enemyFactory);
-        proto.RecomputeLive(); // refresh live speed/armor so the HUD shows upgraded values
-        m_previewPrototypes.emplace(grp.m_enemyType, std::move(proto));
+        auto proto = enemyFactory.Create(grp.m_enemyType); // e.g. an unlisted type — nothing to clone
+        if (!proto) continue;
+        ApplyTierUpgrades(*proto, tier, enemyFactory);
+        proto->RecomputeLive(); // refresh live speed/armor so the HUD shows upgraded values
+        m_previewPrototypes.emplace(grp.m_enemyType, std::move(*proto));
     }
 }
 

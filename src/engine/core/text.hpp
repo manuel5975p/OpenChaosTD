@@ -4,34 +4,39 @@
 #include <string>
 #include <vector>
 
-// Global text drawing facade: GPU vector text (TextRenderer) using one font
-// embedded in the binary — Victor Mono for both prose and code/numeric
-// readouts. Drop-in signatures for raylib's DrawText/MeasureText so
-// call sites need no other changes; the optional Face selects the typeface.
-// Falls back to raylib's bitmap font where the GPU path is unavailable
-// (e.g. web builds).
+class FileStore;
+
+// Global text drawing facade: GPU vector text (TextRenderer) drawn in semantic
+// "kinds", each mapped to a font by config/fonts.toml (see text.cpp). Drop-in
+// signatures for raylib's DrawText/MeasureText so call sites need no other
+// changes; the optional Kind selects the typeface. Falls back to raylib's
+// bitmap font where the GPU path is unavailable (e.g. web builds).
 namespace Text {
 
-// Typeface selection. Both faces use Victor Mono; the distinction is
-// preserved for call sites that want to label their text semantically.
-enum class Face { Prose, Mono };
+// Semantic text roles. Each maps to a font name in config/fonts.toml; several
+// kinds may resolve to the same font. Body is the default for general UI copy.
+enum class Kind { Title, Heading, Body, Label, Number, Button, Tooltip };
 
-// Creates the renderer and loads the embedded fonts; warns and arms the
-// raylib fallback on failure. Requires an initialized window.
-void Init();
+// Number of Kind values — indexes the per-kind font table.
+inline constexpr int KindCount = 7;
+
+// Creates the renderer, reads config/fonts.toml via fileStore, and resolves each
+// Kind to a font (file override in resources/fonts/ or an embedded default); warns
+// and arms the raylib font fallback on failure. Requires an initialized window.
+void Init(FileStore& fileStore);
 
 // Releases GPU resources. Must run before CloseWindow(); Draw/Measure
 // fall back to raylib afterwards.
 void Shutdown();
 
 // Draws UTF-8 text (multi-line via '\n') with its top-left corner at (x, y).
-void Draw(const char* text, int x, int y, int fontSize, Color color, Face face = Face::Prose);
+void Draw(const char* text, int x, int y, int fontSize, Color color, Kind kind = Kind::Body);
 
 // Width in pixels of the widest line of text at fontSize.
-int Measure(const char* text, int fontSize, Face face = Face::Prose);
+int Measure(const char* text, int fontSize, Kind kind = Kind::Body);
 
 // Greedy word-wrap: split UTF-8 text into lines no wider than maxWidth pixels at fontSize.
 std::vector<std::string> Wrap(const std::string& text, float maxWidth, int fontSize,
-                              Face face = Face::Prose);
+                              Kind kind = Kind::Body);
 
 } // namespace Text

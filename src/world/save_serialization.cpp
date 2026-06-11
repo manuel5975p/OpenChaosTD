@@ -69,9 +69,9 @@ bool LoadTowers(const nlohmann::json& j, DenseSlotMap<Tower>& out,
     for (size_t i = 0; i < valueCount; ++i) {
         const nlohmann::json& v = jvalues[i];
         std::string name = v.value("name", std::string{});
-        if (!factory.Has(name)) return false; // unknown tower (datapack changed) -> abort
-
-        Tower tw = factory.Create(name);
+        auto built = factory.Create(name); // unknown tower (datapack changed) -> abort
+        if (!built) return false;
+        Tower tw = std::move(*built);
 
         // Terrain buff first (matches PlaceTower ordering), then upgrade tiers 0..level-1.
         if (const TileModifier* mod = denseModifier[i])

@@ -21,11 +21,11 @@ void Button::Draw(bool selected, const WidgetStyle& style) const {
 
 void Button::DrawLabel(int fontSize, Color color) const {
     if (m_label.empty()) return;
-    int lw = Text::Measure(m_label.c_str(), fontSize);
+    int lw = Text::Measure(m_label.c_str(), fontSize, Text::Kind::Button);
     Text::Draw(m_label.c_str(),
         static_cast<int>(m_rect.x + (m_rect.width - lw) / 2.0f),
         static_cast<int>(m_rect.y + (m_rect.height - fontSize) / 2.0f),
-        fontSize, color);
+        fontSize, color, Text::Kind::Button);
 }
 
 // --- Slider ---

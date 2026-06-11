@@ -11,23 +11,23 @@
 
 // Draw text horizontally centered on centerX, with its top at y.
 inline void DrawCenteredText(const char* text, float centerX, float y, int fontSize, Color color,
-                             Text::Face face = Text::Face::Prose) {
-    int w = Text::Measure(text, fontSize, face);
-    Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color, face);
+                             Text::Kind kind = Text::Kind::Body) {
+    int w = Text::Measure(text, fontSize, kind);
+    Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color, kind);
 }
 
 // Vertically center a label inside a row of the given height, left-aligned at x.
 inline void DrawLabelInRow(const char* text, float x, float rowY, float rowH, int fontSize, Color color,
-                           Text::Face face = Text::Face::Prose) {
-    Text::Draw(text, static_cast<int>(x), static_cast<int>(rowY + (rowH - fontSize) / 2.0f), fontSize, color, face);
+                           Text::Kind kind = Text::Kind::Body) {
+    Text::Draw(text, static_cast<int>(x), static_cast<int>(rowY + (rowH - fontSize) / 2.0f), fontSize, color, kind);
 }
 
 // Trim text with a trailing ellipsis so it fits within maxWidth pixels.
 inline std::string TruncateToWidth(const std::string& text, int fontSize, float maxWidth,
-                                   Text::Face face = Text::Face::Prose) {
-    if (Text::Measure(text.c_str(), fontSize, face) <= maxWidth) return text;
+                                   Text::Kind kind = Text::Kind::Body) {
+    if (Text::Measure(text.c_str(), fontSize, kind) <= maxWidth) return text;
     std::string out = text;
-    while (!out.empty() && Text::Measure((out + "...").c_str(), fontSize, face) > maxWidth)
+    while (!out.empty() && Text::Measure((out + "...").c_str(), fontSize, kind) > maxWidth)
         out.pop_back();
     return out + "...";
 }
