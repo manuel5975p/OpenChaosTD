@@ -3,25 +3,13 @@
 #include <world/map.hpp>
 #include <world/tile.hpp>
 #include <engine/util/file_store.hpp>
+#include <engine/util/compact_float.hpp>
 
 #include <cstdint>
-#include <cstdio>
 #include <iostream>
 #include <string>
 
 namespace {
-
-// Compact float: trailing zeros stripped, at least one decimal digit kept (mirrors
-// the helper in emitter_presets.cpp so saved values round-trip without noise).
-std::string FormatFloat(float v) {
-    char buf[32];
-    std::snprintf(buf, sizeof(buf), "%.4f", v);
-    std::string s(buf);
-    size_t dot = s.find('.');
-    size_t last = s.find_last_not_of('0');
-    s.erase(last > dot ? last + 1 : dot + 2);
-    return s;
-}
 
 const char* TileTypeName(TileType type) {
     switch (type) {

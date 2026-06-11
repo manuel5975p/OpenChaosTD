@@ -1,4 +1,5 @@
 #include <factory/tower_factory.hpp>
+#include <factory/module_registry.hpp>
 #include <world/tower_modules.hpp>
 #include <world/attack_style.hpp>
 #include <stdexcept>
@@ -13,11 +14,6 @@ static TargetingMode ParseTargetingMode(const std::string& s) {
     if (s == "MostArmor") return TargetingMode::MostArmor;
     if (s == "MostShield") return TargetingMode::MostShield;
     return TargetingMode::First;
-}
-
-// Wrap a parsed module sub-tree with its cached "type" string for the world layer.
-static ModuleDef MakeModuleDef(const toml::table& t) {
-    return ModuleDef{t["type"].value_or(std::string{}), t};
 }
 
 static AttackStyle ParseAttackStyle(const std::string& s) {
@@ -53,14 +49,7 @@ static TowerPresentation ParsePresentation(const toml::table& j, const EmitterPr
 static TowerUpgrade ParseUpgrade(const toml::table& j) {
     TowerUpgrade up;
     up.m_cost = j["cost"].value_or(0);
-    if (auto add = j["add"].as_table())
-        for (auto&& [k, v] : *add) up.m_adds.push_back({std::string(k.str()), v.value_or(0.0f)});
-    if (auto mul = j["mul"].as_table())
-        for (auto&& [k, v] : *mul) up.m_muls.push_back({std::string(k.str()), v.value_or(0.0f)});
-    // Added modules live under "modules" (unified upgrade schema across towers and enemies).
-    if (auto mods = j["modules"].as_array())
-        for (auto&& m : *mods)
-            if (auto mt = m.as_table()) up.m_addModules.push_back(MakeModuleDef(*mt));
+    ParseUpgradeFields(j, up); // shared add/mul/modules schema across towers and enemies
     return up;
 }
 
@@ -159,11 +148,7 @@ EmitterDesc TowerFactory::ResolveEmitter(const toml::table& j) const {
 }
 
 std::unique_ptr<TowerModule> TowerFactory::BuildModule(const ModuleDef& mod) const {
-    auto bit = m_builders.find(mod.m_type);
-    if (bit != m_builders.end())
-        return bit->second(mod);
-    std::cerr << "TowerFactory: unknown module type '" << mod.m_type << "'\n";
-    return nullptr;
+    return BuildFromRegistry<std::unique_ptr<TowerModule>>(m_builders, mod, "TowerFactory");
 }
 
 void TowerFactory::ApplyUpgradeStats(Tower& tower, const TowerUpgrade& up) const {

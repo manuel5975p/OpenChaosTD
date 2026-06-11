@@ -1,6 +1,7 @@
 #include <states/map_editor_state.hpp>
 #include <states/menu_state.hpp>
 #include <engine/core/text.hpp>
+#include <engine/core/draw_helpers.hpp>
 #include <world/tile.hpp>
 #include <game.hpp>
 #include <raylib.h>
@@ -21,15 +22,6 @@ namespace {
 
     // Stat keys a Buff tile can apply, parallel to the three buff brush buttons.
     const char* kBuffStats[3] = {"range", "damage", "shotsPerMinute"};
-
-    void DrawCenteredText(const char* text, float centerX, float y, int fontSize, Color color) {
-        int w = Text::Measure(text, fontSize);
-        Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
-    }
-
-    void DrawLabelInRow(const char* text, float x, float rowY, float rowH, int fontSize, Color color) {
-        Text::Draw(text, static_cast<int>(x), static_cast<int>(rowY + (rowH - fontSize) / 2.0f), fontSize, color);
-    }
 
     // Translucent tint for the active brush ghost / hover highlight. Index = Brush value.
     Color BrushTint(int brush) {

@@ -5,6 +5,7 @@
 #include <raylib.h>
 #include <engine/features/particle_system.hpp>
 #include <world/desc_line.hpp>
+#include <world/stat_module.hpp>
 
 struct AttackPayload;
 class AttackModule;
@@ -48,16 +49,12 @@ inline void ApplyDelta(float& field, float v, bool mul) {
     field = mul ? field * v : field + v;
 }
 
-class TowerModule {
+// DescribeStats/PatchStats are inherited from IStatModule (shared with EnemyModule).
+class TowerModule : public IStatModule {
 public:
-    virtual ~TowerModule() = default;
     virtual void Contribute(AttackPayload&) const {}
     // Augment the firing tower's live combat stats each tick (e.g. RampUp's fire-rate ramp).
     virtual void ContributeTower(AttackModule&) const {}
-    // Append this module's display lines to the tower info panel (zero or more rows).
-    virtual void DescribeStats(std::vector<DescLine>&) const {}
-    // Called by the upgrade system to patch module-owned parameters (e.g. slowPercent, burnDamage).
-    virtual void PatchStats(const std::string& /*key*/, float /*v*/, bool /*mul*/) {}
     // Stateful hooks: Tick runs every frame (idle decay), OnFire runs the frame the tower fires.
     virtual void Tick(float /*dt*/) {}
     virtual void OnFire() {}

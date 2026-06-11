@@ -6,29 +6,15 @@
 #include <states/map_select_state.hpp>
 #include <datapack/datapack.hpp>
 #include <engine/core/text.hpp>
+#include <engine/core/draw_helpers.hpp>
 #include <game.hpp>
 #include <raylib.h>
-#include <algorithm>
 #include <memory>
 #include <string>
 
 namespace {
     constexpr Color kBackground = {30, 30, 35, 255};
     constexpr Color kSubtle     = {160, 160, 170, 255};
-
-    void DrawCenteredText(const char* text, float centerX, float y, int fontSize, Color color) {
-        int w = Text::Measure(text, fontSize);
-        Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
-    }
-
-    // Trims text with a trailing ellipsis so it fits within maxWidth pixels.
-    std::string TruncateToWidth(const std::string& text, int fontSize, float maxWidth) {
-        if (Text::Measure(text.c_str(), fontSize) <= maxWidth) return text;
-        std::string out = text;
-        while (!out.empty() && Text::Measure((out + "...").c_str(), fontSize) > maxWidth)
-            out.pop_back();
-        return out + "...";
-    }
 }
 
 void DatapackSelectState::OnEnter(Game& game) {
@@ -36,36 +22,17 @@ void DatapackSelectState::OnEnter(Game& game) {
     game.GetDatapackRegistry().Scan(game.GetFileStore());
     game.GetDatapackRegistry().LoadIcons();
 
-    m_scroll = 0.0f;
-    m_hovered = -1;
+    m_list.Reset();
 
     float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
     float screenH = static_cast<float>(game.GetScreen().GetGameHeight());
     m_backButton.m_label = "BACK";
-    m_backButton.m_rect = { screenW / 2.0f - 80.0f, screenH - kFooterH + 18.0f, 160.0f, 44.0f };
+    m_backButton.m_rect = { screenW / 2.0f - 80.0f, m_list.ListBottom(screenH) + 18.0f, 160.0f, 44.0f };
 }
 
 void DatapackSelectState::OnExit(Game& game) {
     // Selection-screen thumbnails are only needed while this screen is up.
     game.GetDatapackRegistry().UnloadIcons();
-}
-
-float DatapackSelectState::ListBottom(Game& game) const {
-    return static_cast<float>(game.GetScreen().GetGameHeight()) - kFooterH;
-}
-
-float DatapackSelectState::MaxScroll(Game& game) const {
-    int count = static_cast<int>(game.GetDatapackRegistry().Packs().size());
-    float contentH = count * (kCardH + kCardGap);
-    float bandH = ListBottom(game) - ListTop();
-    return std::max(0.0f, contentH - bandH);
-}
-
-Rectangle DatapackSelectState::CardRect(Game& game, int index) const {
-    float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
-    float cardW = screenW - 2.0f * kMargin;
-    float y = ListTop() - m_scroll + index * (kCardH + kCardGap);
-    return { kMargin, y, cardW, kCardH };
 }
 
 void DatapackSelectState::SelectPack(Game& game, int index) {
@@ -88,11 +55,12 @@ void DatapackSelectState::SelectPack(Game& game, int index) {
 void DatapackSelectState::ProcessInput(Game& game, float /*dt*/) {
     Vector2 mouse = game.GetInput().GetMousePosition();
     bool clicked = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
+    float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
+    float screenH = static_cast<float>(game.GetScreen().GetGameHeight());
+    int count = static_cast<int>(game.GetDatapackRegistry().Packs().size());
 
     // Scroll wheel pans the list, clamped to the content extent.
-    float wheel = game.GetInput().GetMouseWheelDelta();
-    if (wheel != 0.0f)
-        m_scroll = std::clamp(m_scroll - wheel * kScrollSpeed, 0.0f, MaxScroll(game));
+    m_list.ProcessScroll(game.GetInput().GetMouseWheelDelta(), count, screenH);
 
     // Back button / cancel returns to the menu.
     m_backButton.Update(mouse, clicked);
@@ -101,21 +69,11 @@ void DatapackSelectState::ProcessInput(Game& game, float /*dt*/) {
         return;
     }
 
-    // Card hover/select — only within the visible band so clicks on the masked
-    // overflow above/below the list are ignored.
-    m_hovered = -1;
-    const auto& packs = game.GetDatapackRegistry().Packs();
-    bool inBand = mouse.y >= ListTop() && mouse.y <= ListBottom(game);
-    for (int i = 0; i < static_cast<int>(packs.size()); i++) {
-        Rectangle rect = CardRect(game, i);
-        if (inBand && CheckCollisionPointRec(mouse, rect)) {
-            m_hovered = i;
-            if (clicked) {
-                SelectPack(game, i);
-                return;
-            }
-        }
-    }
+    // Card hover/select — the widget limits hits to the visible band so clicks on the
+    // masked overflow above/below the list are ignored.
+    int chosen = m_list.ProcessHover(mouse, clicked, count, screenW, screenH);
+    if (chosen >= 0)
+        SelectPack(game, chosen);
 }
 
 void DatapackSelectState::Update(Game& /*game*/, float /*dt*/) {}
@@ -123,31 +81,33 @@ void DatapackSelectState::Update(Game& /*game*/, float /*dt*/) {}
 void DatapackSelectState::Draw(Game& game) {
     float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
     float screenH = static_cast<float>(game.GetScreen().GetGameHeight());
-    float listBottom = ListBottom(game);
+    float listTop = m_list.ListTop();
+    float listBottom = m_list.ListBottom(screenH);
 
     ClearBackground(kBackground);
 
     const auto& packs = game.GetDatapackRegistry().Packs();
+    int count = static_cast<int>(packs.size());
 
     if (packs.empty()) {
         DrawCenteredText("No datapacks found", screenW / 2.0f, screenH / 2.0f - 12.0f, 28, kSubtle);
     }
 
     // Cards. Overflow past the band is hidden by the header/footer masks below.
-    for (int i = 0; i < static_cast<int>(packs.size()); i++) {
+    for (int i = 0; i < count; i++) {
         const Datapack& pack = packs[i];
-        Rectangle card = CardRect(game, i);
+        Rectangle card = m_list.CardRect(i, screenW, screenH);
 
         // Cheap cull: skip cards entirely outside the band.
-        if (card.y + card.height < ListTop() || card.y > listBottom) continue;
+        if (card.y + card.height < listTop || card.y > listBottom) continue;
 
-        bool hovered = (i == m_hovered);
+        bool hovered = (i == m_list.Hovered());
         DrawRectangleRec(card, hovered ? kDefaultStyle.m_bgHovered : kDefaultStyle.m_bgNormal);
         DrawRectangleLinesEx(card, hovered ? kDefaultStyle.m_borderWidthActive : kDefaultStyle.m_borderWidth,
                              hovered ? kDefaultStyle.m_borderSel : kDefaultStyle.m_border);
 
         // Icon (or a placeholder when the pack ships none).
-        float iconSize = kCardH - 2.0f * kIconPad;
+        float iconSize = card.height - 2.0f * kIconPad;
         Rectangle iconRect = { card.x + kIconPad, card.y + kIconPad, iconSize, iconSize };
         if (pack.m_icon.id != 0) {
             Rectangle src = { 0.0f, 0.0f,
@@ -175,19 +135,10 @@ void DatapackSelectState::Draw(Game& game) {
     }
 
     // Scrollbar (only when there is something to scroll).
-    float maxScroll = MaxScroll(game);
-    if (maxScroll > 0.0f) {
-        float bandH = listBottom - ListTop();
-        float contentH = bandH + maxScroll;
-        float trackX = screenW - kMargin + 8.0f;
-        float thumbH = bandH * (bandH / contentH);
-        float thumbY = ListTop() + (m_scroll / maxScroll) * (bandH - thumbH);
-        DrawRectangle(static_cast<int>(trackX), static_cast<int>(ListTop()), 6, static_cast<int>(bandH), {20, 20, 25, 255});
-        DrawRectangle(static_cast<int>(trackX), static_cast<int>(thumbY), 6, static_cast<int>(thumbH), kDefaultStyle.m_border);
-    }
+    m_list.DrawScrollbar(count, screenW, screenH, {20, 20, 25, 255}, kDefaultStyle.m_border);
 
     // Header mask + title (drawn over any card that scrolled up into this band).
-    DrawRectangle(0, 0, static_cast<int>(screenW), static_cast<int>(ListTop()), kBackground);
+    DrawRectangle(0, 0, static_cast<int>(screenW), static_cast<int>(listTop), kBackground);
     DrawCenteredText("SELECT DATAPACK", screenW / 2.0f, 40.0f, 40, RAYWHITE);
 
     // Footer mask + back button.

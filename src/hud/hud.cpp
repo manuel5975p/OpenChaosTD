@@ -4,8 +4,8 @@
 #include <algorithm>
 
 void DrawTextCenteredX(const char* text, int centerX, int y, int fontSize, Color color, Text::Face face) {
-    int width = Text::Measure(text, fontSize, face);
-    Text::Draw(text, centerX - width / 2, y, fontSize, color, face);
+    // Thin integer-coord forwarder to the shared float-coord helper.
+    DrawCenteredText(text, static_cast<float>(centerX), static_cast<float>(y), fontSize, color, face);
 }
 
 void HUD::DrawPanelBackground(unsigned char alpha, bool border) const {
@@ -25,4 +25,18 @@ void HUD::ClampPanelToScreen(int screenW, int screenH) {
                                static_cast<float>(screenW) - m_panelRect.width);
     m_panelRect.y = std::clamp(m_panelRect.y, 0.0f,
                                static_cast<float>(screenH) - m_panelRect.height);
+}
+
+bool HUD::BeginInput(Input& input, Vector2& mousePos, bool& pressed) {
+    if (!m_visible) return false;
+    mousePos = input.GetMousePosition();
+    pressed = input.IsMousePressed(MOUSE_LEFT_BUTTON);
+    ConsumePanelClick(input);
+    return true;
+}
+
+bool HUD::BeginInput(Input& input) {
+    if (!m_visible) return false;
+    ConsumePanelClick(input);
+    return true;
 }

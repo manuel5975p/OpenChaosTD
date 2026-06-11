@@ -1,21 +1,14 @@
 #include <hud/wave_enemy_card.hpp>
 #include <engine/core/text.hpp>
+#include <engine/core/draw_helpers.hpp>
 #include <engine/core/resources.hpp>
 #include <raylib.h>
 #include <algorithm>
 
-// Draw a sprite scaled (aspect-preserving) to fit `dest`, centered. No-op if the key is missing.
+// Resolve a texture by key and aspect-fit it into `dest`. No-op if the key is missing.
 static void DrawSpriteFit(const std::string& textureKey, Resources& assets, Rectangle dest) {
     if (!assets.HasTexture(textureKey)) return; // GetTexture throws on a missing key
-    Texture2D& texture = assets.GetTexture(textureKey);
-    if (texture.width <= 0 || texture.height <= 0) return;
-
-    float scale = std::min(dest.width / texture.width, dest.height / texture.height);
-    float w = texture.width  * scale;
-    float h = texture.height * scale;
-    Rectangle src = {0.0f, 0.0f, static_cast<float>(texture.width), static_cast<float>(texture.height)};
-    Rectangle dst = {dest.x + (dest.width - w) * 0.5f, dest.y + (dest.height - h) * 0.5f, w, h};
-    DrawTexturePro(texture, src, dst, {0.0f, 0.0f}, 0.0f, WHITE);
+    DrawTextureFitted(assets.GetTexture(textureKey), dest);
 }
 
 void WaveEnemyCard::SetContent(const WaveEnemyEntry& entry) {

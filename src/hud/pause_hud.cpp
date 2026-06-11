@@ -35,13 +35,10 @@ void PauseHUD::Build(float scale, int screenW, int screenH) {
 }
 
 void PauseHUD::ProcessInput(Input& input) {
-    if (!m_visible) return;
-
-    Vector2 mousePos = input.GetMousePosition();
-    bool pressed = input.IsMousePressed(MOUSE_LEFT_BUTTON);
-
-    // Swallow clicks landing on the panel so they never reach the game grid behind it.
-    ConsumePanelClick(input);
+    // BeginInput also swallows clicks on the panel so they never reach the game grid behind it.
+    Vector2 mousePos{};
+    bool pressed = false;
+    if (!BeginInput(input, mousePos, pressed)) return;
 
     m_resumeBtn.Update(mousePos, pressed);
     m_saveBtn.Update(mousePos, pressed);

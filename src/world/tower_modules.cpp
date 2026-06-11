@@ -1,7 +1,6 @@
 #include <world/tower_modules.hpp>
 #include <world/attack.hpp>
 #include <world/effect.hpp>
-#include <cstdio>
 
 // --- AttackModule ---
 
@@ -24,15 +23,10 @@ void AttackModule::PatchStats(const std::string& key, float v, bool mul) {
 }
 
 void AttackModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Damage:  %g", m_liveDamage);
-    out.push_back({buf, RAYWHITE});
-    snprintf(buf, sizeof(buf), "Range:   %.0f", m_liveRange);
-    out.push_back({buf, RAYWHITE});
-    snprintf(buf, sizeof(buf), "Rate:    %d/min", static_cast<int>(m_liveShotsPerMinute + 0.5f));
-    out.push_back({buf, RAYWHITE});
-    snprintf(buf, sizeof(buf), "Targets: %d", m_liveTargetCount);
-    out.push_back({buf, RAYWHITE});
+    PushStatLine(out, RAYWHITE, "Damage:  %g", m_liveDamage);
+    PushStatLine(out, RAYWHITE, "Range:   %.0f", m_liveRange);
+    PushStatLine(out, RAYWHITE, "Rate:    %d/min", static_cast<int>(m_liveShotsPerMinute + 0.5f));
+    PushStatLine(out, RAYWHITE, "Targets: %d", m_liveTargetCount);
 }
 
 // --- ArmorPierceModule ---
@@ -45,9 +39,7 @@ void ArmorPierceModule::Contribute(AttackPayload& attack) const {
 }
 
 void ArmorPierceModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Pierce:  %g", m_amount);
-    out.push_back({buf, GOLD});
+    PushStatLine(out, GOLD, "Pierce:  %g", m_amount);
 }
 
 void ArmorPierceModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -66,9 +58,7 @@ void SlowModule::Contribute(AttackPayload& attack) const {
 }
 
 void SlowModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Slow:    %.0f%%  %.1fs", m_slowPercent, m_duration);
-    out.push_back({buf, SKYBLUE});
+    PushStatLine(out, SKYBLUE, "Slow:    %.0f%%  %.1fs", m_slowPercent, m_duration);
 }
 
 void SlowModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -88,9 +78,7 @@ void BurnModule::Contribute(AttackPayload& attack) const {
 }
 
 void BurnModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Burn:    %g/s  %.1fs", m_damage, m_duration);
-    out.push_back({buf, ORANGE});
+    PushStatLine(out, ORANGE, "Burn:    %g/s  %.1fs", m_damage, m_duration);
 }
 
 void BurnModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -110,9 +98,7 @@ void ArmorShredModule::Contribute(AttackPayload& attack) const {
 }
 
 void ArmorShredModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Shred:   %g  %.1fs", m_amount, m_duration);
-    out.push_back({buf, GRAY});
+    PushStatLine(out, GRAY, "Shred:   %g  %.1fs", m_amount, m_duration);
 }
 
 void ArmorShredModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -132,9 +118,7 @@ void WeaknessModule::Contribute(AttackPayload& attack) const {
 }
 
 void WeaknessModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Weak:    +%g  %.1fs", m_amount, m_duration);
-    out.push_back({buf, PURPLE});
+    PushStatLine(out, PURPLE, "Weak:    +%g  %.1fs", m_amount, m_duration);
 }
 
 void WeaknessModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -155,9 +139,7 @@ void StunModule::Contribute(AttackPayload& attack) const {
 }
 
 void StunModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Stun:    %.1fs", m_duration);
-    out.push_back({buf, YELLOW});
+    PushStatLine(out, YELLOW, "Stun:    %.1fs", m_duration);
 }
 
 void StunModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -175,9 +157,7 @@ void CritModule::Contribute(AttackPayload& attack) const {
 }
 
 void CritModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Crit:    %.0f%%  x%.1f", m_critChance * 100.0f, m_critMultiplier);
-    out.push_back({buf, YELLOW});
+    PushStatLine(out, YELLOW, "Crit:    %.0f%%  x%.1f", m_critChance * 100.0f, m_critMultiplier);
 }
 
 void CritModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -209,9 +189,7 @@ void RampUpModule::OnFire() {
 }
 
 void RampUpModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Ramp:    %d/%d", m_stacks, m_maxStacks);
-    out.push_back({buf, GREEN});
+    PushStatLine(out, GREEN, "Ramp:    %d/%d", m_stacks, m_maxStacks);
 }
 
 void RampUpModule::PatchStats(const std::string& key, float v, bool mul) {

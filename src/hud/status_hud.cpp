@@ -30,12 +30,9 @@ void StatusHUD::Build(float scale, int screenW) {
 }
 
 void StatusHUD::ProcessInput(Input& input, const StatusView& view) {
-    if (!m_visible) return;
-
-    Vector2 mousePos = input.GetMousePosition();
-    bool pressed = input.IsMousePressed(MOUSE_LEFT_BUTTON);
-
-    ConsumePanelClick(input);
+    Vector2 mousePos{};
+    bool pressed = false;
+    if (!BeginInput(input, mousePos, pressed)) return;
 
     m_autoBtn.Update(mousePos, pressed);
     m_startWaveBtn.Update(mousePos, pressed);

@@ -101,11 +101,9 @@ void TowerInfoHUD::SetTarget(const TowerInfoView& view) {
 }
 
 void TowerInfoHUD::ProcessInput(Input& input) {
-    if (!m_visible) return;
-
-    bool pressed = input.IsMousePressed(MOUSE_LEFT_BUTTON);
-    ConsumePanelClick(input);
-    Vector2 mousePos = input.GetMousePosition();
+    Vector2 mousePos{};
+    bool pressed = false;
+    if (!BeginInput(input, mousePos, pressed)) return;
 
     // Update whenever an upgrade is available so hover registers even when unaffordable,
     // but only raise the buy signal when the player can pay.

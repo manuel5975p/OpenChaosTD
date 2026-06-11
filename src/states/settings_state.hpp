@@ -1,6 +1,7 @@
 #pragma once
 
 #include <states/game_state.hpp>
+#include <states/state_ui_helpers.hpp>
 #include <engine/features/ui_widgets.hpp>
 #include <string>
 #include <vector>
@@ -109,8 +110,7 @@ private:
     bool m_sfxWasDragging = false;
 
     // Transient status toast
-    std::string m_status;
-    float m_statusTimer = 0.0f;
+    StatusToast m_status;
 
     static constexpr int kFpsOptions[] = {30, 60, 120, 144, 240};
 

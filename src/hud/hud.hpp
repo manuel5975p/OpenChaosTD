@@ -1,6 +1,7 @@
 #pragma once
 #include <raylib.h>
 #include <engine/core/text.hpp>
+#include <engine/core/draw_helpers.hpp>
 
 class Input;
 
@@ -36,6 +37,12 @@ protected:
     void DrawPanelBackground(unsigned char alpha, bool border = false) const;
     void ConsumePanelClick(Input& input) const;
     void ClampPanelToScreen(int screenW, int screenH);
+
+    // Shared ProcessInput preamble: returns false (so the caller bails) when hidden;
+    // otherwise reads the cursor + left-click state and swallows any panel click.
+    bool BeginInput(Input& input, Vector2& mousePos, bool& pressed);
+    // Click-only variant for HUDs that just need to swallow clicks on their panel.
+    bool BeginInput(Input& input);
 
     float m_scale = 1.0f;
     bool m_visible = true;

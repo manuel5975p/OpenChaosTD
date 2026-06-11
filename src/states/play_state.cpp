@@ -3,13 +3,10 @@
 #include <states/end_state.hpp>
 #include <states/menu_state.hpp>
 #include <world/map_serialization.hpp>
+#include <world/game_paths.hpp>
 #include <game.hpp>
 #include <raylib.h>
 #include <raymath.h>
-
-namespace {
-    constexpr const char* kSaveGamePath = "saves/savegame.json";
-}
 
 // --- Base overrides --------------------------------------------------------
 

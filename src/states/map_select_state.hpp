@@ -34,23 +34,9 @@ private:
     void UnloadPreviews();          // free every loaded preview texture
     void SelectEntry(Game& game, int index);
 
-    // On-screen rect of card i, accounting for the current scroll offset.
-    Rectangle CardRect(Game& game, int index) const;
-    float ListTop() const { return kListTop; }
-    float ListBottom(Game& game) const;
-    float MaxScroll(Game& game) const;
-
     std::vector<MapEntry> m_entries;
-    float m_scroll = 0.0f;
-    int m_hovered = -1;
+    ScrollableList m_list; // scroll/hover state + card geometry (default layout)
     Button m_backButton;
 
-    // Layout constants (raw virtual coords, matching DatapackSelectState).
-    static constexpr float kMargin      = 40.0f;
-    static constexpr float kListTop     = 110.0f;
-    static constexpr float kFooterH     = 80.0f;
-    static constexpr float kCardH       = 120.0f;
-    static constexpr float kCardGap     = 12.0f;
-    static constexpr float kIconPad     = 16.0f;
-    static constexpr float kScrollSpeed = 40.0f;
+    static constexpr float kIconPad = 16.0f; // inset of the preview inside a card
 };

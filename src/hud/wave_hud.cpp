@@ -23,9 +23,8 @@ void WaveHUD::Build(float scale, int screenW) {
 }
 
 void WaveHUD::ProcessInput(Input& input) {
-    if (!m_visible) return;
     // Swallow clicks that land on the panel so they don't place/deselect towers underneath.
-    ConsumePanelClick(input);
+    BeginInput(input);
 }
 
 void WaveHUD::Draw(const WaveView& view, Resources& assets) {

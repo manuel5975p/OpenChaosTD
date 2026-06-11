@@ -1,8 +1,9 @@
 #include <factory/emitter_presets.hpp>
+#include <engine/core/draw_helpers.hpp>
+#include <engine/util/compact_float.hpp>
 #include <toml++/toml.hpp>
 #include <algorithm>
 #include <cstdint>
-#include <cstdio>
 #include <iostream>
 
 Color ParseTomlColor(const toml::array& a) {
@@ -54,21 +55,6 @@ static const char* ShapeName(SpawnShape s) {
         case SpawnShape::Ring:   return "Ring";
         default:                 return "Point";
     }
-}
-
-// Compact float: trailing zeros stripped, at least one decimal digit kept (2.0, 0.38).
-static std::string FormatFloat(float v) {
-    char buf[32];
-    std::snprintf(buf, sizeof(buf), "%.4f", v);
-    std::string s(buf);
-    size_t dot = s.find('.');
-    size_t last = s.find_last_not_of('0');
-    s.erase(last > dot ? last + 1 : dot + 2);
-    return s;
-}
-
-static bool ColorEquals(Color a, Color b) {
-    return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
 }
 
 static toml::array ColorArray(Color c) {

@@ -1,7 +1,6 @@
 #include <world/enemy_modules.hpp>
 #include <world/enemy.hpp>
 #include <algorithm>
-#include <cstdio>
 
 // --- BaseStatsModule ---
 
@@ -25,11 +24,8 @@ void BaseStatsModule::PatchStats(const std::string& key, float v, bool mul) {
 }
 
 void BaseStatsModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Health:  %g", m_maxHealth);
-    out.push_back({buf, RAYWHITE});
-    snprintf(buf, sizeof(buf), "Speed:   %g", m_liveSpeed);
-    out.push_back({buf, RAYWHITE});
+    PushStatLine(out, RAYWHITE, "Health:  %g", m_maxHealth);
+    PushStatLine(out, RAYWHITE, "Speed:   %g", m_liveSpeed);
 }
 
 // --- RegenerationModule ---
@@ -40,9 +36,7 @@ void RegenerationModule::Tick(float dt, Enemy& enemy) {
 }
 
 void RegenerationModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Regen:   %g/s", m_rate);
-    out.push_back({buf, RAYWHITE});
+    PushStatLine(out, RAYWHITE, "Regen:   %g/s", m_rate);
 }
 
 void RegenerationModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -56,9 +50,7 @@ void ArmorModule::ContributeStats(BaseStatsModule& base) const {
 }
 
 void ArmorModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Armor:   %g", m_amount);
-    out.push_back({buf, RAYWHITE});
+    PushStatLine(out, RAYWHITE, "Armor:   %g", m_amount);
 }
 
 void ArmorModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -91,9 +83,7 @@ float ShieldModule::InterceptDamage(float incoming) {
 }
 
 void ShieldModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Shield:  %.0f/%.0f", m_currentShield, m_maxShield);
-    out.push_back({buf, {0, 220, 255, 255}});
+    PushStatLine(out, {0, 220, 255, 255}, "Shield:  %.0f/%.0f", m_currentShield, m_maxShield);
 }
 
 void ShieldModule::PatchStats(const std::string& key, float v, bool mul) {
@@ -111,9 +101,7 @@ std::optional<SpawnRequest> SplitModule::OnDeath() const {
 }
 
 void SplitModule::DescribeStats(std::vector<DescLine>& out) const {
-    char buf[48];
-    snprintf(buf, sizeof(buf), "Split:   %dx %s", m_count, m_childType.c_str());
-    out.push_back({buf, RAYWHITE});
+    PushStatLine(out, RAYWHITE, "Split:   %dx %s", m_count, m_childType.c_str());
 }
 
 void SplitModule::PatchStats(const std::string& key, float v, bool mul) {

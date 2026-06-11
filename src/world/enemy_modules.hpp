@@ -6,6 +6,7 @@
 #include <memory>
 #include <raylib.h>
 #include <world/effect.hpp>
+#include <world/stat_module.hpp>     // IStatModule (shared DescribeStats/PatchStats)
 #include <world/tower_modules.hpp> // DescLine + ApplyDelta shared module utilities
 
 class Enemy;
@@ -17,9 +18,9 @@ struct SpawnRequest {
     float m_spacing = 0.0f; // world-unit gap between consecutive children so they don't perfectly overlap
 };
 
-class EnemyModule {
+// DescribeStats/PatchStats are inherited from IStatModule (shared with TowerModule).
+class EnemyModule : public IStatModule {
 public:
-    virtual ~EnemyModule() = default;
     // Deep-copy this module (virtual-constructor idiom) so an Enemy prototype can be cloned.
     virtual std::unique_ptr<EnemyModule> Clone() const = 0;
     // Stateful per-frame hook (e.g. RegenerationModule); non-const so modules mutate cleanly.
@@ -32,10 +33,6 @@ public:
     virtual std::optional<SpawnRequest> OnDeath() const { return std::nullopt; }
     virtual bool ShouldBlock(EffectType) const { return false; }
     virtual float GetShield() const { return 0.0f; }
-    // Append this module's display lines to the enemy info panel (zero or more rows).
-    virtual void DescribeStats(std::vector<DescLine>&) const {}
-    // Patch module-owned parameters for dynamic scaling (mirrors TowerModule::PatchStats).
-    virtual void PatchStats(const std::string& /*key*/, float /*v*/, bool /*mul*/) {}
 };
 
 // The "core" enemy module: owns an enemy's base stats (formerly the Enemy scalars + EnemyStats).

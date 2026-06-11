@@ -1,6 +1,7 @@
 #include <states/particle_editor_state.hpp>
 #include <states/menu_state.hpp>
 #include <engine/core/text.hpp>
+#include <engine/core/draw_helpers.hpp>
 #include <game.hpp>
 #include <raylib.h>
 #include <algorithm>
@@ -12,26 +13,11 @@ namespace {
     // Accent tint for section headers and preview hints (matches SettingsState).
     constexpr Color kAccentColor = {255, 180, 0, 255};
 
-    // Centered text helper (states draw at raw virtual coords, no HUD scaling).
-    void DrawCenteredText(const char* text, float centerX, float y, int fontSize, Color color) {
-        int w = Text::Measure(text, fontSize);
-        Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
-    }
-
-    // Vertically center a label inside a row of the given height.
-    void DrawLabelInRow(const char* text, float x, float rowY, float rowH, int fontSize, Color color) {
-        Text::Draw(text, static_cast<int>(x), static_cast<int>(rowY + (rowH - fontSize) / 2.0f), fontSize, color);
-    }
-
     // Color swatch over a dark backing so low-alpha values stay readable.
     void DrawSwatch(Rectangle rect, Color color) {
         DrawRectangleRec(rect, {15, 15, 15, 255});
         DrawRectangleRec(rect, color);
         DrawRectangleLinesEx(rect, 1.0f, {80, 80, 80, 255});
-    }
-
-    bool ColorEquals(Color a, Color b) {
-        return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
     }
 
     // Memberwise compare; exact float equality is right here — values only
@@ -304,8 +290,7 @@ bool ParticleEditorState::AnySliderDragging() const {
 }
 
 void ParticleEditorState::SetStatus(const std::string& msg) {
-    m_status = msg;
-    m_statusTimer = 2.5f;
+    m_status.Set(msg);
 }
 
 void ParticleEditorState::SanitizeName() {
@@ -485,8 +470,7 @@ void ParticleEditorState::UpdatePreview(Game& game) {
 
 void ParticleEditorState::Update(Game& /*game*/, float dt) {
     m_previewParticles.Tick(dt);
-    if (m_statusTimer > 0.0f)
-        m_statusTimer -= dt;
+    m_status.Update(dt);
 }
 
 // --- Draw ----------------------------------------------------------------------
@@ -598,7 +582,5 @@ void ParticleEditorState::DrawBottomBar(Game& game) {
     m_backBtn.Draw();
     m_backBtn.DrawLabel(18, RAYWHITE);
 
-    if (m_statusTimer > 0.0f)
-        DrawCenteredText(m_status.c_str(),
-            static_cast<float>(game.GetScreen().GetGameWidth()) / 2.0f, barY - 26.0f, 18, GREEN);
+    m_status.Draw(static_cast<float>(game.GetScreen().GetGameWidth()) / 2.0f, barY - 26.0f, 18, GREEN);
 }

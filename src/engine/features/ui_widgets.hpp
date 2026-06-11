@@ -106,3 +106,47 @@ struct ProgressBar {
 
     void Draw(const WidgetStyle& style = kDefaultStyle) const;
 };
+
+// Geometry of a ScrollableList in raw virtual coords. Defaults match the picker
+// screens; pass a custom config to tune card size or band insets.
+struct ScrollableListConfig {
+    float m_margin = 40.0f;      // left/right inset of cards; gutter for the scrollbar
+    float m_listTop = 110.0f;    // top of the scrolling band (below the title)
+    float m_footerH = 80.0f;     // bottom strip reserved for a back button
+    float m_cardH = 120.0f;      // fixed card height
+    float m_cardGap = 12.0f;     // vertical gap between cards
+    float m_scrollSpeed = 40.0f; // virtual px panned per wheel notch
+};
+
+// Vertically scrolling list of fixed-height cards inside a header/footer-masked band.
+// Owns the scroll offset and hovered index plus all geometry; the caller renders each
+// card's contents into CardRect(i) and masks the overflow above/below the band itself.
+class ScrollableList {
+public:
+    ScrollableList() = default;
+    explicit ScrollableList(const ScrollableListConfig& cfg) : m_cfg(cfg) {}
+
+    void Reset() { m_scroll = 0.0f; m_hovered = -1; }
+
+    float ListTop() const { return m_cfg.m_listTop; }
+    float ListBottom(float screenH) const { return screenH - m_cfg.m_footerH; }
+    float MaxScroll(int count, float screenH) const;
+    // On-screen rect of card `index`, accounting for the current scroll offset.
+    Rectangle CardRect(int index, float screenW, float screenH) const;
+
+    // Mouse-wheel pans the list, clamped to the content extent.
+    void ProcessScroll(float wheel, int count, float screenH);
+    // Refresh the hovered card and return the index clicked this frame, or -1. Only cards
+    // inside the visible band are considered, so clicks on masked overflow are ignored.
+    int ProcessHover(Vector2 mouse, bool clicked, int count, float screenW, float screenH);
+    int Hovered() const { return m_hovered; }
+
+    // Draw the scrollbar track + thumb; no-op when the content fits the band.
+    void DrawScrollbar(int count, float screenW, float screenH,
+                       Color trackColor, Color thumbColor) const;
+
+private:
+    ScrollableListConfig m_cfg;
+    float m_scroll = 0.0f;
+    int m_hovered = -1; // index of the card under the cursor, or -1
+};

@@ -10,3 +10,8 @@ struct ModuleDef {
     std::string m_type;   // value of the def's "type" key (cached for display without re-parsing)
     toml::table m_table;  // full module sub-tree, consumed by the factory's BuildModule
 };
+
+// Wrap a parsed module sub-tree with its cached "type" string for the world layer.
+inline ModuleDef MakeModuleDef(const toml::table& t) {
+    return ModuleDef{t["type"].value_or(std::string{}), t};
+}

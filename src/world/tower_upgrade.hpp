@@ -1,12 +1,8 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include <utility>
-#include <cstdio>
 #include <unordered_map>
-#include <world/module_def.hpp>
-#include <world/desc_line.hpp>
+#include <world/upgrade_shared.hpp>
 
 // Readable name for an upgrade key (combat stats and module parameters); falls back to the raw key.
 inline const char* StatLabel(const std::string& key) {
@@ -33,41 +29,15 @@ inline bool IsPercentKey(const std::string& key) {
     return key == "slowPercent";
 }
 
-// One additive delta line: "+10% Crit" for fraction keys, "+20% Slow" for whole-percent keys,
-// "+2 Range" for flat values.
-inline std::string FormatAddDelta(const std::string& key, float v) {
-    char buf[48];
-    if (IsFractionKey(key))     snprintf(buf, sizeof(buf), "+%g%% %s", v * 100.0f, StatLabel(key));
-    else if (IsPercentKey(key)) snprintf(buf, sizeof(buf), "+%g%% %s", v, StatLabel(key));
-    else                        snprintf(buf, sizeof(buf), "+%g %s", v, StatLabel(key));
-    return buf;
+// Formatting policy for tower upgrade lines.
+inline const StatFormat& TowerStatFormat() {
+    static const StatFormat fmt{StatLabel, IsFractionKey, IsPercentKey};
+    return fmt;
 }
 
-// One multiplicative delta line: "x1.5 Rate".
-inline std::string FormatMulDelta(const std::string& key, float v) {
-    char buf[48];
-    snprintf(buf, sizeof(buf), "x%g %s", v, StatLabel(key));
-    return buf;
-}
-
-// One purchasable upgrade level for a tower: scalar deltas broadcast to its modules
-// (additive + multiplicative) plus any new effect modules to append.
-struct TowerUpgrade {
+// One purchasable upgrade level for a tower: the shared scalar deltas / added modules plus a cost.
+struct TowerUpgrade : UpgradeDef {
     int m_cost = 0;
-    std::vector<std::pair<std::string, float>> m_adds; // stat key -> additive delta
-    std::vector<std::pair<std::string, float>> m_muls; // stat key -> multiplicative factor
-    std::vector<ModuleDef> m_addModules;               // new effect modules built via TowerFactory
 
-    // Append this level's deltas as display lines, mirroring TowerModule::Describe.
-    void Describe(std::vector<DescLine>& out) const;
+    void Describe(std::vector<DescLine>& out) const { UpgradeDef::Describe(out, TowerStatFormat()); }
 };
-
-inline void TowerUpgrade::Describe(std::vector<DescLine>& out) const {
-    for (const auto& [key, v] : m_adds)
-        out.push_back({FormatAddDelta(key, v), RAYWHITE});
-    for (const auto& [key, v] : m_muls)
-        out.push_back({FormatMulDelta(key, v), RAYWHITE});
-    for (const auto& mod : m_addModules) {
-        if (!mod.m_type.empty()) out.push_back({"Adds " + mod.m_type, RAYWHITE});
-    }
-}

@@ -2,10 +2,10 @@
 #include <states/datapack_select_state.hpp>
 #include <states/play_state.hpp>
 #include <engine/core/text.hpp>
+#include <engine/core/draw_helpers.hpp>
 #include <game.hpp>
 #include <toml++/toml.hpp>
 #include <raylib.h>
-#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -15,43 +15,17 @@ namespace {
     constexpr Color kAutoTint   = {45, 55, 70, 255};
 
     constexpr float kThumbW = 160.0f; // preview column width inside a card
-
-    void DrawCenteredText(const char* text, float centerX, float y, int fontSize, Color color) {
-        int w = Text::Measure(text, fontSize);
-        Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
-    }
-
-    // Trims text with a trailing ellipsis so it fits within maxWidth pixels.
-    std::string TruncateToWidth(const std::string& text, int fontSize, float maxWidth) {
-        if (Text::Measure(text.c_str(), fontSize) <= maxWidth) return text;
-        std::string out = text;
-        while (!out.empty() && Text::Measure((out + "...").c_str(), fontSize) > maxWidth)
-            out.pop_back();
-        return out + "...";
-    }
-
-    // Draw a texture aspect-fitted (letterboxed) inside region, centered.
-    void DrawTextureFitted(const Texture2D& tex, Rectangle region) {
-        if (tex.id == 0 || tex.width == 0 || tex.height == 0) return;
-        float scale = std::min(region.width / tex.width, region.height / tex.height);
-        float w = tex.width * scale;
-        float h = tex.height * scale;
-        Rectangle dst = {region.x + (region.width - w) / 2.0f,
-                         region.y + (region.height - h) / 2.0f, w, h};
-        Rectangle src = {0.0f, 0.0f, static_cast<float>(tex.width), static_cast<float>(tex.height)};
-        DrawTexturePro(tex, src, dst, {0.0f, 0.0f}, 0.0f, WHITE);
-    }
 }
 
 // --- Lifecycle ---------------------------------------------------------------
 
 void MapSelectState::OnEnter(Game& game) {
-    RebuildList(game);
+    RebuildList(game); // also resets the scroll/hover state
 
     float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
     float screenH = static_cast<float>(game.GetScreen().GetGameHeight());
     m_backButton.m_label = "BACK";
-    m_backButton.m_rect = {screenW / 2.0f - 80.0f, screenH - kFooterH + 18.0f, 160.0f, 44.0f};
+    m_backButton.m_rect = {screenW / 2.0f - 80.0f, m_list.ListBottom(screenH) + 18.0f, 160.0f, 44.0f};
 }
 
 void MapSelectState::OnExit(Game& /*game*/) {
@@ -63,8 +37,7 @@ void MapSelectState::OnExit(Game& /*game*/) {
 void MapSelectState::RebuildList(Game& game) {
     UnloadPreviews();
     m_entries.clear();
-    m_scroll = 0.0f;
-    m_hovered = -1;
+    m_list.Reset();
 
     FileStore& fs = game.GetFileStore();
     std::string mapsDir = game.GetActiveMapsDir();
@@ -114,25 +87,6 @@ void MapSelectState::UnloadPreviews() {
     }
 }
 
-// --- Layout helpers ----------------------------------------------------------
-
-float MapSelectState::ListBottom(Game& game) const {
-    return static_cast<float>(game.GetScreen().GetGameHeight()) - kFooterH;
-}
-
-float MapSelectState::MaxScroll(Game& game) const {
-    float contentH = m_entries.size() * (kCardH + kCardGap);
-    float bandH = ListBottom(game) - ListTop();
-    return std::max(0.0f, contentH - bandH);
-}
-
-Rectangle MapSelectState::CardRect(Game& game, int index) const {
-    float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
-    float cardW = screenW - 2.0f * kMargin;
-    float y = ListTop() - m_scroll + index * (kCardH + kCardGap);
-    return {kMargin, y, cardW, kCardH};
-}
-
 // --- Selection ---------------------------------------------------------------
 
 void MapSelectState::SelectEntry(Game& game, int index) {
@@ -152,10 +106,11 @@ void MapSelectState::SelectEntry(Game& game, int index) {
 void MapSelectState::ProcessInput(Game& game, float /*dt*/) {
     Vector2 mouse = game.GetInput().GetMousePosition();
     bool clicked = game.GetInput().IsMousePressed(MOUSE_LEFT_BUTTON);
+    float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
+    float screenH = static_cast<float>(game.GetScreen().GetGameHeight());
+    int count = static_cast<int>(m_entries.size());
 
-    float wheel = game.GetInput().GetMouseWheelDelta();
-    if (wheel != 0.0f)
-        m_scroll = std::clamp(m_scroll - wheel * kScrollSpeed, 0.0f, MaxScroll(game));
+    m_list.ProcessScroll(game.GetInput().GetMouseWheelDelta(), count, screenH);
 
     m_backButton.Update(mouse, clicked);
     if (m_backButton.IsClicked() || game.GetInput().IsPressed("Cancel")) {
@@ -163,18 +118,9 @@ void MapSelectState::ProcessInput(Game& game, float /*dt*/) {
         return;
     }
 
-    m_hovered = -1;
-    bool inBand = mouse.y >= ListTop() && mouse.y <= ListBottom(game);
-    for (int i = 0; i < static_cast<int>(m_entries.size()); i++) {
-        Rectangle rect = CardRect(game, i);
-        if (inBand && CheckCollisionPointRec(mouse, rect)) {
-            m_hovered = i;
-            if (clicked) {
-                SelectEntry(game, i);
-                return;
-            }
-        }
-    }
+    int chosen = m_list.ProcessHover(mouse, clicked, count, screenW, screenH);
+    if (chosen >= 0)
+        SelectEntry(game, chosen);
 }
 
 void MapSelectState::Update(Game& /*game*/, float /*dt*/) {}
@@ -184,24 +130,26 @@ void MapSelectState::Update(Game& /*game*/, float /*dt*/) {}
 void MapSelectState::Draw(Game& game) {
     float screenW = static_cast<float>(game.GetScreen().GetGameWidth());
     float screenH = static_cast<float>(game.GetScreen().GetGameHeight());
-    float listBottom = ListBottom(game);
+    float listTop = m_list.ListTop();
+    float listBottom = m_list.ListBottom(screenH);
 
     ClearBackground(kBackground);
 
-    for (int i = 0; i < static_cast<int>(m_entries.size()); i++) {
+    int count = static_cast<int>(m_entries.size());
+    for (int i = 0; i < count; i++) {
         const MapEntry& entry = m_entries[i];
-        Rectangle card = CardRect(game, i);
+        Rectangle card = m_list.CardRect(i, screenW, screenH);
 
         // Cull cards entirely outside the visible band.
-        if (card.y + card.height < ListTop() || card.y > listBottom) continue;
+        if (card.y + card.height < listTop || card.y > listBottom) continue;
 
-        bool hovered = (i == m_hovered);
+        bool hovered = (i == m_list.Hovered());
         DrawRectangleRec(card, hovered ? kDefaultStyle.m_bgHovered : kDefaultStyle.m_bgNormal);
         DrawRectangleLinesEx(card, hovered ? kDefaultStyle.m_borderWidthActive : kDefaultStyle.m_borderWidth,
                              hovered ? kDefaultStyle.m_borderSel : kDefaultStyle.m_border);
 
         // Thumbnail column.
-        Rectangle thumb = {card.x + kIconPad, card.y + kIconPad, kThumbW, kCardH - 2.0f * kIconPad};
+        Rectangle thumb = {card.x + kIconPad, card.y + kIconPad, kThumbW, card.height - 2.0f * kIconPad};
         if (entry.m_isAuto) {
             DrawRectangleRec(thumb, kAutoTint);
             DrawRectangleLinesEx(thumb, 1.0f, kDefaultStyle.m_border);
@@ -232,19 +180,10 @@ void MapSelectState::Draw(Game& game) {
     }
 
     // Scrollbar (only when there is something to scroll).
-    float maxScroll = MaxScroll(game);
-    if (maxScroll > 0.0f) {
-        float bandH = listBottom - ListTop();
-        float contentH = bandH + maxScroll;
-        float trackX = screenW - kMargin + 8.0f;
-        float thumbH = bandH * (bandH / contentH);
-        float thumbY = ListTop() + (m_scroll / maxScroll) * (bandH - thumbH);
-        DrawRectangle(static_cast<int>(trackX), static_cast<int>(ListTop()), 6, static_cast<int>(bandH), {20, 20, 25, 255});
-        DrawRectangle(static_cast<int>(trackX), static_cast<int>(thumbY), 6, static_cast<int>(thumbH), kDefaultStyle.m_border);
-    }
+    m_list.DrawScrollbar(count, screenW, screenH, {20, 20, 25, 255}, kDefaultStyle.m_border);
 
     // Header mask + title (covers any card scrolled up into this band).
-    DrawRectangle(0, 0, static_cast<int>(screenW), static_cast<int>(ListTop()), kBackground);
+    DrawRectangle(0, 0, static_cast<int>(screenW), static_cast<int>(listTop), kBackground);
     DrawCenteredText("SELECT MAP", screenW / 2.0f, 40.0f, 40, RAYWHITE);
 
     // Footer mask + back button.

@@ -1,5 +1,6 @@
 #include <states/menu_state.hpp>
 #include <engine/core/text.hpp>
+#include <world/game_paths.hpp>
 #include <game.hpp>
 #include <raylib.h>
 #include <memory>
@@ -7,10 +8,6 @@
 #include <states/datapack_select_state.hpp>
 #include <states/play_state.hpp>
 #include <states/settings_state.hpp>
-
-namespace {
-    constexpr const char* kSaveGamePath = "saves/savegame.json";
-}
 
 void MenuState::OnEnter(Game& game) {
     // Returning to the menu is the single choke point that frees any active pack's

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <states/game_state.hpp>
+#include <states/state_ui_helpers.hpp>
 #include <engine/features/ui_widgets.hpp>
 #include <engine/features/particle_system.hpp>
 #include <string>
@@ -108,8 +109,7 @@ private:
     Button m_backBtn;
 
     // Transient status toast
-    std::string m_status;
-    float m_statusTimer = 0.0f;
+    StatusToast m_status;
 
     // Layout constants (raw virtual coords, matching SettingsState's approach)
     static constexpr float kTopY       = 110.0f; // content top, below the title

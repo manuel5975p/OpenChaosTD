@@ -27,12 +27,9 @@ void TowerBuildHUD::Build(float scale, int screenW, int screenH, const std::vect
 }
 
 void TowerBuildHUD::ProcessInput(Input& input) {
-    if (!m_visible) return;
-
-    Vector2 mousePos = input.GetMousePosition();
-    bool pressed = input.IsMousePressed(MOUSE_LEFT_BUTTON);
-
-    ConsumePanelClick(input);
+    Vector2 mousePos{};
+    bool pressed = false;
+    if (!BeginInput(input, mousePos, pressed)) return;
 
     for (BuildButton& entry : m_buttons) {
         entry.m_button.Update(mousePos, pressed);

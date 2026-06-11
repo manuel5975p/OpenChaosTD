@@ -1,5 +1,6 @@
 #include <states/settings_state.hpp>
 #include <engine/core/text.hpp>
+#include <engine/core/draw_helpers.hpp>
 #include <states/menu_state.hpp>
 #include <game.hpp>
 #include <engine/core/input.hpp>
@@ -11,17 +12,6 @@
 namespace {
     // Warning tint reused for duplicate-key highlighting and the conflict banner.
     constexpr Color kWarnColor = {255, 180, 0, 255};
-
-    // Centered text helper (states draw at raw virtual coords, no HUD scaling).
-    void DrawCenteredText(const char* text, float centerX, float y, int fontSize, Color color) {
-        int w = Text::Measure(text, fontSize);
-        Text::Draw(text, static_cast<int>(centerX - w / 2.0f), static_cast<int>(y), fontSize, color);
-    }
-
-    // Vertically center a label inside a row of the given height.
-    void DrawLabelInRow(const char* text, float x, float rowY, float rowH, int fontSize, Color color) {
-        Text::Draw(text, static_cast<int>(x), static_cast<int>(rowY + (rowH - fontSize) / 2.0f), fontSize, color);
-    }
 }
 
 // --- ConfigValues comparison -----------------------------------------------
@@ -215,8 +205,7 @@ void SettingsState::ApplyLiveAudio(Game& game, const ConfigValues& v) {
 }
 
 void SettingsState::SetStatus(const std::string& msg) {
-    m_status = msg;
-    m_statusTimer = 2.5f;
+    m_status.Set(msg);
 }
 
 // --- Actions ---------------------------------------------------------------
@@ -395,8 +384,7 @@ void SettingsState::ProcessDialog(Game& game) {
 }
 
 void SettingsState::Update(Game& /*game*/, float dt) {
-    if (m_statusTimer > 0.0f)
-        m_statusTimer -= dt;
+    m_status.Update(dt);
 }
 
 // --- Draw ------------------------------------------------------------------
@@ -488,8 +476,7 @@ void SettingsState::DrawControls(Game& game) {
     m_backBtn.DrawLabel(18, RAYWHITE);
 
     // ----- Status toast -----
-    if (m_statusTimer > 0.0f)
-        DrawCenteredText(m_status.c_str(), gw / 2.0f, kBottomBtnY - 36.0f, 20, GREEN);
+    m_status.Draw(gw / 2.0f, kBottomBtnY - 36.0f, 20, GREEN);
 }
 
 void SettingsState::DrawDialog(Game& game) {

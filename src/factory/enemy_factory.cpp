@@ -1,4 +1,5 @@
 #include <factory/enemy_factory.hpp>
+#include <factory/module_registry.hpp>
 #include <world/enemy_modules.hpp>
 #include <cassert>
 #include <stdexcept>
@@ -12,11 +13,6 @@ static EffectType ParseEffectType(const std::string& name) {
     return EffectType::Burn;
 }
 
-// Wrap a parsed module sub-tree with its cached "type" string for the world layer.
-static ModuleDef MakeModuleDef(const toml::table& t) {
-    return ModuleDef{t["type"].value_or(std::string{}), t};
-}
-
 static EnemyPresentation ParsePresentation(const toml::table& j, const EmitterPresets& presets) {
     EnemyPresentation v;
     v.m_texture = j["texture"].value_or(std::string{});
@@ -27,14 +23,7 @@ static EnemyPresentation ParsePresentation(const toml::table& j, const EmitterPr
 
 static EnemyUpgrade ParseUpgrade(const toml::table& j) {
     EnemyUpgrade up;
-    if (auto add = j["add"].as_table())
-        for (auto&& [k, v] : *add) up.m_adds.push_back({std::string(k.str()), v.value_or(0.0f)});
-    if (auto mul = j["mul"].as_table())
-        for (auto&& [k, v] : *mul) up.m_muls.push_back({std::string(k.str()), v.value_or(0.0f)});
-    // Added modules live under "modules" (unified upgrade schema across towers and enemies).
-    if (auto mods = j["modules"].as_array())
-        for (auto&& m : *mods)
-            if (auto mt = m.as_table()) up.m_addModules.push_back(MakeModuleDef(*mt));
+    ParseUpgradeFields(j, up); // shared add/mul/modules schema across towers and enemies
     return up;
 }
 
@@ -121,11 +110,7 @@ Enemy EnemyFactory::Create(const std::string& name) const {
 }
 
 std::unique_ptr<EnemyModule> EnemyFactory::BuildModule(const ModuleDef& mod) const {
-    auto bit = m_builders.find(mod.m_type);
-    if (bit != m_builders.end())
-        return bit->second(mod);
-    std::cerr << "EnemyFactory: unknown module type '" << mod.m_type << "'\n";
-    return nullptr;
+    return BuildFromRegistry<std::unique_ptr<EnemyModule>>(m_builders, mod, "EnemyFactory");
 }
 
 void EnemyFactory::ApplyUpgrade(Enemy& enemy, const EnemyUpgrade& up, bool includeModules) const {

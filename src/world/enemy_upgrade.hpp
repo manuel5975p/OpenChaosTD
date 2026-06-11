@@ -1,12 +1,8 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include <utility>
-#include <cstdio>
 #include <unordered_map>
-#include <world/module_def.hpp>
-#include <world/desc_line.hpp>
+#include <world/upgrade_shared.hpp>
 
 // Readable name for an enemy upgrade key (base stats and module parameters); falls back to the raw key.
 inline const char* EnemyStatLabel(const std::string& key) {
@@ -19,38 +15,14 @@ inline const char* EnemyStatLabel(const std::string& key) {
     return it != labels.end() ? it->second : key.c_str();
 }
 
-// One additive delta line: "+50 Health", "+5 Armor".
-inline std::string FormatEnemyAddDelta(const std::string& key, float v) {
-    char buf[48];
-    snprintf(buf, sizeof(buf), "+%g %s", v, EnemyStatLabel(key));
-    return buf;
+// Formatting policy for enemy upgrade lines (no fraction/percent keys).
+inline const StatFormat& EnemyStatFormat() {
+    static const StatFormat fmt{EnemyStatLabel, NoSpecialKey, NoSpecialKey};
+    return fmt;
 }
 
-// One multiplicative delta line: "x2 Health".
-inline std::string FormatEnemyMulDelta(const std::string& key, float v) {
-    char buf[48];
-    snprintf(buf, sizeof(buf), "x%g %s", v, EnemyStatLabel(key));
-    return buf;
-}
-
-// One upgrade step for an enemy: scalar deltas routed through Enemy::PatchStats
-// (additive + multiplicative) plus any new modules to append. Mirrors TowerUpgrade, minus the
-// player-facing cost (enemy upgrades are applied by wave tier, not purchased).
-struct EnemyUpgrade {
-    std::vector<std::pair<std::string, float>> m_adds; // stat key -> additive delta
-    std::vector<std::pair<std::string, float>> m_muls; // stat key -> multiplicative factor
-    std::vector<ModuleDef> m_addModules;               // new modules built via EnemyFactory
-
-    // Append this level's deltas as display lines, mirroring TowerUpgrade::Describe.
-    void Describe(std::vector<DescLine>& out) const;
+// One upgrade step for an enemy: the shared scalar deltas / added modules. Mirrors TowerUpgrade,
+// minus the player-facing cost (enemy upgrades are applied by wave tier, not purchased).
+struct EnemyUpgrade : UpgradeDef {
+    void Describe(std::vector<DescLine>& out) const { UpgradeDef::Describe(out, EnemyStatFormat()); }
 };
-
-inline void EnemyUpgrade::Describe(std::vector<DescLine>& out) const {
-    for (const auto& [key, v] : m_adds)
-        out.push_back({FormatEnemyAddDelta(key, v), RAYWHITE});
-    for (const auto& [key, v] : m_muls)
-        out.push_back({FormatEnemyMulDelta(key, v), RAYWHITE});
-    for (const auto& mod : m_addModules) {
-        if (!mod.m_type.empty()) out.push_back({"Adds " + mod.m_type, RAYWHITE});
-    }
-}

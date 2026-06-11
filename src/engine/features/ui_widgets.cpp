@@ -136,3 +136,48 @@ void TextInput::Draw(const WidgetStyle& style) const {
         static_cast<int>(m_rect.y + (m_rect.height - fontSize) / 2.0f),
         fontSize, style.m_text);
 }
+
+// --- ScrollableList ---
+
+float ScrollableList::MaxScroll(int count, float screenH) const {
+    float contentH = count * (m_cfg.m_cardH + m_cfg.m_cardGap);
+    float bandH = ListBottom(screenH) - ListTop();
+    return std::max(0.0f, contentH - bandH);
+}
+
+Rectangle ScrollableList::CardRect(int index, float screenW, float screenH) const {
+    (void)screenH;
+    float cardW = screenW - 2.0f * m_cfg.m_margin;
+    float y = ListTop() - m_scroll + index * (m_cfg.m_cardH + m_cfg.m_cardGap);
+    return {m_cfg.m_margin, y, cardW, m_cfg.m_cardH};
+}
+
+void ScrollableList::ProcessScroll(float wheel, int count, float screenH) {
+    if (wheel != 0.0f)
+        m_scroll = std::clamp(m_scroll - wheel * m_cfg.m_scrollSpeed, 0.0f, MaxScroll(count, screenH));
+}
+
+int ScrollableList::ProcessHover(Vector2 mouse, bool clicked, int count, float screenW, float screenH) {
+    m_hovered = -1;
+    bool inBand = mouse.y >= ListTop() && mouse.y <= ListBottom(screenH);
+    for (int i = 0; i < count; i++) {
+        if (inBand && CheckCollisionPointRec(mouse, CardRect(i, screenW, screenH))) {
+            m_hovered = i;
+            if (clicked) return i;
+        }
+    }
+    return -1;
+}
+
+void ScrollableList::DrawScrollbar(int count, float screenW, float screenH,
+                                   Color trackColor, Color thumbColor) const {
+    float maxScroll = MaxScroll(count, screenH);
+    if (maxScroll <= 0.0f) return;
+    float bandH = ListBottom(screenH) - ListTop();
+    float contentH = bandH + maxScroll;
+    float trackX = screenW - m_cfg.m_margin + 8.0f;
+    float thumbH = bandH * (bandH / contentH);
+    float thumbY = ListTop() + (m_scroll / maxScroll) * (bandH - thumbH);
+    DrawRectangle(static_cast<int>(trackX), static_cast<int>(ListTop()), 6, static_cast<int>(bandH), trackColor);
+    DrawRectangle(static_cast<int>(trackX), static_cast<int>(thumbY), 6, static_cast<int>(thumbH), thumbColor);
+}
